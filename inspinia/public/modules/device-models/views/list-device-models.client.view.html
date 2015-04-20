@@ -1,0 +1,19 @@
+<section data-ng-controller="DeviceModelsController" data-ng-init="find()">
+    <div class="page-header">
+        <h1>Device models</h1>
+    </div>
+    <div class="list-group">
+        <a data-ng-repeat="deviceModel in deviceModels" data-ng-href="#!/device-models/{{deviceModel._id}}" class="list-group-item">
+			<small class="list-group-item-text">
+				Posted on
+				<span data-ng-bind="deviceModel.created | date:'medium'"></span>
+				by
+				<span data-ng-bind="deviceModel.user.displayName"></span>
+			</small>
+			<h4 class="list-group-item-heading" data-ng-bind="deviceModel.name"></h4>
+        </a>
+    </div>
+    <div class="alert alert-warning text-center" data-ng-hide="!deviceModels.$resolved || deviceModels.length">
+    	No Device models yet, why don't you <a href="/#!/device-models/create">create one</a>?
+    </div>
+</section>

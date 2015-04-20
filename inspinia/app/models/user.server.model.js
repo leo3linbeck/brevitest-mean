@@ -75,6 +75,10 @@ var UserSchema = new Schema({
 		}],
 		default: ['user']
 	},
+	_employer : {
+		type: Schema.ObjectId,
+		ref: 'Provider'
+	},
 	updated: {
 		type: Date
 	},

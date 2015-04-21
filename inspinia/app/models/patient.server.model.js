@@ -28,11 +28,11 @@ var PatientSchema = new Schema({
 		type: Schema.ObjectId,
 		ref: 'Provider'
 	},
-	createdOn: {
+	created: {
 		type: Date,
 		default: Date.now
 	},
-	_createdBy: {
+	user: {
 		type: Schema.ObjectId,
 		ref: 'User'
 	}

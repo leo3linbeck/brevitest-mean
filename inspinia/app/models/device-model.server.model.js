@@ -23,11 +23,11 @@ var DeviceModelSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Device'
 	},
-	createdOn: {
+	created: {
 		type: Date,
 		default: Date.now
 	},
-	_createdBy: {
+	user: {
 		type: Schema.ObjectId,
 		ref: 'User'
 	}

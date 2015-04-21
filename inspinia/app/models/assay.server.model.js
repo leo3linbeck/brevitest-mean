@@ -47,11 +47,11 @@ var AssaySchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Cartridge'
 	},
-	createdOn: {
+	created: {
 		type: Date,
 		default: Date.now
 	},
-	_createdBy: {
+	user: {
 		type: Schema.ObjectId,
 		ref: 'User'
 	}

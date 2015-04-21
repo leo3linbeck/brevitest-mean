@@ -13,7 +13,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
 				reference: this.reference,
 				description: this.description,
 				url: this.url,
-				BCODE: this.BCODE,
+				BCODE: this.BCODE
 			});
 
 			// Redirect after save

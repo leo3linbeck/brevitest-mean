@@ -36,11 +36,11 @@ var ProviderSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'User'
 	},
-	createdOn: {
+	created: {
 		type: Date,
 		default: Date.now
 	},
-	_createdBy: {
+	user: {
 		type: Schema.ObjectId,
 		ref: 'User'
 	}

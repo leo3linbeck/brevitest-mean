@@ -46,11 +46,11 @@ var TestSchema = new Schema({
 		type: Schema.ObjectId,
 		ref: 'Cartridge'
 	},
-	createdOn: {
+	created: {
 		type: Date,
 		default: Date.now
 	},
-	_createdBy: {
+	user: {
 		type: Schema.ObjectId,
 		ref: 'User'
 	}

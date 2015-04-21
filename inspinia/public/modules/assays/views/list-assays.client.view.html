@@ -6,11 +6,11 @@
         <a data-ng-repeat="assay in assays" data-ng-href="#!/assays/{{assay._id}}" class="list-group-item">
 			<small class="list-group-item-text">
 				Posted on
-				<span data-ng-bind="assay.createdOn | date:'medium'"></span>
+				<span data-ng-bind="assay.created | date:'medium'"></span>
 				by
-				<span data-ng-bind="assay._createdBy.displayName"></span>
+				<span data-ng-bind="assay.user.displayName"></span>
 			</small>
-			<h4 class="list-group-item-heading" data-ng-bind="assay.name"></h4>
+			<h3 class="list-group-item-heading" data-ng-bind="assay.name"></h3>
         </a>
     </div>
     <div class="alert alert-warning text-center" data-ng-hide="!assays.$resolved || assays.length">

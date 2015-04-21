@@ -28,11 +28,11 @@ var ManufacturerSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Assay'
 	},
-	createdOn: {
+	created: {
 		type: Date,
 		default: Date.now
 	},
-	_createdBy: {
+	user: {
 		type: Schema.ObjectId,
 		ref: 'User'
 	}

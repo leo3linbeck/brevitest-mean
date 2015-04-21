@@ -23,11 +23,11 @@ var SparkSchema = new Schema({
 	lastHeard: {
 		type: Date
 	},
-	createdOn: {
+	created: {
 		type: Date,
 		default: Date.now
 	},
-	_createdBy: {
+	user: {
 		type: Schema.ObjectId,
 		ref: 'User'
 	}

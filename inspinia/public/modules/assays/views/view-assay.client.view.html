@@ -17,9 +17,9 @@
 	<small>
 		<em class="text-muted">
 			Posted on
-			<span data-ng-bind="assay.createdOn | date:'mediumDate'"></span>
+			<span data-ng-bind="assay.created | date:'mediumDate'"></span>
 			by
-			<span data-ng-bind="assay._createdBy.displayName"></span>
+			<span data-ng-bind="assay.user.displayName"></span>
 		</em>
 	</small>
 </section>

@@ -55,11 +55,11 @@ var CartridgeSchema = new Schema({
 		type: Schema.ObjectId,
 		ref: 'User'
 	},
-	createdOn: {
+	created: {
 		type: Date,
 		default: Date.now
 	},
-	_createdBy: {
+	user: {
 		type: Schema.ObjectId,
 		ref: 'User'
 	}

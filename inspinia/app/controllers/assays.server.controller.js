@@ -72,7 +72,7 @@ exports.delete = function(req, res) {
 /**
  * List of Assays
  */
-exports.list = function(req, res) { 
+exports.list = function(req, res) {
 	Assay.find().sort('-created').populate('user', 'displayName').exec(function(err, assays) {
 		if (err) {
 			return res.status(400).send({
@@ -87,7 +87,7 @@ exports.list = function(req, res) {
 /**
  * Assay middleware
  */
-exports.assayByID = function(req, res, next, id) { 
+exports.assayByID = function(req, res, next, id) {
 	Assay.findById(id).populate('user', 'displayName').exec(function(err, assay) {
 		if (err) return next(err);
 		if (! assay) return next(new Error('Failed to load Assay ' + id));

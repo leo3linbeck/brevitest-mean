@@ -47,11 +47,11 @@ var AddressSchema = new Schema({
 	longitude: {
 		type: Number
 	},
-	createdOn: {
+	created: {
 		type: Date,
 		default: Date.now
 	},
-	_createdBy: {
+	user: {
 		type: Schema.ObjectId,
 		ref: 'User'
 	}

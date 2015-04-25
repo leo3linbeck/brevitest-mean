@@ -6,6 +6,19 @@
 var mongoose = require('mongoose'),
 	Schema = mongoose.Schema;
 
+	var BCODESchema = new Schema({
+		command: {
+			type: String,
+			default: '',
+			required: 'Please fill Command name',
+			trim: true
+		},
+		params: {
+			type: String,
+			default: ''
+		}
+	});
+
 /**
  * Assay Schema
  */
@@ -26,9 +39,9 @@ var AssaySchema = new Schema({
 	url: {
 		type: String
 	},
-	BCODE: {
-		type: String
-	},
+	BCODE: [
+		BCODESchema
+	],
 	analysis: {
 		redMax: {type: Number},
 		greenMax: {type: Number},

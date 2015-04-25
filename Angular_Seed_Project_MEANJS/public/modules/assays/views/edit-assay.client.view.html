@@ -12,7 +12,11 @@
                         <input type="text" data-ng-model="assay.reference" id="reference" class="form-control" placeholder="Reference">
                         <input type="text" data-ng-model="assay.description" id="description" class="form-control" placeholder="Description">
                         <input type="text" data-ng-model="assay.url" id="url" class="form-control" placeholder="URL">
-                        <input type="text" data-ng-model="assay.BCODE" id="BCODE" class="form-control" placeholder="BCODE">
+                        <ol class="list-group">
+                          <li ng-repeat="line in BCODE">
+                            <input type="text" data-ng-model="line.command" id="BCODECommand" class="form-control" placeholder="Command">
+                          </li>
+                        </ol>
                     </div>
                 </div>
                 <div class="form-group">

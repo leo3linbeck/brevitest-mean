@@ -2,57 +2,63 @@
     <div class="page-header">
         <h1>New Assay</h1>
     </div>
-    <div class="col-md-12">
-        <form class="form-horizontal" data-ng-submit="create()" novalidate>
-            <fieldset>
-                <div class="form-group">
-                    <label class="control-label" for="name">Enter assay information</label>
-                    <div class="controls">
-                        <input type="text" data-ng-model="name" id="name" class="form-control" placeholder="Name" required>
-                        <input type="text" data-ng-model="reference" id="reference" class="form-control" placeholder="Reference">
-                        <input type="text" data-ng-model="description" id="description" class="form-control" placeholder="Description">
-                        <input type="text" data-ng-model="url" id="url" class="form-control" placeholder="URL">
-                      	<button class="btn btn-default" ng-click="toggleBCODE()">{{BCODEButtonLabel}}</button>
-                      	<hr>
-                      	<div collapse="isCollapsedBCODE">
-                      		<div class="well well-lg">
-                            <div class="btn-group">
-                                <label class="btn btn-info" ng-model="moveBCODEUp" btn>Move Up</label>
-                                <label class="btn btn-info" ng-model="moveBCODEDown" btn>Move Down</label>
-                            </div>
-                            <div class="btn-group">
-                              <label class="btn btn-danger" ng-model="deleteBCODE" btn>Delete</label>
-                            </div>
-                            <div class="btn-group">
-                                <label class="btn btn-primary" ng-model="insertBCODETop" btn>Insert Top</label>
-                                <label class="btn btn-primary" ng-model="insertBCODEAbove" btn>Insert Above</label>
-                                <label class="btn btn-primary" ng-model="insertBCODEBelow" btn>Insert Below</label>
-                                <label class="btn btn-primary" ng-model="appendBCODEBottom" btn>Append Bottom</label>
-                            </div>
-                            <hr>
-                            <div ng-controller="DropdownCtrl">
-                              <div class="btn-group" dropdown is-open="status.isopen">
-                                <button type="button" class="btn btn-primary" dropdown-toggle ng-disabled="disabled">
-                                  Command dropdown <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu" role="menu">
-                                  <li ng-repeat="command in BCODECommands">
-                                    <a href="#">{{command.name}}</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-                      	</div>
-                    </div>
+    <div class="col-xs-12">
+      <form class="form-horizontal" data-ng-submit="create()" novalidate>
+        <fieldset>
+            <div class="form-group">
+                <label class="control-label" for="name">Enter assay information</label>
+                <div class="controls">
+                    <input type="text" data-ng-model="name" id="name" class="form-control" placeholder="Name" required>
+                    <input type="text" data-ng-model="reference" id="reference" class="form-control" placeholder="Reference">
+                    <input type="text" data-ng-model="description" id="description" class="form-control" placeholder="Description">
+                    <input type="text" data-ng-model="url" id="url" class="form-control" placeholder="URL">
                 </div>
-                <div class="form-group">
-                    <input type="submit" class="btn btn-default">
-                </div>
-				<div data-ng-show="error" class="text-danger">
+            </div>
+        </fieldset>
+        <button type="button" class="btn btn-info" ng-click="toggleBCODE()">{{BCODEButtonLabel}}</button>
+        <div collapse="isCollapsedBCODE">
+          <br/>
+          <div class="col-xs-9">
+            <div class="well well-lg row">
+              <div class="col-xs-5">
+                <bs-dropdown data-menu-type="button" select-val="selected_command = selectedVal" preselected-item="selected_command" data-dropdown-data="BCODECommands"></bs-dropdown>
+              </div>
+              <div class="col-xs-7">
+                <input type="text" data-ng-model="params" id="params" class="form-control" placeholder="Parameters">
+              </div>
+              <hr/>
+                {{selected_command.description}}
+            </div>
+          </div>
+          <div class="col-xs-3">
+            <div class="btn-group-vertical pull-right">
+              <label class="btn btn-info" ng-model="moveBCODEUp" btn>Move Up</label>
+              <label class="btn btn-info" ng-model="moveBCODEDown" btn>Move Down</label>
+              <label class="btn btn-primary" ng-model="insertBCODETop" btn>Insert Top</label>
+              <label class="btn btn-primary" ng-model="insertBCODEAbove" btn>Insert Above</label>
+              <label class="btn btn-primary" ng-model="insertBCODEBelow" btn>Insert Below</label>
+              <label class="btn btn-primary" ng-click="appendBCODEBottom()" btn>Append Bottom</label>
+              <label class="btn btn-danger" ng-model="deleteBCODE" btn>Delete</label>
+            </div>
+          </div>
+          <div class="col-xs-12">
+            <div class="well well-lg row">
+              <h3>BCODE:</h3>
+              <ol>
+                <li ng-repeat="line in BCODE">
+                  <bs-dropdown data-menu-type="button" select-val="doBCODEAction(selectedVal)" preselected-item="line.command.name + '(' + line.params + ')'" data-dropdown-data="BCODEActions"></bs-dropdown>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+        <br/><hr/>
+        <div data-ng-show="error" class="text-danger">
 					<strong data-ng-bind="error"></strong>
 				</div>
-            </fieldset>
-        </form>
+        <div class="form-group">
+            <input type="submit" class="btn btn-default">
+        </div>
+      </form>
     </div>
 </section>

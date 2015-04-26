@@ -5,11 +5,126 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
 	function($scope, $stateParams, $location, Authentication, Assays) {
 		$scope.authentication = Authentication;
 
+		$scope.BCODE = [];
+		$scope.BCODEActions = [
+			{
+				name:'Move Up'
+			},
+			{
+				name:'Move Down'
+			},
+			{
+				name:'Edit'
+			},
+			{
+				name:'Delete'
+			}
+		];
+		$scope.doBCODEAction = function(sel) {
+			switch (sel) {
+				case 'Move Up':
+					break;
+				case 'Move Down':
+					break;
+				case 'Edit':
+					break;
+				case 'Delete':
+					break;
+			}
+		};
+		$scope.BCODECommands = [
+			{
+				num: '0',
+				name: 'Start Test',
+				description: 'Starts the test. Required to be the first command. Test executes until Finish Test command. Parameters are (sensor integration time, sensor gain).'
+			},
+			{
+				num: '1',
+				name: 'Delay',
+				description: 'Waits for specified period of time. Parameter is (delay in milliseconds).'
+			},
+			{
+				num: '2',
+				name: 'Move',
+				description: 'Moves the stage a specified number of steps at a specified speed. Parameters are (number of steps, step delay time in microseconds).'
+			},
+			{
+				num: '3',
+				name: 'Solenoid On',
+				description: 'Energizes the solenoid for a specified amount of time. Parameter is (energize period in milliseconds).'
+			},
+			{
+				num: '4',
+				name: 'Device LED On',
+				description: 'Turns on the device LED, which is visible outside the device. No parameters.'
+			},
+			{
+				num: '5',
+				name: 'Device LED Off',
+				description: 'Turns off the device LED. No parameters.'
+			},
+			{
+				num: '6',
+				name: 'Device LED Blink',
+				description: 'Blinks the device LED at a specified rate. Parameter is (period in milliseconds between change in LED state).'
+			},
+			{
+				num: '7',
+				name: 'Sensor LED On',
+				description: 'Turns on the sensor LED at a given power. Parameter is (power, from 0 to 255).'
+			},
+			{
+				num: '8',
+				name: 'Sensor LED Off',
+				description: 'Turns off the sensor LED. No parameters.'
+			},
+			{
+				num: '9',
+				name: 'Read Sensors',
+				description: 'Takes readings from the sensors. Parameters are (number of samples [1-10], milliseconds between samples).'
+			},
+			{
+				num: '10',
+				name: 'Read QR Code',
+				description: 'Reads the cartridge QR code. No parameters. [NOT IMPLEMENTED]'
+			},
+			{
+				num: '11',
+				name: 'Disable Sensor',
+				description: 'Disables the sensors, switching them to low-power mode. No parameters.'
+			},
+			{
+				num: '12',
+				name: 'Repeat Begin',
+				description: 'Begins a block of commands that will be repeated a specified number of times. Nesting is acceptable. Parameter is (number of interations).'
+			},
+			{
+				num: '13',
+				name: 'Repeat End',
+				description: 'Ends the innermost block of repeated commands. No parameters.'
+			},
+			{
+				num: '14',
+				name: 'Status',
+				description: 'Changes the device status register, which used in remote monitoring. Parameters are (message length, message text).'
+			},
+			{
+				num: '99',
+				name: 'Finish Test',
+				description: 'Finishes the test. Required to be the final command. No parameters.'
+			}
+		];
+
 		$scope.isCollapsedBCODE = true;
 		$scope.BCODEButtonLabel = 'Show BCODE';
+		$scope.selected_command = $scope.BCODECommands[0];
 		$scope.toggleBCODE = function() {
 			$scope.isCollapsedBCODE = !$scope.isCollapsedBCODE;
 			$scope.BCODEButtonLabel = $scope.isCollapsedBCODE ? 'Show BCODE' : 'Hide BCODE';
+		};
+
+		$scope.appendBCODEBottom = function() {
+			$scope.BCODE.push({command: $scope.selected_command, params: $scope.params});
 		};
 
 		// Create new Assay
@@ -79,103 +194,3 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
 		};
 	}
 ]);
-
-angular.module('assays')
-.controller('DropdownCtrl', function ($scope, $log) {
-	$scope.BCODECommands = [
-		{
-			num: '0',
-			name: 'Start Test',
-			description: 'Starts the test. Required to be the first command. Test executes until Finish Test command. Parameters are (sensor integration time, sensor gain).'
-		},
-		{
-			num: '1',
-			name: 'Delay',
-			description: 'Waits for specified period of time. Parameter is (delay in milliseconds).'
-		},
-		{
-			num: '2',
-			name: 'Move',
-			description: 'Moves the stage a specified number of steps at a specified speed. Parameters are (number of steps, step delay time in microseconds).'
-		},
-		{
-			num: '3',
-			name: 'Solenoid On',
-			description: 'Energizes the solenoid for a specified amount of time. Parameter is (energize period in milliseconds).'
-		},
-		{
-			num: '4',
-			name: 'Device LED On',
-			description: 'Turns on the device LED, which is visible outside the device. No parameters.'
-		},
-		{
-			num: '5',
-			name: 'Device LED Off',
-			description: 'Turns off the device LED. No parameters.'
-		},
-		{
-			num: '6',
-			name: 'Device LED Blink',
-			description: 'Blinks the device LED at a specified rate. Parameter is (period in milliseconds between change in LED state).'
-		},
-		{
-			num: '7',
-			name: 'Sensor LED On',
-			description: 'Turns on the sensor LED at a given power. Parameter is (power, from 0 to 255).'
-		},
-		{
-			num: '8',
-			name: 'Sensor LED Off',
-			description: 'Turns off the sensor LED. No parameters.'
-		},
-		{
-			num: '9',
-			name: 'Read Sensors',
-			description: 'Takes readings from the sensors. Parameters are (number of samples [1-10], milliseconds between samples).'
-		},
-		{
-			num: '10',
-			name: 'Read QR Code',
-			description: 'Reads the cartridge QR code. No parameters. [NOT IMPLEMENTED]'
-		},
-		{
-			num: '11',
-			name: 'Disable Sensor',
-			description: 'Disables the sensors, switching them to low-power mode. No parameters.'
-		},
-		{
-			num: '12',
-			name: 'Repeat Begin',
-			description: 'Begins a block of commands that will be repeated a specified number of times. Nesting is acceptable. Parameter is (number of interations).'
-		},
-		{
-			num: '13',
-			name: 'Repeat End',
-			description: 'Ends the innermost block of repeated commands. No parameters.'
-		},
-		{
-			num: '14',
-			name: 'Status',
-			description: 'Changes the device status register, which used in remote monitoring. Parameters are (message length, message text).'
-		},
-		{
-			num: '99',
-			name: 'Finish Test',
-			description: 'Finishes the test. Required to be the final command. No parameters.'
-		}
-	];
-
-  $scope.status = {
-    isopen: false
-  };
-
-  $scope.toggled = function(open) {
-    $log.log('Dropdown is now: ', open);
-  };
-
-  $scope.toggleDropdown = function($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
-    $scope.status.isopen = !$scope.status.isopen;
-  };
-});

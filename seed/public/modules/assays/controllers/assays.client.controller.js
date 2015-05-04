@@ -1,12 +1,13 @@
 'use strict';
 
 // Assays controller
-angular.module('assays').controller('AssaysController', ['$scope', '$stateParams', '$location', 'Authentication', 'Assays',
-	function($scope, $stateParams, $location, Authentication, Assays) {
+angular.module('assays').controller('AssaysController', ['$scope', '$log', '$stateParams', '$location', 'Authentication', 'Assays',
+	function($scope, $log, $stateParams, $location, Authentication, Assays) {
 		$scope.authentication = Authentication;
 
 		$scope.BCODE = [];
 		$scope.BCODEActions = [
+
 			{
 				name:'Move Up'
 			},
@@ -20,15 +21,20 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
 				name:'Delete'
 			}
 		];
+		$scope.selected_action = 	{name:'--Choose Action--'};
 		$scope.doBCODEAction = function(sel) {
-			switch (sel) {
+			switch (sel.name) {
 				case 'Move Up':
+					$log.log(sel.name);
 					break;
 				case 'Move Down':
+					$log.log(sel.name);
 					break;
 				case 'Edit':
+					$log.log(sel.name);
 					break;
 				case 'Delete':
+					$log.log(sel.name);
 					break;
 			}
 		};
@@ -121,6 +127,10 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
 		$scope.toggleBCODE = function() {
 			$scope.isCollapsedBCODE = !$scope.isCollapsedBCODE;
 			$scope.BCODEButtonLabel = $scope.isCollapsedBCODE ? 'Show BCODE' : 'Hide BCODE';
+		};
+
+		$scope.moveBCODEUp = function() {
+
 		};
 
 		$scope.appendBCODEBottom = function() {

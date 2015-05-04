@@ -13,16 +13,8 @@ var DeviceSchema = new Schema({
 	name: {
 		type: String,
 		default: '',
-		required: 'Please fill in Device name',
+		required: 'Please fill Device name',
 		trim: true
-	},
-	createdOn: {
-		type: Date,
-		default: Date.now
-	},
-	_createdBy: {
-		type: Schema.ObjectId,
-		ref: 'User'
 	},
 	serialNumber: {
 		type: String,
@@ -59,6 +51,14 @@ var DeviceSchema = new Schema({
 		ref: 'Test'
 	},
 	_registeredBy: {
+		type: Schema.ObjectId,
+		ref: 'User'
+	},
+	created: {
+		type: Date,
+		default: Date.now
+	},
+	user: {
 		type: Schema.ObjectId,
 		ref: 'User'
 	}

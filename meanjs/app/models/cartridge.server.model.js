@@ -10,13 +10,11 @@ var mongoose = require('mongoose'),
  * Cartridge Schema
  */
 var CartridgeSchema = new Schema({
-	createdOn: {
-		type: Date,
-		default: Date.now
-	},
-	_createdBy: {
-		type: Schema.ObjectId,
-		ref: 'User'
+	name: {
+		type: String,
+		default: '',
+		required: 'Please fill Cartridge name',
+		trim: true
 	},
 	result: {
 		type: Number
@@ -60,6 +58,14 @@ var CartridgeSchema = new Schema({
 		ref: 'User'
 	},
 	_runBy: {
+		type: Schema.ObjectId,
+		ref: 'User'
+	},
+	created: {
+		type: Date,
+		default: Date.now
+	},
+	user: {
 		type: Schema.ObjectId,
 		ref: 'User'
 	}

@@ -10,13 +10,11 @@ var mongoose = require('mongoose'),
  * Test Schema
  */
 var TestSchema = new Schema({
-	createdOn: {
-		type: Date,
-		default: Date.now
-	},
-	_createdBy: {
-		type: Schema.ObjectId,
-		ref: 'User'
+	name: {
+		type: String,
+		default: '',
+		required: 'Please fill Test name',
+		trim: true
 	},
 	status: {
 		type: String
@@ -53,6 +51,14 @@ var TestSchema = new Schema({
 	_cartridge: {
 		type: Schema.ObjectId,
 		ref: 'Cartridge'
+	},
+	created: {
+		type: Date,
+		default: Date.now
+	},
+	user: {
+		type: Schema.ObjectId,
+		ref: 'User'
 	}
 });
 

@@ -3,11 +3,11 @@
 
 # TEAM
 
-    <name> -- <role> -- <twitter>
+    Leo Linbeck III -- Shakespearean Thespian -- @leo3linbeck
 
 # THANKS
 
-    <name>
+    Ellen, for putting up with me for more than a quarter-century
 
 # TECHNOLOGY COLOPHON
 

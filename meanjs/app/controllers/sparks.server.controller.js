@@ -1,0 +1,162 @@
+'use strict';
+
+/**
+ * Module dependencies.
+ */
+var mongoose = require('mongoose'),
+	errorHandler = require('./errors.server.controller'),
+	Spark = mongoose.model('Spark'),
+	_ = require('lodash'),
+	sparkcore = require('spark');
+
+var callspark = sparkcore.login({username: 'leo3@linbeck.com', password: '2january88'});
+console.log('Spark test');
+
+/**
+ * Refresh Spark data
+ */
+
+function updateSparks(sparkInfo) {
+	console.log(sparkInfo);
+	sparkInfo.forEach(function(e) {
+		Spark.findOneAndUpdate({sparkID: e.sparkID}, e, {new: true, upsert: true}, function(err, result) {
+			if (err) {
+				console.log('Error', err);
+			}
+			else {
+				console.log('Result', result);
+			}
+		});
+	});
+}
+
+exports.refresh = function(req, res) {
+	console.log('Spark start refresh');
+	callspark.then(
+		function(token) {
+			var sparkInfo = [];
+			var devicesPromise = sparkcore.listDevices();
+			devicesPromise.then (
+				function (devices) {
+					console.log(devices);
+					devices.forEach(function(e) {
+						sparkInfo.push({
+							name: e.attributes.name,
+							sparkID: e.attributes.id,
+							lastHeard: e.attributes.lastHeard,
+							lastIpAddress: e.attributes.lastIpAddress,
+							connected: e.attributes.connected
+						});
+					});
+					updateSparks(sparkInfo);
+					return res.jsonp(sparkInfo);
+				},
+				function (err) {
+					console.log('Spark refresh failed', err);
+				}
+			);
+		},
+		function(err) {
+			console.log('Spark login failed', err);
+		}
+	);
+};
+
+/**
+ * Create a Spark
+ */
+exports.create = function(req, res) {
+	var spark = new Spark(req.body);
+	spark.user = req.user;
+
+	spark.save(function(err) {
+		if (err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		} else {
+			res.jsonp(spark);
+		}
+	});
+};
+
+/**
+ * Show the current Spark
+ */
+exports.read = function(req, res) {
+	res.jsonp(req.spark);
+};
+
+/**
+ * Update a Spark
+ */
+exports.update = function(req, res) {
+	var spark = req.spark ;
+
+	spark = _.extend(spark , req.body);
+
+	spark.save(function(err) {
+		if (err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		} else {
+			res.jsonp(spark);
+		}
+	});
+};
+
+/**
+ * Delete an Spark
+ */
+exports.delete = function(req, res) {
+	var spark = req.spark ;
+
+	spark.remove(function(err) {
+		if (err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		} else {
+			res.jsonp(spark);
+		}
+	});
+};
+
+/**
+ * List of Sparks
+ */
+exports.list = function(req, res) {
+	console.log('Spark list');
+	Spark.find().sort('-created').populate('user', 'displayName').exec(function(err, sparks) {
+		if (err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		} else {
+			res.jsonp(sparks);
+		}
+	});
+};
+
+/**
+ * Spark middleware
+ */
+exports.sparkByID = function(req, res, next, id) {
+	Spark.findById(id).populate('user', 'displayName').exec(function(err, spark) {
+		if (err) return next(err);
+		if (! spark) return next(new Error('Failed to load Spark ' + id));
+		req.spark = spark ;
+		next();
+	});
+};
+
+/**
+ * Spark authorization middleware
+ */
+exports.hasAuthorization = function(req, res, next) {
+	if (req.spark.user.id !== req.user.id) {
+		return res.status(403).send('User is not authorized');
+	}
+	next();
+};

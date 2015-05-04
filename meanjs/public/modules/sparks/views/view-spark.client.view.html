@@ -1,0 +1,22 @@
+<section data-ng-controller="SparksController" data-ng-init="findOne()">
+	<div class="page-header">
+		<h1 data-ng-bind="spark.name"></h1>
+	</div>
+	<h3>Spark ID: {{spark.sparkID}}</h3>
+	<div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == spark.user._id))">
+		<a class="btn btn-primary" href="/#!/sparks/{{spark._id}}/edit">
+			<i class="glyphicon glyphicon-edit"></i>
+		</a>
+		<a class="btn btn-primary" data-ng-click="remove();">
+			<i class="glyphicon glyphicon-trash"></i>
+		</a>
+	</div>
+	<small>
+		<em class="text-muted">
+			Posted on
+			<span data-ng-bind="spark.created | date:'mediumDate'"></span>
+			by
+			<span data-ng-bind="spark.user.displayName"></span>
+		</em>
+	</small>
+</section>

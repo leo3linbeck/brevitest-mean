@@ -19,6 +19,7 @@ var user, assay;
 describe('Assay Model Unit Tests:', function() {
 	beforeEach(function(done) {
 		user = new User({
+			id: 'XXX',
 			firstName: 'Full',
 			lastName: 'Name',
 			displayName: 'Full Name',
@@ -27,7 +28,7 @@ describe('Assay Model Unit Tests:', function() {
 			password: 'password'
 		});
 
-		user.save(function() { 
+		user.save(function() {
 			assay = new Assay({
 				name: 'Assay Name',
 				user: user
@@ -45,7 +46,7 @@ describe('Assay Model Unit Tests:', function() {
 			});
 		});
 
-		it('should be able to show an error when try to save without name', function(done) { 
+		it('should be able to show an error when try to save without name', function(done) {
 			assay.name = '';
 
 			return assay.save(function(err) {
@@ -55,7 +56,7 @@ describe('Assay Model Unit Tests:', function() {
 		});
 	});
 
-	afterEach(function(done) { 
+	afterEach(function(done) {
 		Assay.remove().exec();
 		User.remove().exec();
 

@@ -6,6 +6,19 @@
 var mongoose = require('mongoose'),
 	Schema = mongoose.Schema;
 
+var BCODESchema = new Schema({
+	command: {
+		type: String,
+		default: '',
+		required: 'Please fill Command name',
+		trim: true
+	},
+	params: {
+		type: String,
+		default: ''
+	}
+});
+
 /**
  * Assay Schema
  */
@@ -15,14 +28,6 @@ var AssaySchema = new Schema({
 		default: '',
 		required: 'Please fill Assay name',
 		trim: true
-	},
-	createdOn: {
-		type: Date,
-		default: Date.now
-	},
-	_createdBy: {
-		type: Schema.ObjectId,
-		ref: 'User'
 	},
 	reference: {
 		type: String
@@ -34,9 +39,9 @@ var AssaySchema = new Schema({
 	url: {
 		type: String
 	},
-	BCODE: {
-		type: String
-	},
+	BCODE: [
+		BCODESchema
+	],
 	analysis: {
 		redMax: {type: Number},
 		greenMax: {type: Number},
@@ -54,6 +59,14 @@ var AssaySchema = new Schema({
 	_cartridges: {
 		type: Schema.Types.ObjectId,
 		ref: 'Cartridge'
+	},
+	created: {
+		type: Date,
+		default: Date.now
+	},
+	user: {
+		type: Schema.ObjectId,
+		ref: 'User'
 	}
 });
 

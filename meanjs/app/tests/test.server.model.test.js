@@ -29,9 +29,7 @@ describe('Test Model Unit Tests:', function() {
 
 		user.save(function() {
 			test = new Test({
-				status: 'Running',
-				percentComplete: 0.75,
-				_createdBy: user
+				name: 'Test name'
 			});
 
 			done();

@@ -8,6 +8,29 @@ var mongoose = require('mongoose'),
 	Spark = mongoose.model('Spark'),
 	_ = require('lodash');
 
+var sparknode = require('spark');
+sparknode.login({username: 'leo3@linbeck.com', password: '2january88'}, function(err, body) {
+	console.log('Spark login complete', body);
+});
+
+/**
+ * Refresh spark list
+ */
+exports.refresh = function(req, res) {
+	var spark = new Spark(req.body);
+	spark.user = req.user;
+
+	spark.save(function(err) {
+		if (err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		} else {
+			res.jsonp(spark);
+		}
+	});
+};
+
 /**
  * Create a Spark
  */
@@ -72,7 +95,7 @@ exports.delete = function(req, res) {
 /**
  * List of Sparks
  */
-exports.list = function(req, res) { 
+exports.list = function(req, res) {
 	Spark.find().sort('-created').populate('user', 'displayName').exec(function(err, sparks) {
 		if (err) {
 			return res.status(400).send({
@@ -87,7 +110,7 @@ exports.list = function(req, res) {
 /**
  * Spark middleware
  */
-exports.sparkByID = function(req, res, next, id) { 
+exports.sparkByID = function(req, res, next, id) {
 	Spark.findById(id).populate('user', 'displayName').exec(function(err, spark) {
 		if (err) return next(err);
 		if (! spark) return next(new Error('Failed to load Spark ' + id));

@@ -1,10 +1,21 @@
 'use strict';
 
 // Sparks controller
-angular.module('sparks').controller('SparksController', ['$scope', '$stateParams', '$location', 'Authentication', 'Sparks',
-	function($scope, $stateParams, $location, Authentication, Sparks) {
+angular.module('sparks').controller('SparksController', ['$scope', '$log', '$stateParams', '$location', 'Authentication', 'Sparks',
+	function($scope, $log, $stateParams, $location, Authentication, Sparks) {
 		$scope.authentication = Authentication;
 
+		$scope.refresh = function() {
+			var spark = $scope.spark;
+
+			spark.$refresh(function(result) {
+				$log.log('$refresh', result);
+				$scope.sparks = result;
+				$location.path('sparks');
+			}, function(errorResponse) {
+				$scope.error = errorResponse.data.message;
+			});
+		};
 		// Create new Spark
 		$scope.create = function() {
 			// Create new Spark object
@@ -25,7 +36,7 @@ angular.module('sparks').controller('SparksController', ['$scope', '$stateParams
 
 		// Remove existing Spark
 		$scope.remove = function(spark) {
-			if ( spark ) { 
+			if ( spark ) {
 				spark.$remove();
 
 				for (var i in $scope.sparks) {
@@ -58,7 +69,7 @@ angular.module('sparks').controller('SparksController', ['$scope', '$stateParams
 
 		// Find existing Spark
 		$scope.findOne = function() {
-			$scope.spark = Sparks.get({ 
+			$scope.spark = Sparks.get({
 				sparkId: $stateParams.sparkId
 			});
 		};

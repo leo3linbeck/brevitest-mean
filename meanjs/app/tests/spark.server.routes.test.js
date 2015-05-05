@@ -232,7 +232,7 @@ describe('Spark CRUD tests', function() {
 							done(sparkSaveErr);
 						}
 						else {
-							sparkSaveRes.body[0].should.have.keys(['sparkID', 'name', 'lastIpAddress', 'lastHeard', 'connected']);
+							Object.keys(sparkSaveRes.body[0]).should.containDeep(['sparkID', 'name', 'lastIpAddress', 'lastHeard', 'connected']);
 
 							// Call the assertion callback
 							done();

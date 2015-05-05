@@ -21,7 +21,7 @@ function getUpdatePromise(e) {
 	return new Q(Spark.findOneAndUpdate({sparkID: e.sparkID}, e, {new: true, upsert: true})
 								.exec(function(err, result) {
 											if (err) {
-												console.log('Error', err);
+												console.log('Error in getUpdatePromise)', err);
 											}
 										}
 									)
@@ -31,7 +31,6 @@ function getUpdatePromise(e) {
 function updateSparks(res, sparkInfo) {
 	var promises = [];
 
-	console.log(sparkInfo);
 	sparkInfo.forEach(function(e) {
 		promises.push(getUpdatePromise(e));
 	});
@@ -43,6 +42,7 @@ function updateSparks(res, sparkInfo) {
 						throw new Error(err);
 					}
 					else {
+						console.log(res);
 						res.jsonp(result);
 					}
 				});
@@ -54,30 +54,27 @@ exports.refresh = function(req, res) {
 	console.log('Spark start refresh');
 	callspark.then(
 		function(token) {
+			return new Q(sparkcore.listDevices());
+		})
+	.then(
+		function (devices) {
 			var sparkInfo = [];
-			var devicesPromise = new Q(sparkcore.listDevices());
-			devicesPromise.then(
-				function (devices) {
-					devices.forEach(function(e) {
-						sparkInfo.push({
-							name: e.attributes.name,
-							sparkID: e.attributes.id,
-							lastHeard: e.attributes.lastHeard,
-							lastIpAddress: e.attributes.lastIpAddress,
-							connected: e.attributes.connected
-						});
-					});
-					updateSparks(res, sparkInfo);
-				},
-				function (err) {
-					console.log('Spark refresh failed', err);
-				}
-			);
-		},
-		function(err) {
-			console.log('Spark login failed', err);
-		}
-	);
+			devices.forEach(function(e) {
+				sparkInfo.push({
+					name: e.attributes.name,
+					sparkID: e.attributes.id,
+					lastHeard: e.attributes.lastHeard,
+					lastIpAddress: e.attributes.lastIpAddress,
+					connected: e.attributes.connected
+				});
+			});
+			updateSparks(res, sparkInfo);
+		})
+	.catch(
+		function (err) {
+			console.log('Spark refresh failed', err);
+		})
+	.done();
 };
 
 /**

@@ -7,27 +7,47 @@ var mongoose = require('mongoose'),
 	errorHandler = require('./errors.server.controller'),
 	Spark = mongoose.model('Spark'),
 	_ = require('lodash'),
-	sparkcore = require('spark');
+	sparkcore = require('spark'),
+	Q = require('q');
 
-var callspark = sparkcore.login({username: 'leo3@linbeck.com', password: '2january88'});
+var callspark = new Q(sparkcore.login({username: 'leo3@linbeck.com', password: '2january88'}));
 console.log('Spark test');
 
 /**
  * Refresh Spark data
  */
 
-function updateSparks(sparkInfo) {
+function getUpdatePromise(e) {
+	return new Q(Spark.findOneAndUpdate({sparkID: e.sparkID}, e, {new: true, upsert: true})
+								.exec(function(err, result) {
+											if (err) {
+												console.log('Error', err);
+											}
+										}
+									)
+							);
+}
+
+function updateSparks(res, sparkInfo) {
+	var promises = [];
+
 	console.log(sparkInfo);
 	sparkInfo.forEach(function(e) {
-		Spark.findOneAndUpdate({sparkID: e.sparkID}, e, {new: true, upsert: true}, function(err, result) {
-			if (err) {
-				console.log('Error', err);
-			}
-			else {
-				console.log('Result', result);
-			}
-		});
+		promises.push(getUpdatePromise(e));
 	});
+
+	Q.allSettled(promises)
+		.then(function() {
+				Spark.find(function(err, result) {
+					if (err) {
+						throw new Error(err);
+					}
+					else {
+						res.jsonp(result);
+					}
+				});
+			})
+		.done();
 }
 
 exports.refresh = function(req, res) {
@@ -35,10 +55,9 @@ exports.refresh = function(req, res) {
 	callspark.then(
 		function(token) {
 			var sparkInfo = [];
-			var devicesPromise = sparkcore.listDevices();
-			devicesPromise.then (
+			var devicesPromise = new Q(sparkcore.listDevices());
+			devicesPromise.then(
 				function (devices) {
-					console.log(devices);
 					devices.forEach(function(e) {
 						sparkInfo.push({
 							name: e.attributes.name,
@@ -48,8 +67,7 @@ exports.refresh = function(req, res) {
 							connected: e.attributes.connected
 						});
 					});
-					updateSparks(sparkInfo);
-					return res.jsonp(sparkInfo);
+					updateSparks(res, sparkInfo);
 				},
 				function (err) {
 					console.log('Spark refresh failed', err);

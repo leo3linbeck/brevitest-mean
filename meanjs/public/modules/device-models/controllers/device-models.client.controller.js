@@ -1,12 +1,14 @@
 'use strict';
 
 // Device models controller
-angular.module('device-models').controller('DeviceModelsController', ['$scope', '$stateParams', '$location', 'Authentication', 'DeviceModels',
-	function($scope, $stateParams, $location, Authentication, DeviceModels) {
+angular.module('device-models').controller('DeviceModelsController', ['$scope', '$stateParams', '$location', 'Authentication', 'DeviceModels', 'Devices',
+	function($scope, $stateParams, $location, Authentication, DeviceModels, Devices) {
 		$scope.authentication = Authentication;
 
 		$scope.loadDevices = function() {
-			$scope.devices = [{_id: '123456', name: 'The Brothers Karamazov'}, {_id: '7890AB', name: 'Parks and Recreation'}];
+			if (!$scope.devices) {
+				$scope.devices = Devices.query({_deviceModel: $scope.deviceModel._id});
+			}
 		};
 
 		// Create new Device model

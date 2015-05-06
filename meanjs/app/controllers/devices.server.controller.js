@@ -30,7 +30,20 @@ exports.create = function(req, res) {
  * Show the current Device
  */
 exports.read = function(req, res) {
-	res.jsonp(req.device);
+	var device = req.device;
+
+	device.populate([
+			{path: '_deviceModel', select: '_id name'},
+			{path: '_spark', select: '_id name sparkID'}
+		], function(err) {
+		if (err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		} else {
+			res.jsonp(device);
+		}
+	});
 };
 
 /**
@@ -72,7 +85,7 @@ exports.delete = function(req, res) {
 /**
  * List of Devices
  */
-exports.list = function(req, res) { 
+exports.list = function(req, res) {
 	Device.find().sort('-created').populate('user', 'displayName').exec(function(err, devices) {
 		if (err) {
 			return res.status(400).send({
@@ -87,7 +100,7 @@ exports.list = function(req, res) {
 /**
  * Device middleware
  */
-exports.deviceByID = function(req, res, next, id) { 
+exports.deviceByID = function(req, res, next, id) {
 	Device.findById(id).populate('user', 'displayName').exec(function(err, device) {
 		if (err) return next(err);
 		if (! device) return next(new Error('Failed to load Device ' + id));

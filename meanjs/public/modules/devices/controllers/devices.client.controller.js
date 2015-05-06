@@ -1,39 +1,39 @@
 'use strict';
 
 // Devices controller
-angular.module('devices').controller('DevicesController', ['$scope', '$stateParams', '$location', 'Authentication', 'Devices', 'DeviceModels',
-	function($scope, $stateParams, $location, Authentication, Devices, DeviceModels) {
+angular.module('devices').controller('DevicesController', ['$scope', '$stateParams', '$location', 'Authentication', 'Devices', 'DeviceModels', 'Sparks',
+	function($scope, $stateParams, $location, Authentication, Devices, DeviceModels, Sparks) {
 		$scope.authentication = Authentication;
 
-		$scope.toggleOnlineButtonText = function(init) {
-			var online = $scope.device ? $scope.device.online : $scope.online;
-			if (init) {
-				online = !online;
-			}
-			if (online) {
+		$scope.setOnlineButtonText = function() {
+			if ($scope.online) {
 				$scope.onlineText = 'Online';
 			}
 			else {
 				$scope.onlineText = 'Offline';
 			}
-
-			return $scope.onlineText;
 		};
 
-		$scope.online = $scope.device ? $scope.device.online : false;
-		$scope.onlineText = $scope.toggleOnlineButtonText(true);
+		$scope.deviceModel = {};
+		$scope.spark = {};
+
 		$scope.openedMfg = false;
 		$scope.openedReg = false;
 		$scope.minRegDate = $scope.manufacturedOn;
 
 		$scope.deviceModels = DeviceModels.query();
+		$scope.sparks = Sparks.query();
 
 		$scope.setRegMinDate = function() {
 			$scope.minRegDate = $scope.manufacturedOn;
 		};
 
 		$scope.selectDeviceModel = function(id) {
-			$scope._deviceModel = id;
+			$scope.deviceModel._id = id;
+		};
+
+		$scope.selectSpark = function(id) {
+			$scope.spark._id = id;
 		};
 
 		$scope.openDatepicker = function($event, dateField) {
@@ -61,7 +61,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$statePara
 				status: this.status,
 				manufacturedOn: this.manufacturedOn,
 				registeredOn: this.registeredOn,
-				_deviceModel: this._deviceModel
+				_deviceModel: this.deviceModel._id,
+				_spark: this.spark._id
 			});
 
 			// Redirect after save
@@ -76,7 +77,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$statePara
 				$scope.status = '';
 				$scope.manufacturedOn = '';
 				$scope.registeredOn = '';
-				$scope._deviceModel = '';
+				$scope.deviceModel = {};
+				$scope.spark = {};
 			}, function(errorResponse) {
 				$scope.error = errorResponse.data.message;
 			});
@@ -102,6 +104,9 @@ angular.module('devices').controller('DevicesController', ['$scope', '$statePara
 		// Update existing Device
 		$scope.update = function() {
 			var device = $scope.device;
+			device._deviceModel = $scope.deviceModel ? $scope.deviceModel._id : '';
+			device._spark = $scope.spark ? $scope.spark._id : '';
+			device.online = $scope.online;
 
 			device.$update(function() {
 				$location.path('devices/' + device._id);
@@ -119,6 +124,11 @@ angular.module('devices').controller('DevicesController', ['$scope', '$statePara
 		$scope.findOne = function() {
 			$scope.device = Devices.get({
 				deviceId: $stateParams.deviceId
+			}, function() {
+				$scope.online = $scope.device.online;
+				$scope.setOnlineButtonText();
+				$scope.deviceModel = $scope.device._deviceModel ? $scope.device._deviceModel : {};
+				$scope.spark = $scope.device._spark ? $scope.device._spark : {};
 			});
 		};
 	}

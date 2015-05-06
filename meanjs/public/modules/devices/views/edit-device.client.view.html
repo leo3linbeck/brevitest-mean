@@ -15,7 +15,7 @@
         </div>
         <label class="control-label" for="online">Connection</label>
         <div class="controls">
-          <button type="button" class="btn btn-primary" ng-model="device.online" btn-checkbox ng-click="toggleOnlineButtonText()">
+          <button type="button" class="btn btn-primary" ng-model="online" btn-checkbox ng-change="setOnlineButtonText()">
             {{onlineText}}
           </button>
         </div>
@@ -53,12 +53,22 @@
             </div>
           </div>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-4">
           <div class="panel panel-default">
             <div class="panel-heading"><b>Device Model</b></div>
             <div class="panel-body">
               <div class="list-group">
-                <a href='' ng_click="selectDeviceModel('{{dm._id}}')" class="list-group-item {{dm._id === device._deviceModel ? 'active' : ''}}" ng-repeat="dm in deviceModels" active>{{dm.name}}</a>
+                <a href='' ng_click="selectDeviceModel('{{dm._id}}')" class="list-group-item {{dm._id === deviceModel._id ? 'active' : ''}}" ng-repeat="dm in deviceModels" active>{{dm.name}}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading"><b>Spark Processor</b></div>
+            <div class="panel-body">
+              <div class="list-group">
+                <a href='' ng_click="selectSpark('{{s._id}}')" class="list-group-item {{s._id === spark._id ? 'active' : ''}}" ng-repeat="s in sparks" active>{{s.name}}</a>
               </div>
             </div>
           </div>

@@ -4,8 +4,9 @@
 	</div>
 	<div>
 		<ul class="list-group">
-			<li class="list-group-item"><b>Model: </b>{{device.deviceModel.name | date: mediumDate}}</li>
+			<li class="list-group-item"><b>Model: </b>{{device._deviceModel.name | date: mediumDate}}</li>
 			<li class="list-group-item"><b>Serial Number: </b>{{device.serialNumber}}</li>
+			<li class="list-group-item"><b>Spark: </b>{{device._spark.name | date: mediumDate}}</li>
 			<li class="list-group-item"><b>Online: </b>{{device.online}}</li>
 			<li class="list-group-item"><b>Status: </b>{{device.status}}</li>
 			<li class="list-group-item"><b>Calibration Steps: </b>{{device.calibrationSteps}}</li>

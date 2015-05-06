@@ -1,23 +1,31 @@
 <section data-ng-controller="DeviceModelsController" data-ng-init="findOne()">
-    <div class="page-header">
-        <h1>Edit Device model</h1>
-    </div>
-    <div class="col-md-12">
-        <form class="form-horizontal" data-ng-submit="update()" novalidate>
-            <fieldset>
-                <div class="form-group">
-                    <label class="control-label" for="name">Name</label>
-                    <div class="controls">
-                        <input type="text" data-ng-model="deviceModel.name" id="name" class="form-control" placeholder="Name" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <input type="submit" value="Update" class="btn btn-default">
-                </div>
-				<div data-ng-show="error" class="text-danger">
-					<strong data-ng-bind="error"></strong>
-				</div>
-            </fieldset>
-        </form>
-    </div>
+  <div class="page-header">
+    <h1>Edit Device model</h1>
+  </div>
+  <div class="col-md-12">
+    <form class="form-horizontal" data-ng-submit="update()" novalidate>
+      <fieldset>
+        <div class="form-group">
+          <label class="control-label" for="name">Name</label>
+          <div class="controls">
+            <input type="text" data-ng-model="deviceModel.name" id="name" class="form-control" placeholder="Enter name of device model here" required>
+          </div>
+          <label class="control-label" for="reference">Reference</label>
+          <div class="controls">
+            <input type="text" data-ng-model="deviceModel.reference" id="reference" class="form-control" placeholder="Enter manufacturer reference here">
+          </div>
+          <label class="control-label" for="description">Description</label>
+          <div class="controls">
+            <input type="text" data-ng-model="deviceModel.description" id="description" class="form-control" placeholder="Enter description of device model here">
+          </div>
+        </div>
+        <div class="form-group">
+          <input type="submit" value="Update" class="btn btn-default">
+        </div>
+        <div data-ng-show="error" class="text-danger">
+          <strong data-ng-bind="error"></strong>
+        </div>
+      </fieldset>
+    </form>
+  </div>
 </section>

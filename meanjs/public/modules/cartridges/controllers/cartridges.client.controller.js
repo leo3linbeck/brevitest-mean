@@ -5,6 +5,8 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$sta
 	function($scope, $stateParams, $location, Authentication, Cartridges) {
 		$scope.authentication = Authentication;
 
+		$scope.showResultsOnOpen = true;
+
 		// Create new Cartridge
 		$scope.create = function() {
 			// Create new Cartridge object
@@ -25,7 +27,7 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$sta
 
 		// Remove existing Cartridge
 		$scope.remove = function(cartridge) {
-			if ( cartridge ) { 
+			if ( cartridge ) {
 				cartridge.$remove();
 
 				for (var i in $scope.cartridges) {
@@ -58,7 +60,7 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$sta
 
 		// Find existing Cartridge
 		$scope.findOne = function() {
-			$scope.cartridge = Cartridges.get({ 
+			$scope.cartridge = Cartridges.get({
 				cartridgeId: $stateParams.cartridgeId
 			});
 		};

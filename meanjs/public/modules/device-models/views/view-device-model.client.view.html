@@ -1,21 +1,36 @@
 <section data-ng-controller="DeviceModelsController" data-ng-init="findOne()">
-	<div class="page-header">
-		<h1 data-ng-bind="deviceModel.name"></h1>
+  <div class="page-header">
+    <h1 data-ng-bind="deviceModel.name"></h1>
+  </div>
+	<div>
+		<ul class="list-group">
+			<li class="list-group-item"><b>Reference: </b>{{deviceModel.reference}}</a></li>
+			<li class="list-group-item"><b>Description: </b>{{deviceModel.description}}</a></li>
+		</ul>
 	</div>
-	<div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == deviceModel.user._id))">
-		<a class="btn btn-primary" href="/#!/device-models/{{deviceModel._id}}/edit">
-			<i class="glyphicon glyphicon-edit"></i>
-		</a>
-		<a class="btn btn-primary" data-ng-click="remove();">
-			<i class="glyphicon glyphicon-trash"></i>
-		</a>
-	</div>
-	<small>
-		<em class="text-muted">
-			Posted on
-			<span data-ng-bind="deviceModel.created | date:'mediumDate'"></span>
-			by
-			<span data-ng-bind="deviceModel.user.displayName"></span>
-		</em>
-	</small>
+  <accordion>
+    <accordion-group heading="Devices" ng-click="loadDevices()">
+      <ul class="list-group">
+        <li class="list-group-item" ng-repeat="device in devices">
+          <a href="#!/devices/{{device._id}}">{{device.name}}</a>
+        </li>
+      </ul>
+    </accordion-group>
+  </accordion>
+  <div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == deviceModel.user._id))">
+    <a class="btn btn-primary" href="/#!/device-models/{{deviceModel._id}}/edit">
+      <i class="glyphicon glyphicon-edit"></i>
+    </a>
+    <a class="btn btn-primary" data-ng-click="remove();">
+      <i class="glyphicon glyphicon-trash"></i>
+    </a>
+  </div>
+  <small>
+    <em class="text-muted">
+      Posted on
+      <span data-ng-bind="deviceModel.created | date:'mediumDate'"></span>
+      by
+      <span data-ng-bind="deviceModel.user.displayName"></span>
+    </em>
+  </small>
 </section>

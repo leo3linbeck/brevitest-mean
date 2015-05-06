@@ -5,11 +5,17 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
   function($scope, $stateParams, $location, Authentication, Assays) {
     $scope.authentication = Authentication;
 
+    $scope.analysis = {};
+
     // Create new Assay
     $scope.create = function() {
       // Create new Assay object
       var assay = new Assays({
-        name: this.name
+        name: this.name,
+        reference: this.reference,
+        description: this.description,
+        url: this.url,
+        analysis: this.analysis
       });
 
       // Redirect after save
@@ -18,6 +24,10 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
 
         // Clear form fields
         $scope.name = '';
+        $scope.reference = '';
+        $scope.description = '';
+        $scope.url = '';
+        $scope.analysis = {};
       }, function(errorResponse) {
         $scope.error = errorResponse.data.message;
       });

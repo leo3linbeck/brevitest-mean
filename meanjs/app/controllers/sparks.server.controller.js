@@ -42,7 +42,6 @@ function updateSparks(res, sparkInfo) {
 						throw new Error(err);
 					}
 					else {
-						console.log(res);
 						res.jsonp(result);
 					}
 				});

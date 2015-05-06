@@ -2,6 +2,21 @@
 	<div class="page-header">
 		<h1 data-ng-bind="assay.name"></h1>
 	</div>
+	<div>
+		<ul class="list-group">
+			<li class="list-group-item"><b>Reference: </b>{{assay.reference}}</li>
+			<li class="list-group-item"><b>Description: </b>{{assay.description}}</li>
+			<li class="list-group-item"><b>URL: </b>{{assay.url}}</li>
+			<li class="list-group-item"><b>Cut Values:</b><br/><br/>
+				<ul class="list-group">
+					<li class="list-group-item"><b>Positive high: </b>{{assay.analysis.redMax}}</li>
+					<li class="list-group-item"><b>Negative high: </b>{{assay.analysis.greenMax}}</li>
+					<li class="list-group-item"><b>Negative low: </b>{{assay.analysis.greenMin}}</li>
+					<li class="list-group-item"><b>Positive low: </b>{{assay.analysis.redMin}}</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
 	<div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == assay.user._id))">
 		<a class="btn btn-primary" href="/#!/assays/{{assay._id}}/edit">
 			<i class="glyphicon glyphicon-edit"></i>

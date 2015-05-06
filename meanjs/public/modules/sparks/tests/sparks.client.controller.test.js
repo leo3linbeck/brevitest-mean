@@ -53,7 +53,8 @@
 		it('$scope.find() should create an array with at least one Spark object fetched from XHR', inject(function(Sparks) {
 			// Create sample Spark using the Sparks service
 			var sampleSpark = new Sparks({
-				name: 'New Spark'
+				name: 'New Spark',
+				sparkID: '525a8422f6d0f87f0e407a33'
 			});
 
 			// Create a sample Sparks array that includes the new Spark
@@ -73,7 +74,8 @@
 		it('$scope.findOne() should create an array with one Spark object fetched from XHR using a sparkId URL parameter', inject(function(Sparks) {
 			// Define a sample Spark object
 			var sampleSpark = new Sparks({
-				name: 'New Spark'
+				name: 'New Spark',
+				sparkID: '525a8422f6d0f87f0e407a33'
 			});
 
 			// Set the URL parameter
@@ -93,17 +95,20 @@
 		it('$scope.create() with valid form data should send a POST request with the form input values and then locate to new object URL', inject(function(Sparks) {
 			// Create a sample Spark object
 			var sampleSparkPostData = new Sparks({
-				name: 'New Spark'
+				name: 'New Spark',
+				sparkID: '525a8422f6d0f87f0e407a33'
 			});
 
 			// Create a sample Spark response
 			var sampleSparkResponse = new Sparks({
 				_id: '525cf20451979dea2c000001',
-				name: 'New Spark'
+				name: 'New Spark',
+				sparkID: '525a8422f6d0f87f0e407a33'
 			});
 
 			// Fixture mock form input values
 			scope.name = 'New Spark';
+			scope.sparkID = '525a8422f6d0f87f0e407a33';
 
 			// Set POST response
 			$httpBackend.expectPOST('sparks', sampleSparkPostData).respond(sampleSparkResponse);
@@ -114,6 +119,7 @@
 
 			// Test form inputs are reset
 			expect(scope.name).toEqual('');
+			expect(scope.sparkID).toEqual('');
 
 			// Test URL redirection after the Spark was created
 			expect($location.path()).toBe('/sparks/' + sampleSparkResponse._id);

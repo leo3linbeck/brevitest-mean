@@ -6,10 +6,29 @@
         <form class="form-horizontal" data-ng-submit="update()" novalidate>
             <fieldset>
                 <div class="form-group">
-                    <label class="control-label" for="name">Name</label>
-                    <div class="controls">
-                        <input type="text" data-ng-model="assay.name" id="name" class="form-control" placeholder="Name" required>
-                    </div>
+                  <label class="control-label" for="name">Name</label>
+                  <div class="controls">
+                    <input type="text" data-ng-model="assay.name" id="name" class="form-control" placeholder="Enter the name of the assay here" required>
+                  </div>
+                  <label class="control-label" for="reference">Reference</label>
+                  <div class="controls">
+                    <input type="text" data-ng-model="assay.reference" id="reference" class="form-control" placeholder="Enter reference number from manufacturer here">
+                  </div>
+                  <label class="control-label" for="description">Description</label>
+                  <div class="controls">
+                    <input type="text" data-ng-model="assay.description" id="description" class="form-control" placeholder="Enter description of the assay here">
+                  </div>
+                  <label class="control-label" for="url">URL</label>
+                  <div class="controls">
+                    <input type="text" data-ng-model="assay.url" id="url" class="form-control" placeholder="Enter URL for more information here">
+                  </div>
+                  <label class="control-label" for="analysis">Cut Values</label>
+                  <div class="controls">
+                    <input type="text" data-ng-model="assay.analysis.redMax" id="analysis" class="form-control" placeholder="Enter value above which test is positive">
+                    <input type="text" data-ng-model="assay.analysis.greenMax" id="analysis" class="form-control" placeholder="Enter value above which test is borderline high">
+                    <input type="text" data-ng-model="assay.analysis.greenMin" id="analysis" class="form-control" placeholder="Enter value below which test is borderline low">
+                    <input type="text" data-ng-model="assay.analysis.redMin" id="analysis" class="form-control" placeholder="Enter value below which test is positive">
+                  </div>
                 </div>
                 <div class="form-group">
                     <input type="submit" value="Update" class="btn btn-default">

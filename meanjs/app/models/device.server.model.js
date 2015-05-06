@@ -24,23 +24,21 @@ var DeviceSchema = new Schema({
 		type: Boolean,
 		default: false
 	},
-	calibrationSteps: {
-		type: Number
-	},
-	sparkID: {
-		type: String
-	},
-	sparkName: {
-		type: String
-	},
 	status: {
 		type: String
+	},
+	calibrationSteps: {
+		type: Number
 	},
 	manufacturedOn: {
 		type: Date
 	},
 	registeredOn: {
 		type: Date
+	},
+	_spark: {
+		type: Schema.ObjectId,
+		ref: 'Spark'
 	},
 	_deviceModel: {
 		type: Schema.ObjectId,

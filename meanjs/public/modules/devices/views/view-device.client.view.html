@@ -2,6 +2,17 @@
 	<div class="page-header">
 		<h1 data-ng-bind="device.name"></h1>
 	</div>
+	<div>
+		<ul class="list-group">
+			<li class="list-group-item"><b>Model: </b>{{device.deviceModel.name | date: mediumDate}}</li>
+			<li class="list-group-item"><b>Serial Number: </b>{{device.serialNumber}}</li>
+			<li class="list-group-item"><b>Online: </b>{{device.online}}</li>
+			<li class="list-group-item"><b>Status: </b>{{device.status}}</li>
+			<li class="list-group-item"><b>Calibration Steps: </b>{{device.calibrationSteps}}</li>
+			<li class="list-group-item"><b>Manufactured On: </b>{{device.manufacturedOn | date: mediumDate}}</li>
+			<li class="list-group-item"><b>Registered On: </b>{{device.registeredOn | date: mediumDate}}</li>
+		</ul>
+	</div>
 	<div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == device.user._id))">
 		<a class="btn btn-primary" href="/#!/devices/{{device._id}}/edit">
 			<i class="glyphicon glyphicon-edit"></i>

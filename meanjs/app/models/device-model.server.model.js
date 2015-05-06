@@ -16,6 +16,13 @@ var DeviceModelSchema = new Schema({
 		required: 'Please fill Device model name',
 		trim: true
 	},
+	reference: {
+		type: String,
+		trim: true
+	},
+	description: {
+		type: String
+	},
 	created: {
 		type: Date,
 		default: Date.now

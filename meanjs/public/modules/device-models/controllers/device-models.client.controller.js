@@ -5,11 +5,17 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
 	function($scope, $stateParams, $location, Authentication, DeviceModels) {
 		$scope.authentication = Authentication;
 
+		$scope.loadDevices = function() {
+			$scope.devices = [{_id: '123456', name: 'The Brothers Karamazov'}, {_id: '7890AB', name: 'Parks and Recreation'}];
+		};
+
 		// Create new Device model
 		$scope.create = function() {
 			// Create new Device model object
 			var deviceModel = new DeviceModels ({
-				name: this.name
+				name: this.name,
+				reference: this.reference,
+				description: this.description
 			});
 
 			// Redirect after save
@@ -18,6 +24,8 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
 
 				// Clear form fields
 				$scope.name = '';
+				$scope.reference = '';
+				$scope.description = '';
 			}, function(errorResponse) {
 				$scope.error = errorResponse.data.message;
 			});
@@ -25,7 +33,7 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
 
 		// Remove existing Device model
 		$scope.remove = function(deviceModel) {
-			if ( deviceModel ) { 
+			if ( deviceModel ) {
 				deviceModel.$remove();
 
 				for (var i in $scope.deviceModels) {
@@ -58,7 +66,7 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
 
 		// Find existing Device model
 		$scope.findOne = function() {
-			$scope.deviceModel = DeviceModels.get({ 
+			$scope.deviceModel = DeviceModels.get({
 				deviceModelId: $stateParams.deviceModelId
 			});
 		};

@@ -5,11 +5,23 @@ angular.module('healthcare-providers').controller('HealthcareProvidersController
 	function($scope, $stateParams, $location, Authentication, HealthcareProviders) {
 		$scope.authentication = Authentication;
 
+		$scope.addNewAddress = function() {
+			$scope.addresses.push({
+				location: '',
+				street1: '',
+				street2: '',
+				city: '',
+				state: '',
+				zipcode: ''
+			});
+		};
+
 		// Create new Healthcare provider
 		$scope.create = function() {
 			// Create new Healthcare provider object
 			var healthcareProvider = new HealthcareProviders ({
-				name: this.name
+				name: this.name,
+				addresses: this.addresses
 			});
 
 			// Redirect after save
@@ -18,6 +30,7 @@ angular.module('healthcare-providers').controller('HealthcareProvidersController
 
 				// Clear form fields
 				$scope.name = '';
+				$scope.addresses = [];
 			}, function(errorResponse) {
 				$scope.error = errorResponse.data.message;
 			});
@@ -25,7 +38,7 @@ angular.module('healthcare-providers').controller('HealthcareProvidersController
 
 		// Remove existing Healthcare provider
 		$scope.remove = function(healthcareProvider) {
-			if ( healthcareProvider ) { 
+			if ( healthcareProvider ) {
 				healthcareProvider.$remove();
 
 				for (var i in $scope.healthcareProviders) {
@@ -58,9 +71,10 @@ angular.module('healthcare-providers').controller('HealthcareProvidersController
 
 		// Find existing Healthcare provider
 		$scope.findOne = function() {
-			$scope.healthcareProvider = HealthcareProviders.get({ 
+			$scope.healthcareProvider = HealthcareProviders.get({
 				healthcareProviderId: $stateParams.healthcareProviderId
 			});
+			$scope.addresses = $scope.healthcareProvider.addresses;
 		};
 	}
 ]);

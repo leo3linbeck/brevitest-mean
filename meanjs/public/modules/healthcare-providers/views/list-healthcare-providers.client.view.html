@@ -11,6 +11,7 @@
 				<span data-ng-bind="healthcareProvider.user.displayName"></span>
 			</small>
 			<h4 class="list-group-item-heading" data-ng-bind="healthcareProvider.name"></h4>
+      <h3 class="list-group-item-body" data-ng-bind="healthcareProvider.address.city"></h3>
         </a>
     </div>
     <div class="alert alert-warning text-center" data-ng-hide="!healthcareProviders.$resolved || healthcareProviders.length">

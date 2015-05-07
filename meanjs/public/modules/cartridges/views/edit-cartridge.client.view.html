@@ -1,43 +1,43 @@
 <section data-ng-controller="CartridgesController" data-ng-init="findOne()">
-    <div class="page-header">
-        <h1>Edit Cartridge</h1>
-    </div>
-    <div class="col-md-12">
-        <form class="form-horizontal" data-ng-submit="update()" novalidate>
-            <fieldset>
-                <div class="form-group">
-                    <label class="control-label" for="name">Name</label>
-                    <div class="controls">
-                        <input type="text" data-ng-model="cartridge.name" id="name" class="form-control" placeholder="Name" required>
-                    </div>
-                </div>
-                <accordion close-others="true">
-                  <accordion-group heading="Result" is-open="showResultsOnOpen">
-                    <ul class="list-group">
-                      <li class="list-group-item">Test succeeded: {{!cartridge.failed | uppercase}}</li>
-                      <li class="list-group-item">Value: {{cartridge.result | number: 3}}</li>
-                    </ul>
-                  </accordion-group>
-                  <accordion-group heading="Raw Data">
-                    <p>{{cartridge.rawData}}</p>
-                  </accordion-group>
-                  <accordion-group heading="Dates">
-                    <ul class="list-group">
-                      <li class="list-group-item">Manufactured on: {{cartridge.manufacturedOn | date: medium}}</li>
-                      <li class="list-group-item">Ordered on: {{cartridge.orderedOn | date: medium}}</li>
-                      <li class="list-group-item">Registered on: {{cartridge.registeredOn | date: medium}}</li>
-                      <li class="list-group-item">Test started on: {{cartridge.startedOn | date: medium}}</li>
-                      <li class="list-group-item">Test finished on: {{cartridge.finishedOn | date: medium}}</li>
-                    </ul>
-                  </accordion-group>
-                </accordion>
-                <div class="form-group">
-                    <input type="submit" value="Update" class="btn btn-default">
-                </div>
-				<div data-ng-show="error" class="text-danger">
-					<strong data-ng-bind="error"></strong>
-				</div>
-            </fieldset>
-        </form>
-    </div>
+  <div class="page-header">
+    <h1>Edit Cartridge</h1>
+  </div>
+  <div class="col-md-12">
+    <form class="form-horizontal" data-ng-submit="update()" novalidate>
+      <fieldset>
+        <div class="form-group">
+          <label class="control-label" for="name">Name</label>
+          <div class="controls">
+            <input type="text" data-ng-model="cartridge.name" id="name" class="form-control" placeholder="Name" required>
+          </div>
+        </div>
+        <accordion close-others="true">
+          <accordion-group heading="Result" is-open="showResultsOnOpen">
+            <ul class="list-group">
+              <li class="list-group-item">Test succeeded: {{!cartridge.failed | uppercase}}</li>
+              <li class="list-group-item">Value: {{cartridge.result | number: 3}}</li>
+            </ul>
+          </accordion-group>
+          <accordion-group heading="Raw Data">
+            <p>{{cartridge.rawData}}</p>
+          </accordion-group>
+          <accordion-group heading="Dates">
+            <ul class="list-group">
+              <li class="list-group-item">Manufactured on: {{cartridge.manufacturedOn | date: medium}}</li>
+              <li class="list-group-item">Ordered on: {{cartridge.orderedOn | date: medium}}</li>
+              <li class="list-group-item">Registered on: {{cartridge.registeredOn | date: medium}}</li>
+              <li class="list-group-item">Test started on: {{cartridge.startedOn | date: medium}}</li>
+              <li class="list-group-item">Test finished on: {{cartridge.finishedOn | date: medium}}</li>
+            </ul>
+          </accordion-group>
+        </accordion>
+        <div class="form-group">
+          <input type="submit" value="Update" class="btn btn-default">
+        </div>
+        <div data-ng-show="error" class="text-danger">
+          <strong data-ng-bind="error"></strong>
+        </div>
+      </fieldset>
+    </form>
+  </div>
 </section>

@@ -16,33 +16,15 @@ var TestSchema = new Schema({
 		required: 'Please fill Test name',
 		trim: true
 	},
+	description: {
+		type: String,
+		trim: true
+	},
 	status: {
 		type: String
 	},
 	percentComplete: {
 		type: Number
-	},
-	description: {
-		type: String,
-		trim: true
-	},
-	url: {
-		type: String
-	},
-	BCODE: {
-		type: String
-	},
-	analysis: {
-		redMax: {type: Number},
-		greenMax: {type: Number},
-		greenMin: {type: Number},
-		redMin: {type: Number}
-	},
-	startedOn: {
-		type: Date
-	},
-	finishedOn: {
-		type: Date
 	},
 	_assay: {
 		type: Schema.ObjectId,

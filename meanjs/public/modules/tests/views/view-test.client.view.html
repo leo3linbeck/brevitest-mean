@@ -1,21 +1,50 @@
 <section data-ng-controller="TestsController" data-ng-init="findOne()">
-	<div class="page-header">
-		<h1 data-ng-bind="test.name"></h1>
-	</div>
-	<div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == test.user._id))">
-		<a class="btn btn-primary" href="/#!/tests/{{test._id}}/edit">
-			<i class="glyphicon glyphicon-edit"></i>
-		</a>
-		<a class="btn btn-primary" data-ng-click="remove();">
-			<i class="glyphicon glyphicon-trash"></i>
-		</a>
-	</div>
-	<small>
-		<em class="text-muted">
-			Posted on
-			<span data-ng-bind="test.created | date:'mediumDate'"></span>
-			by
-			<span data-ng-bind="test.user.displayName"></span>
-		</em>
-	</small>
+  <div class="page-header">
+    <h1 data-ng-bind="test.name"></h1>
+  </div>
+  <accordion close-others="true">
+		<accordion-group heading="Details" is-open="showResultsOnOpen">
+			<ul class="list-group">
+				<li class="list-group-item">Assay: {{test._assay.name}}</li>
+				<li class="list-group-item">Cartridge: {{test._cartridge.name}}</li>
+			</ul>
+		</accordion-group>
+    <accordion-group heading="Status">
+      <ul class="list-group">
+        <li class="list-group-item">Status: {{test.status}}</li>
+        <li class="list-group-item">Percent complete: {{test.percentComplete}}</li>
+      </ul>
+    </accordion-group>
+		<accordion-group heading="Results">
+      <ul class="list-group">
+				<li class="list-group-item">Test succeeded: {{!test._cartridge.failed | uppercase}}</li>
+        <li class="list-group-item">Result: {{test._cartridge.result}}</li>
+      </ul>
+    </accordion-group>
+    <accordion-group heading="BCODE">
+      <p>{{test._cartridge.BCODE}}</p>
+    </accordion-group>
+    <accordion-group heading="Dates">
+      <ul class="list-group">
+        <li class="list-group-item">Test started on: {{test._cartridge.startedOn | date: medium}}</li>
+        <li class="list-group-item">Test finished on: {{test._cartridge.finishedOn | date: medium}}</li>
+      </ul>
+    </accordion-group>
+  </accordion>
+  <div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == test.user._id))">
+    <a class="btn btn-primary" href="/#!/tests/{{test._id}}/edit">
+      <i class="glyphicon glyphicon-edit"></i>
+    </a>
+    <a class="btn btn-primary" data-ng-click="remove();">
+      <i class="glyphicon glyphicon-trash"></i>
+    </a>
+  </div>
+  <small>
+    <em class="text-muted">
+      Posted on
+      <span data-ng-bind="test.created | date:'mediumDate'"></span>
+      by
+      <span data-ng-bind="test.user.displayName"></span>
+    </em>
+  </small>
 </section>

@@ -5,11 +5,14 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
 	function($scope, $stateParams, $location, Authentication, Tests) {
 		$scope.authentication = Authentication;
 
+		$scope.showResultsOnOpen = true;
+
 		// Create new Test
 		$scope.create = function() {
 			// Create new Test object
 			var test = new Tests ({
-				name: this.name
+				name: this.name,
+				description: this.description
 			});
 
 			// Redirect after save
@@ -18,6 +21,7 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
 
 				// Clear form fields
 				$scope.name = '';
+				$scope.description = '';
 			}, function(errorResponse) {
 				$scope.error = errorResponse.data.message;
 			});
@@ -25,7 +29,7 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
 
 		// Remove existing Test
 		$scope.remove = function(test) {
-			if ( test ) { 
+			if ( test ) {
 				test.$remove();
 
 				for (var i in $scope.tests) {
@@ -58,7 +62,7 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
 
 		// Find existing Test
 		$scope.findOne = function() {
-			$scope.test = Tests.get({ 
+			$scope.test = Tests.get({
 				testId: $stateParams.testId
 			});
 		};

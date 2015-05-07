@@ -1,21 +1,35 @@
 <section data-ng-controller="ManufacturersController" data-ng-init="findOne()">
-	<div class="page-header">
-		<h1 data-ng-bind="manufacturer.name"></h1>
-	</div>
-	<div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == manufacturer.user._id))">
-		<a class="btn btn-primary" href="/#!/manufacturers/{{manufacturer._id}}/edit">
-			<i class="glyphicon glyphicon-edit"></i>
-		</a>
-		<a class="btn btn-primary" data-ng-click="remove();">
-			<i class="glyphicon glyphicon-trash"></i>
-		</a>
-	</div>
-	<small>
-		<em class="text-muted">
-			Posted on
-			<span data-ng-bind="manufacturer.created | date:'mediumDate'"></span>
-			by
-			<span data-ng-bind="manufacturer.user.displayName"></span>
-		</em>
-	</small>
+  <div class="page-header">
+    <h1 data-ng-bind="manufacturer.name"></h1>
+  </div>
+  <div>
+    <h4>Addresses</h4>
+    <accordion close-others="true">
+      <accordion-group ng-repeat="address in addresses" heading="{{address.location}}">
+        <ul class="list-group">
+          <li class="list-group-item">Street 1: {{address.street1}}</li>
+          <li class="list-group-item">Street 2: {{address.street2}}</li>
+          <li class="list-group-item">City: {{address.city}}</li>
+          <li class="list-group-item">State: {{address.state}}</li>
+          <li class="list-group-item">Zipcode: {{address.zipcode}}</li>
+        </ul>
+      </accordion-group>
+    </accordion>
+  </div>
+  <div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == manufacturer.user._id))">
+    <a class="btn btn-primary" href="/#!/manufacturers/{{manufacturer._id}}/edit">
+      <i class="glyphicon glyphicon-edit"></i>
+    </a>
+    <a class="btn btn-primary" data-ng-click="remove();">
+      <i class="glyphicon glyphicon-trash"></i>
+    </a>
+  </div>
+  <small>
+    <em class="text-muted">
+      Posted on
+      <span data-ng-bind="manufacturer.created | date:'mediumDate'"></span>
+      by
+      <span data-ng-bind="manufacturer.user.displayName"></span>
+    </em>
+  </small>
 </section>

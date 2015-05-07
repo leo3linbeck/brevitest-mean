@@ -5,11 +5,25 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
 	function($scope, $stateParams, $location, Authentication, Manufacturers) {
 		$scope.authentication = Authentication;
 
+		$scope.addresses = [];
+		$scope.addressTypes = ['Main', 'Business', 'Operations', 'Other'];
+		$scope.addressTypes.forEach(function(a) {
+			$scope.addresses.push({
+				location: a,
+				street1: '',
+				street2: '',
+				city: '',
+				state: '',
+				zipcode: ''
+			});
+		});
+
 		// Create new Manufacturer
 		$scope.create = function() {
 			// Create new Manufacturer object
 			var manufacturer = new Manufacturers ({
-				name: this.name
+				name: this.name,
+				addresses: this.addresses
 			});
 
 			// Redirect after save
@@ -18,6 +32,7 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
 
 				// Clear form fields
 				$scope.name = '';
+				$scope.addresses = [];
 			}, function(errorResponse) {
 				$scope.error = errorResponse.data.message;
 			});
@@ -25,7 +40,7 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
 
 		// Remove existing Manufacturer
 		$scope.remove = function(manufacturer) {
-			if ( manufacturer ) { 
+			if ( manufacturer ) {
 				manufacturer.$remove();
 
 				for (var i in $scope.manufacturers) {
@@ -44,6 +59,7 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
 		$scope.update = function() {
 			var manufacturer = $scope.manufacturer;
 
+			manufacturer.addresses = $scope.addresses;
 			manufacturer.$update(function() {
 				$location.path('manufacturers/' + manufacturer._id);
 			}, function(errorResponse) {
@@ -58,8 +74,10 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
 
 		// Find existing Manufacturer
 		$scope.findOne = function() {
-			$scope.manufacturer = Manufacturers.get({ 
+			$scope.manufacturer = Manufacturers.get({
 				manufacturerId: $stateParams.manufacturerId
+			},function(){
+				$scope.addresses = $scope.manufacturer.addresses.length ? $scope.manufacturer.addresses : $scope.addresses;
 			});
 		};
 	}

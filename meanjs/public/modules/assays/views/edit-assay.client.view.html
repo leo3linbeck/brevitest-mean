@@ -85,8 +85,6 @@
                   </div>
                   <div class="col-md-12">
                     <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
-                  </div>
-                  <div class="col-md-3">
                     <div class="btn-group-vertical" role="group" aria-label="...">
                       <h4 align="center">Move</h4>
                       <button type="button" ng-click="moveBCODETop()" class="btn btn-info">Top</button>
@@ -94,8 +92,6 @@
                       <button type="button" ng-click="moveBCODEDown()" class="btn btn-info">Down</button>
                       <button type="button" ng-click="moveBCODEBottom()" class="btn btn-info">Bottom</button>
                     </div>
-                  </div>
-                  <div class="col-md-3">
                     <div class="btn-group-vertical" role="group" aria-label="...">
                       <h4 align="center">Add</h4>
                       <button type="button" ng-click="insertBCODETop()" class="btn btn-success">Top</button>
@@ -103,30 +99,23 @@
                       <button type="button" ng-click="insertBCODEBelow()" class="btn btn-success">Below</button>
                       <button type="button" ng-click="insertBCODEBottom()" class="btn btn-success">Bottom</button>
                     </div>
-                  </div>
-                  <div class="col-md-3">
                     <div class="btn-group-vertical" role="group" aria-label="...">
                       <h4 align="center">Clipboard</h4>
                       <button type="button" ng-click="cutBCODE()" class="btn btn-default">Cut</button>
                       <button type="button" ng-click="copyBCODE()" class="btn btn-default">Copy</button>
                       <button type="button" ng-click="copyAllBCODE()" class="btn btn-default">Copy All</button>
                       <button type="button" ng-click="pasteBCODE()" class="btn btn-default">Paste</button>
-                      <br/>
                     </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="btn-group-vertical" role="group" aria-label="...">
-                      <h4 align="center">Update</h4>
+                    <div class="btn-group-vertical" style="vertical-align: top" role="group" aria-label="...">
+                      <h4 vertical-align="top" align="center">Update</h4>
                       <button type="button" ng-click="updateBCODE()" class="btn btn-primary">Update</button>
-                      <br/>
                     </div>
-                    <div class="btn-group-vertical" role="group" aria-label="...">
+                    <div class="btn-group-vertical" style="vertical-align: bottom" role="group" aria-label="...">
                       <h4 align="center">Delete</h4>
                       <button type="button" ng-click="deleteBCODE()" class="btn btn-danger">Delete One</button>
                       <button type="button" ng-click="deleteAllBCODE()" class="btn btn-danger">Delete All</button>
                     </div>
                   </div>
-                  <br/>
                 </div>
               </div>
             </div>

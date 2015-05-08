@@ -39,9 +39,7 @@ var AssaySchema = new Schema({
 	url: {
 		type: String
 	},
-	BCODE: [
-		BCODESchema
-	],
+	BCODE: [BCODESchema],
 	analysis: {
 		redMax: {type: Number},
 		greenMax: {type: Number},

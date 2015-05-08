@@ -1,9 +1,16 @@
 'use strict';
 
+var _ = window._;
+
 // Assays controller
 angular.module('assays').controller('AssaysController', ['$scope', '$stateParams', '$location', 'Authentication', 'Assays',
   function($scope, $stateParams, $location, Authentication, Assays) {
     $scope.authentication = Authentication;
+
+    $scope.alerts = [];
+    $scope.closeAlert = function(index) {
+      $scope.alerts.splice(index, 1);
+    };
 
     $scope.analysis = {};
     $scope.BCODE = [];
@@ -191,6 +198,10 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
     $scope.activeBCODE = 0;
     $scope.estimatedTime = 0;
 
+    $scope.changeCommandDescription = function() {
+      $scope.commandDescription = _.where($scope.BCODECommands, {name: $scope.command})[0].description;
+    };
+
     $scope.moveBCODETop = function() {
       $scope.BCODE.splice(0, 0, $scope.BCODE.splice($scope.activeBCODE, 1)[0]);
       $scope.activeBCODE = 0;
@@ -227,39 +238,111 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
       $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
     };
 
+    function validateCommandParams() {
+      if (!$scope.command) {
+        $scope.alerts.push({type: 'danger', msg: 'ERROR: No command selected'});
+        return false;
+      }
+      var cmd = _.where($scope.BCODECommands, {name: $scope.command})[0];
+      var p = $scope.params.split(',');
+      if (p.length !== cmd.param_count) {
+        $scope.alerts.push({type: 'danger', msg: 'ERROR: Wrong number of parameters (' + p.length + ' found and ' + cmd.param_count + ' expected)'});
+        return false;
+      }
+      if (p.length > 0) {
+        if (isNaN(parseInt(p[0], 10))) {
+          $scope.alerts.push({type: 'danger', msg: 'ERROR: Non-numeric parameter (parameter 1 "' + p[0] + '" is not a number)'});
+          return false;
+        }
+        $scope.params = parseInt(p[0]);
+      }
+      if (p.length > 1) {
+        if (isNaN(parseInt(p[1], 10))) {
+          $scope.alerts.push({type: 'danger', msg: 'ERROR: Non-numeric parameter (parameter 2 "' + p[1] + '" is not a number)'});
+          return false;
+        }
+        $scope.params += ',' + parseInt(p[1]);
+      }
+      return true;
+    }
+
     $scope.insertBCODETop = function() {
-      $scope.BCODE.splice(0, 0, {command: $scope.command, params: $scope.params});
-      $scope.activeBCODE = 0;
-      $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      if (validateCommandParams()) {
+        $scope.BCODE.splice(0, 0, {command: $scope.command, params: $scope.params});
+        $scope.activeBCODE = 0;
+        $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      }
     };
 
     $scope.insertBCODEAbove = function() {
-      $scope.BCODE.splice($scope.activeBCODE, 0, {command: $scope.command, params: $scope.params});
-      $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      if (validateCommandParams()) {
+        $scope.BCODE.splice($scope.activeBCODE, 0, {command: $scope.command, params: $scope.params});
+        $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      }
     };
 
     $scope.insertBCODEBelow = function() {
-      $scope.activeBCODE += 1;
-      $scope.BCODE.splice($scope.activeBCODE, 0, {command: $scope.command, params: $scope.params});
-      $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      if (validateCommandParams()) {
+        $scope.activeBCODE += 1;
+        $scope.BCODE.splice($scope.activeBCODE, 0, {command: $scope.command, params: $scope.params});
+        $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      }
     };
 
     $scope.insertBCODEBottom = function() {
-      $scope.BCODE.push({command: $scope.command, params: $scope.params});
-      $scope.activeBCODE = $scope.BCODE.length - 1;
+      if (validateCommandParams()) {
+        $scope.BCODE.push({command: $scope.command, params: $scope.params});
+        $scope.activeBCODE = $scope.BCODE.length - 1;
+        $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      }
+    };
+
+    $scope.cutBCODE = function() {
+      if ($scope.BCODE.length && $scope.activeBCODE) {
+        $scope.clipboard = $scope.BCODE.splice($scope.activeBCODE, 1);
+        delete $scope.clipboard._id;
+        $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      }
+    };
+
+    $scope.copyBCODE = function() {
+      $scope.clipboard = $scope.BCODE[$scope.activeBCODE];
+    };
+
+    $scope.copyAllBCODE = function() {
+      $scope.clipboard = $scope.BCODE.slice();
+    };
+
+    $scope.pasteBCODE = function() {
+      $scope.activeBCODE += 1;
+      if (angular.isArray($scope.clipboard)) {
+        $scope.clipboard.forEach(function(e, i) {
+          $scope.BCODE.splice($scope.activeBCODE + i, 0, angular.copy(e));
+        });
+      }
+      else {
+        $scope.BCODE.splice($scope.activeBCODE, 0, angular.copy($scope.clipboard));
+      }
       $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
     };
 
     $scope.updateBCODE = function() {
-      $scope.BCODE[$scope.activeBCODE] = {command: $scope.command, params: $scope.params};
-      $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      if (validateCommandParams()) {
+        $scope.BCODE[$scope.activeBCODE] = {command: $scope.command, params: $scope.params};
+        $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      }
     };
 
     $scope.deleteBCODE = function() {
-      if ($scope.BCODE.length) {
+      if ($scope.BCODE.length && $scope.activeBCODE) {
         $scope.BCODE.splice($scope.activeBCODE, 1);
+        $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
       }
-      $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+    };
+
+    $scope.deleteAllBCODE = function() {
+      $scope.BCODE= [];
+      $scope.estimatedTime = 0;
     };
 
     $scope.clickBCODECode = function(indx) {
@@ -356,8 +439,10 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
       }, function() {
         $scope.BCODE = $scope.assay.BCODE.length ? $scope.assay.BCODE : $scope.BCODE;
         if ($scope.BCODE.length) {
+          $scope.activeBCODE = 0;
           $scope.command = $scope.BCODE[0].command;
           $scope.params = $scope.BCODE[0].params;
+          $scope.commandDescription = _.where($scope.BCODECommands, {name: $scope.command})[0].description;
           $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
         }
         $scope.analysis = $scope.assay.analysis;

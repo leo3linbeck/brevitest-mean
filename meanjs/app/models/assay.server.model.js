@@ -6,6 +6,15 @@
 var mongoose = require('mongoose'),
 	Schema = mongoose.Schema;
 
+var StandardCurvePointSchema = new Schema({
+	x: {
+		type: Number
+	},
+	y: {
+		type: Number
+	}
+});
+
 var BCODESchema = new Schema({
 	command: {
 		type: String,
@@ -46,6 +55,7 @@ var AssaySchema = new Schema({
 		greenMin: {type: Number},
 		redMin: {type: Number}
 	},
+	standardCurve: [StandardCurvePointSchema],
 	_manufacturer: {
 		type: Schema.ObjectId,
 		ref: 'Manufacturer'

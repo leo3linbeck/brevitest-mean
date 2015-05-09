@@ -7,13 +7,30 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
   function($scope, $stateParams, $location, Authentication, Assays) {
     $scope.authentication = Authentication;
 
+    $scope.analysis = {};
+    $scope.standardCurve = [];
+    $scope.BCODE = [];
+
     $scope.alerts = [];
     $scope.closeAlert = function(index) {
       $scope.alerts.splice(index, 1);
     };
 
-    $scope.analysis = {};
-    $scope.BCODE = [];
+    $scope.stdCurveSort = function() {
+      $scope.standardCurve.sort(function(a, b) {return (a.x - b.x);});
+    };
+
+    $scope.stdCurveAppend = function() {
+      $scope.standardCurve.push({x: 0, y: 0});
+    };
+
+    $scope.stdCurvePrepend = function() {
+      $scope.standardCurve.splice(0, 0, {x: 0, y: 0});
+    };
+
+    $scope.stdCurveDelete = function(indx) {
+      $scope.standardCurve.splice(indx, 1);
+    };
 
     $scope.BCODECommands = [
       {
@@ -199,7 +216,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
     $scope.estimatedTime = 0;
 
     $scope.changeCommandDescription = function() {
-      $scope.commandDescription = _.where($scope.BCODECommands, {name: $scope.command})[0].description;
+      $scope.commandDescription = _.findWhere($scope.BCODECommands, {name: $scope.command}).description;
     };
 
     $scope.moveBCODETop = function() {
@@ -243,13 +260,16 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
         $scope.alerts.push({type: 'danger', msg: 'ERROR: No command selected'});
         return false;
       }
-      var cmd = _.where($scope.BCODECommands, {name: $scope.command})[0];
+      var cmd = _.findWhere($scope.BCODECommands, {name: $scope.command});
       var p = $scope.params.split(',');
+      if (cmd.param_count === 0 && p.length === 1 && p[0] === '') {
+        return true;
+      }
       if (p.length !== cmd.param_count) {
         $scope.alerts.push({type: 'danger', msg: 'ERROR: Wrong number of parameters (' + p.length + ' found and ' + cmd.param_count + ' expected)'});
         return false;
       }
-      if (p.length > 0) {
+      if (p.length > 0 && p[0]) {
         if (isNaN(parseInt(p[0], 10))) {
           $scope.alerts.push({type: 'danger', msg: 'ERROR: Non-numeric parameter (parameter 1 "' + p[0] + '" is not a number)'});
           return false;
@@ -377,6 +397,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
         description: this.description,
         url: this.url,
         analysis: this.analysis,
+        standardCurve: this.standardCurve,
         BCODE: this.BCODE
       });
 
@@ -390,6 +411,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
         $scope.description = '';
         $scope.url = '';
         $scope.analysis = {};
+        $scope.standardCurve = [];
         $scope.BCODE = [];
       }, function(errorResponse) {
         $scope.error = errorResponse.data.message;
@@ -419,6 +441,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
 
       assay.BCODE = $scope.BCODE;
       assay.analysis = $scope.analysis;
+      assay.standardCurve = $scope.standardCurve;
 
       assay.$update(function() {
         $location.path('assays/' + assay._id);
@@ -442,10 +465,11 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
           $scope.activeBCODE = 0;
           $scope.command = $scope.BCODE[0].command;
           $scope.params = $scope.BCODE[0].params;
-          $scope.commandDescription = _.where($scope.BCODECommands, {name: $scope.command})[0].description;
+          $scope.commandDescription = _.findWhere($scope.BCODECommands, {name: $scope.command}).description;
           $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
         }
         $scope.analysis = $scope.assay.analysis;
+        $scope.standardCurve = $scope.assay.standardCurve;
       });
     };
   }

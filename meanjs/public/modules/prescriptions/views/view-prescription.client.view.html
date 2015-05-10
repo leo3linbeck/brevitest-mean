@@ -2,6 +2,20 @@
 	<div class="page-header">
 		<h1 data-ng-bind="prescription.name"></h1>
 	</div>
+	<div>
+		<ul class="list-group">
+			<li class="list-group-item"><b>Prescribed On: </b>{{prescription.prescribedOn | date: "medium"}}</li>
+			<li class="list-group-item"><b>Comments: </b>{{prescription.comments}}</li>
+			<li class="list-group-item"><b>Number of Tests: </b>{{prescription._assays.length}}</li>
+			<li class="list-group-item"><b>Patient Information:</b><br/><br/>
+				<ul class="list-group">
+					<li class="list-group-item"><b>Number: </b>{{prescription.patientNumber}}</li>
+					<li class="list-group-item"><b>Gender: </b>{{prescription.patientGender}}</li>
+					<li class="list-group-item"><b>Date of Birth: </b>{{prescription.patientDateOfBirth | date: "medium"}}</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
 	<div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == prescription.user._id))">
 		<a class="btn btn-primary" href="/#!/prescriptions/{{prescription._id}}/edit">
 			<i class="glyphicon glyphicon-edit"></i>

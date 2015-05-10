@@ -460,7 +460,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
       $scope.assay = Assays.get({
         assayId: $stateParams.assayId
       }, function() {
-        $scope.BCODE = $scope.assay.BCODE.length ? $scope.assay.BCODE : $scope.BCODE;
+        $scope.BCODE = $scope.assay.BCODE && $scope.assay.BCODE.length ? $scope.assay.BCODE : $scope.BCODE;
         if ($scope.BCODE.length) {
           $scope.activeBCODE = 0;
           $scope.command = $scope.BCODE[0].command;

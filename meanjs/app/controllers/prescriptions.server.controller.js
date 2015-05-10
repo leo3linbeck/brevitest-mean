@@ -85,8 +85,26 @@ exports.delete = function(req, res) {
 /**
  * List of Prescriptions
  */
+// exports.list = function(req, res) {
+// 	Prescription.find().sort('-created').populate('user', 'displayName').exec(function(err, prescriptions) {
+// 		if (err) {
+// 			return res.status(400).send({
+// 				message: errorHandler.getErrorMessage(err)
+// 			});
+// 		} else {
+// 			res.jsonp(prescriptions);
+// 		}
+// 	});
+// };
+
 exports.list = function(req, res) {
-	Prescription.find().sort('-created').populate('user', 'displayName').exec(function(err, prescriptions) {
+	Prescription.find().sort('-created').populate([{
+		path: '_assays',
+		select: '_id name'
+	}, {
+		path: 'user',
+		select: 'displayName'
+	}]).exec(function(err, prescriptions) {
 		if (err) {
 			return res.status(400).send({
 				message: errorHandler.getErrorMessage(err)
@@ -101,7 +119,13 @@ exports.list = function(req, res) {
  * Prescription middleware
  */
 exports.prescriptionByID = function(req, res, next, id) {
-	Prescription.findById(id).populate('user', 'displayName').exec(function(err, prescription) {
+	Prescription.findById(id).populate([{
+		path: '_assays',
+		select: '_id name'
+	}, {
+		path: 'user',
+		select: 'displayName'
+	}]).exec(function(err, prescription) {
 		if (err) return next(err);
 		if (! prescription) return next(new Error('Failed to load Prescription ' + id));
 		req.prescription = prescription ;

@@ -6,7 +6,46 @@
 var mongoose = require('mongoose'),
   errorHandler = require('./errors.server.controller'),
   Test = mongoose.model('Test'),
+  Assay = mongoose.model('Assay'),
+  Device = mongoose.model('Device'),
+  Cartridge = mongoose.model('Cartridge'),
+  sparkcore = require('spark'),
   _ = require('lodash');
+
+exports.run = function(req, res) {
+  var assay = Assay.findById(req.body.assay._id, 'name');
+  var device = Device.findById(req.body.device._id, 'name');
+  var cartridge = Cartridge.findById(req.body.cartridge._id);
+
+  var test = new Test();
+  test.user = req.user;
+  test._assay = assay._id;
+  test._device = device._id;
+  test._cartridge = cartridge._id;
+  test.name = req.body.name ? req.body.name : ('Assay ' + assay.name + ' on device ' + device.name + 'using cartridge ' + cartridge._id);
+  test.description = req.body.description;
+  test.status = 'Starting';
+  test.percentComplete = 0;
+
+  test.save(function(err) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      res.jsonp(test);
+    }
+  });
+};
+
+exports.begin = function(req, res) {
+  var test = new Test(req.body);
+  test.user = req.user;
+
+  // add spark call here
+
+  res.jsonp({msg: 'Test begun'});
+};
 
 /**
  * Create a Test
@@ -34,6 +73,9 @@ exports.read = function(req, res) {
 
   test.populate([{
     path: '_assay',
+    select: '_id name'
+  }, {
+    path: '_device',
     select: '_id name'
   }, {
 		path: '_cartridge',
@@ -109,6 +151,9 @@ exports.testByID = function(req, res, next, id) {
     select: 'displayName'
   }, {
     path: '_assay',
+    select: '_id name'
+  }, {
+    path: '_device',
     select: '_id name'
   }, {
     path: '_cartridge',

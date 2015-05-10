@@ -6,7 +6,17 @@
 var mongoose = require('mongoose'),
   errorHandler = require('./errors.server.controller'),
   Device = mongoose.model('Device'),
+  sparkcore = require('spark'),
   _ = require('lodash');
+
+exports.initialize = function(req, res) {
+  var device = new Device(req.body);
+  device.user = req.user;
+
+  // add spark call here
+
+  res.jsonp({msg: 'Initialization begun', device: device});
+};
 
 /**
  * Create a Device

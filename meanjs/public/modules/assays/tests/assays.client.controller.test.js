@@ -73,7 +73,10 @@
 		it('$scope.findOne() should create an array with one Assay object fetched from XHR using a assayId URL parameter', inject(function(Assays) {
 			// Define a sample Assay object
 			var sampleAssay = new Assays({
-				name: 'New Assay'
+				name: 'New Assay',
+				analysis: {},
+				standardCurve: [],
+				BCODE: []
 			});
 
 			// Set the URL parameter
@@ -93,7 +96,10 @@
 		it('$scope.create() with valid form data should send a POST request with the form input values and then locate to new object URL', inject(function(Assays) {
 			// Create a sample Assay object
 			var sampleAssayPostData = new Assays({
-				name: 'New Assay'
+				name: 'New Assay',
+				analysis: {},
+				standardCurve: [],
+				BCODE: []
 			});
 
 			// Create a sample Assay response

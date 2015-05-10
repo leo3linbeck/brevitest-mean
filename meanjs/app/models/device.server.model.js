@@ -44,10 +44,12 @@ var DeviceSchema = new Schema({
 		type: Schema.ObjectId,
 		ref: 'DeviceModel'
 	},
-	_tests: {
-		type: Schema.Types.ObjectId,
-		ref: 'Test'
-	},
+	_tests: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Test'
+		}
+	],
 	_registeredBy: {
 		type: Schema.ObjectId,
 		ref: 'User'

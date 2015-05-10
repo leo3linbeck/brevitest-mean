@@ -9,6 +9,12 @@ module.exports = function(app) {
 		.get(tests.list)
 		.post(users.requiresLogin, tests.create);
 
+	app.route('/tests/run')
+		.all(tests.run);
+
+	app.route('/tests/begin')
+		.post(tests.begin);
+
 	app.route('/tests/:testId')
 		.get(tests.read)
 		.put(users.requiresLogin, tests.hasAuthorization, tests.update)

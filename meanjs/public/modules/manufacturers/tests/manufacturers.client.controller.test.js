@@ -72,8 +72,21 @@
 
 		it('$scope.findOne() should create an array with one Manufacturer object fetched from XHR using a manufacturerId URL parameter', inject(function(Manufacturers) {
 			// Define a sample Manufacturer object
+			var addresses = [];
+			['Main', 'Business', 'Operations', 'Other'].forEach(function(a) {
+				addresses.push({
+					location: a,
+					street1: '',
+					street2: '',
+					city: '',
+					state: '',
+					zipcode: ''
+				});
+			});
+
 			var sampleManufacturer = new Manufacturers({
-				name: 'New Manufacturer'
+				name: 'New Manufacturer',
+				addresses: addresses
 			});
 
 			// Set the URL parameter
@@ -92,8 +105,21 @@
 
 		it('$scope.create() with valid form data should send a POST request with the form input values and then locate to new object URL', inject(function(Manufacturers) {
 			// Create a sample Manufacturer object
+			var addresses = [];
+			['Main', 'Business', 'Operations', 'Other'].forEach(function(a) {
+				addresses.push({
+					location: a,
+					street1: '',
+					street2: '',
+					city: '',
+					state: '',
+					zipcode: ''
+				});
+			});
+
 			var sampleManufacturerPostData = new Manufacturers({
-				name: 'New Manufacturer'
+				name: 'New Manufacturer',
+				addresses: addresses
 			});
 
 			// Create a sample Manufacturer response

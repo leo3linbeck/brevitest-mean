@@ -72,8 +72,21 @@
 
 		it('$scope.findOne() should create an array with one Healthcare provider object fetched from XHR using a healthcareProviderId URL parameter', inject(function(HealthcareProviders) {
 			// Define a sample Healthcare provider object
+			var addresses = [];
+			['Main', 'Business', 'Clinic', 'Other'].forEach(function(a) {
+				addresses.push({
+					location: a,
+					street1: '',
+					street2: '',
+					city: '',
+					state: '',
+					zipcode: ''
+				});
+			});
+
 			var sampleHealthcareProvider = new HealthcareProviders({
-				name: 'New Healthcare provider'
+				name: 'New Healthcare provider',
+				addresses: addresses
 			});
 
 			// Set the URL parameter
@@ -92,8 +105,21 @@
 
 		it('$scope.create() with valid form data should send a POST request with the form input values and then locate to new object URL', inject(function(HealthcareProviders) {
 			// Create a sample Healthcare provider object
+			var addresses = [];
+			['Main', 'Business', 'Clinic', 'Other'].forEach(function(a) {
+				addresses.push({
+					location: a,
+					street1: '',
+					street2: '',
+					city: '',
+					state: '',
+					zipcode: ''
+				});
+			});
+
 			var sampleHealthcareProviderPostData = new HealthcareProviders({
-				name: 'New Healthcare provider'
+				name: 'New Healthcare provider',
+				addresses: addresses
 			});
 
 			// Create a sample Healthcare provider response

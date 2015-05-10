@@ -72,6 +72,7 @@
 
 		it('$scope.findOne() should create an array with one Prescription object fetched from XHR using a prescriptionId URL parameter', inject(function(Prescriptions) {
 			// Define a sample Prescription object
+			var sampleAssays = [];
 			var samplePrescription = new Prescriptions({
 				name: 'New Prescription'
 			});
@@ -81,6 +82,7 @@
 
 			// Set GET response
 			$httpBackend.expectGET(/prescriptions\/([0-9a-fA-F]{24})$/).respond(samplePrescription);
+			$httpBackend.expectGET(/assays/).respond(sampleAssays);
 
 			// Run controller functionality
 			scope.findOne();
@@ -93,7 +95,8 @@
 		it('$scope.create() with valid form data should send a POST request with the form input values and then locate to new object URL', inject(function(Prescriptions) {
 			// Create a sample Prescription object
 			var samplePrescriptionPostData = new Prescriptions({
-				name: 'New Prescription'
+				name: 'New Prescription',
+				_assays: []
 			});
 
 			// Create a sample Prescription response

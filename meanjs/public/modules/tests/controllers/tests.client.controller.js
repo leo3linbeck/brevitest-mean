@@ -1,11 +1,104 @@
 'use strict';
 
 // Tests controller
-angular.module('tests').controller('TestsController', ['$scope', '$stateParams', '$location', 'Authentication', 'Tests',
-	function($scope, $stateParams, $location, Authentication, Tests) {
+angular.module('tests').controller('TestsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'Tests', 'Prescriptions', 'Devices', 'Cartridges',
+	function($scope, $stateParams, $location, $http, Authentication, Tests, Prescriptions, Devices, Cartridges) {
 		$scope.authentication = Authentication;
 
 		$scope.showResultsOnOpen = true;
+
+		$scope.setupRun = function() {
+			$scope.prescriptions = Prescriptions.query();
+			$scope.devices = Devices.query();
+			$scope.cartridges = Cartridges.query();
+		};
+
+		$scope.activePrescription = -1;
+		$scope.clickPrescription = function(indx) {
+			$scope.activePrescription = indx;
+		};
+		$scope.activeAssay = -1;
+		$scope.clickAssay = function(indx) {
+			$scope.activeAssay = indx;
+		};
+		$scope.deviceInitialized = false;
+		$scope.activeDevice = -1;
+		$scope.clickDevice = function(indx) {
+			$scope.activeDevice = indx;
+		};
+		$scope.activeCartridge = -1;
+		$scope.clickCartridge = function(indx) {
+			$scope.activeCartridge = indx;
+		};
+
+		$scope.initAlerts = [];
+		$scope.closeInitAlert = function(index) {
+      $scope.initAlerts.splice(index, 1);
+    };
+		$scope.initializeDevice = function() {
+			if ($scope.activeDevice < 0) {
+				$scope.initAlerts.push({type: 'danger', msg: 'Please select a device to initialize'});
+				return;
+			}
+			if (!$scope.devices[$scope.activeDevice]) {
+				$scope.initAlerts.push({type: 'danger', msg: 'Unknown device'});
+				return;
+			}
+			$http.post('/devices/initialize', {
+					device: $scope.devices[$scope.activeDevice]
+				}).
+				success(function(data, status, headers, config) {
+					$scope.deviceInitialized = true;
+					$scope.initAlerts.push({type: 'info', msg: data.msg});
+			  }).
+			  error(function(data, status, headers, config) {
+					$scope.deviceInitialized = false;
+					$scope.initAlerts.push({type: 'danger', msg: data.msg});
+			  });
+			};
+
+		$scope.runAlerts = [];
+		$scope.closeRunAlert = function(index) {
+      $scope.runAlerts.splice(index, 1);
+    };
+		$scope.beginTest = function() {
+			if ($scope.activePrescription < 0 || $scope.activeAssay < 0) {
+				$scope.runAlerts.push({type: 'danger', msg: 'Please select an assay for testing'});
+				return;
+			}
+			if ($scope.activeDevice < 0) {
+				$scope.runAlerts.push({type: 'danger', msg: 'Please select a device for testing'});
+				return;
+			}
+			if ($scope.activeCartridge < 0) {
+				$scope.runAlerts.push({type: 'danger', msg: 'Please select a cartridge for testing'});
+				return;
+			}
+			if (!$scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]) {
+				$scope.runAlerts.push({type: 'danger', msg: 'Unknown assay'});
+				return;
+			}
+			if (!$scope.devices[$scope.activeDevice]) {
+				$scope.runAlerts.push({type: 'danger', msg: 'Unknown device'});
+				return;
+			}
+			if (!$scope.cartridges[$scope.activeCartridge]) {
+				$scope.runAlerts.push({type: 'danger', msg: 'Unknown cartridge'});
+				return;
+			}
+
+			$http.post('/tests/begin', {
+					assay: $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay],
+					device: $scope.devices[$scope.activeDevice],
+					cartridge: $scope.cartridges[$scope.activeCartridge]
+				}).
+				success(function(data, status, headers, config) {
+					$scope.runAlerts.push({type: 'info', msg: data.msg});
+			  }).
+			  error(function(data, status, headers, config) {
+					$scope.runAlerts.push({type: 'danger', msg: data.msg});
+			  });
+		};
 
 		// Create new Test
 		$scope.create = function() {

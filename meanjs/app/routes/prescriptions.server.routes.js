@@ -9,6 +9,9 @@ module.exports = function(app) {
 		.get(prescriptions.list)
 		.post(users.requiresLogin, prescriptions.create);
 
+	app.route('/prescriptions/create')
+		.all(prescriptions.create);
+
 	app.route('/prescriptions/:prescriptionId')
 		.get(prescriptions.read)
 		.put(users.requiresLogin, prescriptions.hasAuthorization, prescriptions.update)

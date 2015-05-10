@@ -31,14 +31,18 @@ var PrescriptionSchema = new Schema({
 	patientDateOfBirth: {
 		type: Date
 	},
-	_assays: {
-		type: Schema.Types.ObjectId,
-		ref: 'Assay'
-	},
-	_tests: {
-		type: Schema.Types.ObjectId,
-		ref: 'Test'
-	},
+	_assays: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Assay'
+		}
+	],
+	_tests: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Test'
+		}
+	],
 	created: {
 		type: Date,
 		default: Date.now

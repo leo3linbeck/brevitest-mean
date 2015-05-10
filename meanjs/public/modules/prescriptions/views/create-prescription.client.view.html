@@ -78,11 +78,7 @@
                   </div>
                   <div class="panel-body">
                     <div class="list-group">
-                      <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                        <div class="btn-group" role="group">
-                          <button type="button" ng_click="prescribeAssay('{{assay._id}}')" class="list-group-item btn btn-default" ng-repeat="assay in assays">{{assay.name}}</a>
-                        </div>
-                      </div>
+                      <button type="button" ng_click="prescribeAssay('{{assay._id}}')" class="list-group-item btn btn-default btn-block" ng-repeat="assay in assays">{{assay.name}}</a>
                     </div>
                   </div>
                 </div>
@@ -94,11 +90,7 @@
                   </div>
                   <div class="panel-body">
                     <div class="list-group">
-                      <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                        <div class="btn-group" role="group">
-                          <button type="button" ng_click="removePrescribedAssay('{{presAssay._id}}')" class="list-group-item btn btn-default" ng-repeat="presAssay in prescriptionAssays">{{presAssay.name}}</a>
-                        </div>
-                      </div>
+                      <button type="button" ng_click="removePrescribedAssay('{{presAssay._id}}')" class="list-group-item btn btn-default btn-block" ng-repeat="presAssay in prescriptionAssays">{{presAssay.name}}</a>
                     </div>
                   </div>
                 </div>

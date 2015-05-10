@@ -34,6 +34,10 @@ var TestSchema = new Schema({
 		type: Schema.ObjectId,
 		ref: 'Assay'
 	},
+	_device: {
+		type: Schema.ObjectId,
+		ref: 'Device'
+	},
 	_cartridge: {
 		type: Schema.ObjectId,
 		ref: 'Cartridge'

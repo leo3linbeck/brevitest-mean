@@ -10,7 +10,6 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 		$scope.openedPres = false;
 		$scope.openedDOB = false;
 
-		$scope.assays = Assays.query();
 		$scope.prescriptionAssays = [];
 
 		$scope.openDatepicker = function($event, dateField) {
@@ -106,10 +105,11 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 		// Update existing Prescription
 		$scope.update = function() {
 			var prescription = $scope.prescription;
-			prescription._assays = _.map($scope.prescriptionAssays, function(e) {return {_id: e._id};});
-
+			prescription._assays = _.pluck($scope.prescriptionAssays, '_id');
+			console.log(prescription);
 			prescription.$update(function() {
 				$location.path('prescriptions/' + prescription._id);
+				console.log(prescription);
 			}, function(errorResponse) {
 				$scope.error = errorResponse.data.message;
 			});
@@ -125,7 +125,13 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 			$scope.prescription = Prescriptions.get({
 				prescriptionId: $stateParams.prescriptionId
 			}, function() {
-				$scope.prescriptionAssays = $scope.prescription._assays && $scope.prescription._assays.length ? $scope.prescription._assays : $scope.prescriptionAssays;
+				$scope.assays = Assays.query(function() {
+					if ($scope.prescription._assays && $scope.prescription._assays.length) {
+						$scope.prescription._assays.forEach(function(e) {
+							$scope.prescribeAssay(e._id);
+						});
+					}
+				});
 			});
 		};
 	}

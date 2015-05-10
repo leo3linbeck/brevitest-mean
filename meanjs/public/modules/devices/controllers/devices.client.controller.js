@@ -21,9 +21,6 @@ angular.module('devices').controller('DevicesController', ['$scope', '$statePara
 		$scope.openedReg = false;
 		$scope.minRegDate = $scope.manufacturedOn;
 
-		$scope.deviceModels = DeviceModels.query();
-		$scope.sparks = Sparks.query();
-
 		$scope.setRegMinDate = function() {
 			$scope.minRegDate = $scope.manufacturedOn;
 		};
@@ -125,6 +122,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$statePara
 			$scope.device = Devices.get({
 				deviceId: $stateParams.deviceId
 			}, function() {
+				$scope.deviceModels = $scope.deviceModels || DeviceModels.query();
+				$scope.sparks = $scope.sparks || Sparks.query();
 				$scope.online = $scope.device.online;
 				$scope.setOnlineButtonText();
 				$scope.deviceModel = $scope.device._deviceModel ? $scope.device._deviceModel : {};

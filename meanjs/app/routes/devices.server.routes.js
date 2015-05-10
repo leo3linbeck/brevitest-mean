@@ -9,6 +9,9 @@ module.exports = function(app) {
 		.get(devices.list)
 		.post(users.requiresLogin, devices.create);
 
+	app.route('/devices/initialize')
+		.post(devices.initialize);
+
 	app.route('/devices/:deviceId')
 		.get(devices.read)
 		.put(users.requiresLogin, devices.hasAuthorization, devices.update)

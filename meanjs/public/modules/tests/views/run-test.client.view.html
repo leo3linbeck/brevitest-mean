@@ -1,57 +1,63 @@
 <section data-ng-controller="TestsController" data-ng-init="setupRun()">
-    <div class="page-header">
-        <h1>Run Tests</h1>
-    </div>
-    <div class="col-md-4">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">Prescriptions</h3>
-        </div>
-        <div class="panel-body">
-          <accordion close-others="true">
-        		<accordion-group ng-repeat="prescription in prescriptions" ng-click="clickPrescription($index)">
-              <accordion-heading>
-                {{prescription.name}} <i class="glyphicon" ng-class="{'glyphicon-ok': $index === activePrescription}"></i>
-              </accordion-heading>
-              <p>Prescribed on {{prescription.prescribedOn | date: "medium"}}</p>
-              <p>{{prescription.comments}}</p>
-              <p><b>Assays:</b></p>
-              <div class="list-group">
-                <a href="" ng-repeat="assay in prescription._assays" ng_click="clickAssay($index)" class="list-group-item {{activeAssay === $index ? 'active' : ''}}">{{assay.name}}</a>
-              </div>
-        		</accordion-group>
-          </accordion>
-        </div>
+  <div class="page-header">
+    <h1>Run Tests</h1>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Devices</h3>
       </div>
-    </div>
-    <div class="col-md-4">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">Devices</h3>
+      <div class="panel-body">
+        <div class="list-group">
+          <a href="" ng-repeat="device in devices" ng_click="clickDevice($index)" class="list-group-item {{activeDevice === $index ? 'active' : ''}}">{{device.name}}</a>
         </div>
-        <div class="panel-body">
-          <div class="list-group">
-            <a href="" ng-repeat="device in devices" ng_click="clickDevice($index)" class="list-group-item {{activeDevice === $index ? 'active' : ''}}">{{device.name}}</a>
-          </div>
+        <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
           <button type="button" ng-click="initializeDevice()" class="btn btn-success btn-block">Initialize Device</button>
-          <br/>
-          <alert ng-repeat="alert in initAlerts" type="{{alert.type}}" close="closeInitAlert($index)">{{alert.msg}}</alert>
         </div>
+        <br/><br/>
+        <alert ng-repeat="alert in initAlerts" type="{{alert.type}}" close="closeInitAlert($index)">{{alert.msg}}</alert>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="panel panel-default" ng-show="deviceInitialized">
-        <div class="panel-heading">
-          <h3 class="panel-title">Cartridges</h3>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default" ng-show="deviceInitialized">
+      <div class="panel-heading">
+        <h3 class="panel-title">Prescriptions</h3>
+      </div>
+      <div class="panel-body">
+        <accordion close-others="true">
+          <accordion-group ng-repeat="prescription in prescriptions" ng-click="clickPrescription($index)">
+            <accordion-heading>
+              {{prescription.name}} <i class="glyphicon" ng-class="{'glyphicon-ok': $index === activePrescription}"></i>
+            </accordion-heading>
+            <p>Prescribed on {{prescription.prescribedOn | date: "medium"}}</p>
+            <p>{{prescription.comments}}</p>
+            <p><b>Assays:</b></p>
+            <div class="list-group">
+              <a href="" ng-repeat="assay in prescription._assays" ng_click="clickAssay($index)" class="list-group-item {{activeAssay === $index ? 'active' : ''}}">{{assay.name}}</a>
+            </div>
+          </accordion-group>
+        </accordion>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default" ng-show="deviceInitialized && activeAssay >= 0">
+      <div class="panel-heading">
+        <h3 class="panel-title">Cartridges
+          <button type="button" class="btn btn-xs btn-default pull-right" ng-click="scanCartridge()">Scan</button>
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="list-group">
+          <a href="" ng-repeat="cartridge in cartridges" ng_click="clickCartridge($index)" class="list-group-item {{activeCartridge === $index ? 'active' : ''}}">{{cartridge._id | uppercase}}</a>
         </div>
-        <div class="panel-body">
-          <div class="list-group">
-            <a href="" ng-repeat="cartridge in cartridges" ng_click="clickCartridge($index)" class="list-group-item {{activeCartridge === $index ? 'active' : ''}}">{{cartridge._id | uppercase}}</a>
-          </div>
+        <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
           <button type="button" ng-click="beginTest()" class="btn btn-success btn-block">Run Test</button>
-          <br/>
-          <alert ng-repeat="alert in runAlerts" type="{{alert.type}}" close="closeRunAlert($index)">{{alert.msg}}</alert>
         </div>
+        <br/><br/>
+        <alert ng-repeat="alert in runAlerts" type="{{alert.type}}" close="closeRunAlert($index)">{{alert.msg}}</alert>
       </div>
     </div>
+  </div>
 </section>

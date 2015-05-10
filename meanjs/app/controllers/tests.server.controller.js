@@ -10,19 +10,16 @@ var mongoose = require('mongoose'),
   Device = mongoose.model('Device'),
   Cartridge = mongoose.model('Cartridge'),
   sparkcore = require('spark'),
+  Q = require('q'),
   _ = require('lodash');
 
 exports.run = function(req, res) {
-  var assay = Assay.findById(req.body.assay._id, 'name');
-  var device = Device.findById(req.body.device._id, 'name');
-  var cartridge = Cartridge.findById(req.body.cartridge._id);
-
   var test = new Test();
   test.user = req.user;
-  test._assay = assay._id;
-  test._device = device._id;
-  test._cartridge = cartridge._id;
-  test.name = req.body.name ? req.body.name : ('Assay ' + assay.name + ' on device ' + device.name + 'using cartridge ' + cartridge._id);
+  test._assay = req.body.assay._id;
+  test._device = req.body.device._id;
+  test._cartridge = req.body.cartridge._id;
+  test.name = req.body.name ? req.body.name : ('Assay ' + req.body.assay._id + ' on device ' + req.body.device._id + 'using cartridge ' + req.body.cartridge._id);
   test.description = req.body.description;
   test.status = 'Starting';
   test.percentComplete = 0;
@@ -39,8 +36,28 @@ exports.run = function(req, res) {
 };
 
 exports.begin = function(req, res) {
-  var test = new Test(req.body);
+  var test = new Test();
   test.user = req.user;
+  test._assay = req.body.assayId;
+  test._device = req.body.deviceId;
+  test._cartridge = req.body.cartridgeId;
+  test.name = req.body.name ? req.body.name : ('Assay ' + req.body.assayId + ' on device ' + req.body.deviceId + 'using cartridge ' + req.body.cartridgeId);
+  test.description = req.body.description;
+  test.status = 'Starting';
+  test.percentComplete = 0;
+
+  Q.fcall(function(t) {
+    return t.save();
+  }, test)
+  .then(function(test) {
+    
+  })
+  .fail(function(err) {
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
+    });
+  })
+  .done();
 
   // add spark call here
 

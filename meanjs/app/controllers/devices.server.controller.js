@@ -7,15 +7,28 @@ var mongoose = require('mongoose'),
   errorHandler = require('./errors.server.controller'),
   Device = mongoose.model('Device'),
   sparkcore = require('spark'),
+  Q = require('q'),
   _ = require('lodash');
 
 exports.initialize = function(req, res) {
-  var device = new Device(req.body);
-  device.user = req.user;
-
-  // add spark call here
-
-  res.jsonp({msg: 'Initialization begun', device: device});
+  Q.fcall(function(id) {
+      return Device.findById(id);
+    }, req.body.device._id)
+    .then(function(device) {
+      return sparkcore.getDevice(device.sparkID);
+    })
+    .then(function(sparkDevice) {
+      return sparkDevice.callFunction('runcommand', 'initialize_device');
+    })
+    .then(function(result) {
+      res.jsonp({result: result});
+    })
+    .fail(function(err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    })
+    .done();
 };
 
 /**

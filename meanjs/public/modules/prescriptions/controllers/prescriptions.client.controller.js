@@ -11,6 +11,7 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 		$scope.openedDOB = false;
 
 		$scope.prescriptionAssays = [];
+		$scope.assays = Assays.query();
 
 		$scope.openDatepicker = function($event, dateField) {
 	    $event.preventDefault();
@@ -125,13 +126,11 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 			$scope.prescription = Prescriptions.get({
 				prescriptionId: $stateParams.prescriptionId
 			}, function() {
-				$scope.assays = Assays.query(function() {
 					if ($scope.prescription._assays && $scope.prescription._assays.length) {
 						$scope.prescription._assays.forEach(function(e) {
 							$scope.prescribeAssay(e._id);
 						});
 					}
-				});
 			});
 		};
 	}

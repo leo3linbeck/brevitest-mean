@@ -31,6 +31,11 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
 			$scope.activeCartridge = indx;
 		};
 
+		$scope.scanCartridge = function() {
+			// replace next line with scanning code
+			$scope.activeCartridge = $scope.activeCartridge;
+		};
+
 		$scope.initAlerts = [];
 		$scope.closeInitAlert = function(index) {
       $scope.initAlerts.splice(index, 1);
@@ -49,13 +54,15 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
 				}).
 				success(function(data, status, headers, config) {
 					$scope.deviceInitialized = true;
-					$scope.initAlerts.push({type: 'info', msg: data.msg});
+					$scope.initAlerts.push({type: 'success', msg: data.result});
 			  }).
-			  error(function(data, status, headers, config) {
+			  error(function(err, status, headers, config) {
 					$scope.deviceInitialized = false;
-					$scope.initAlerts.push({type: 'danger', msg: data.msg});
+					$scope.initAlerts.push({type: 'danger', msg: err});
 			  });
-			};
+
+			$scope.initAlerts.push({type: 'info', msg: 'Initialization started'});
+		};
 
 		$scope.runAlerts = [];
 		$scope.closeRunAlert = function(index) {
@@ -88,16 +95,18 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
 			}
 
 			$http.post('/tests/begin', {
-					assay: $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay],
-					device: $scope.devices[$scope.activeDevice],
-					cartridge: $scope.cartridges[$scope.activeCartridge]
+					assayId: $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay],
+					deviceId: $scope.devices[$scope.activeDevice],
+					cartridgeId: $scope.cartridges[$scope.activeCartridge]
 				}).
 				success(function(data, status, headers, config) {
-					$scope.runAlerts.push({type: 'info', msg: data.msg});
+					$scope.runAlerts.push({type: 'success', msg: data.msg});
 			  }).
-			  error(function(data, status, headers, config) {
-					$scope.runAlerts.push({type: 'danger', msg: data.msg});
+			  error(function(err, status, headers, config) {
+					$scope.runAlerts.push({type: 'danger', msg: err});
 			  });
+
+			$scope.initAlerts.push({type: 'info', msg: 'Test started'});
 		};
 
 		// Create new Test

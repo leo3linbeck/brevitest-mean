@@ -14,25 +14,7 @@ var mongoose = require('mongoose'),
   _ = require('lodash');
 
 exports.run = function(req, res) {
-  var test = new Test();
-  test.user = req.user;
-  test._assay = req.body.assay._id;
-  test._device = req.body.device._id;
-  test._cartridge = req.body.cartridge._id;
-  test.name = req.body.name ? req.body.name : ('Assay ' + req.body.assay._id + ' on device ' + req.body.device._id + 'using cartridge ' + req.body.cartridge._id);
-  test.description = req.body.description;
-  test.status = 'Starting';
-  test.percentComplete = 0;
-
-  test.save(function(err) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.jsonp(test);
-    }
-  });
+  res.send();
 };
 
 exports.begin = function(req, res) {
@@ -50,7 +32,7 @@ exports.begin = function(req, res) {
     return t.save();
   }, test)
   .then(function(test) {
-    
+
   })
   .fail(function(err) {
     return res.status(400).send({

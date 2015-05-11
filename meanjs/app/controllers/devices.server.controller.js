@@ -10,22 +10,41 @@ var mongoose = require('mongoose'),
   Q = require('q'),
   _ = require('lodash');
 
+function errorCallback(err) {
+  return err;
+}
+
 exports.initialize = function(req, res) {
+  var device, sparkID;
+
+  console.log('device.initialize');
   Q.fcall(function(id) {
-      return Device.findById(id);
+      console.log(id);
+      return new Q(Device.findById(id).populate('_spark', 'sparkID').exec());
     }, req.body.device._id)
-    .then(function(device) {
-      return sparkcore.getDevice(device.sparkID);
+    .then(function(d) {
+      device = d;
+      sparkID = device._spark.sparkID;
+      console.log(device, sparkID);
+      return new Q(sparkcore.login({ username: 'leo3@linbeck.com', password: '2january88' }));
+    })
+    .then(function() {
+      console.log(sparkID);
+      return new Q(sparkcore.getDevice(sparkID));
     })
     .then(function(sparkDevice) {
+      console.log(sparkDevice);
       return sparkDevice.callFunction('runcommand', 'initialize_device');
     })
     .then(function(result) {
-      res.jsonp({result: result});
+      res.jsonp({
+        result: result
+      });
     })
-    .fail(function(err) {
+    .fail(function(error) {
+      console.error(error);
       return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
+        message: error.message
       });
     })
     .done();

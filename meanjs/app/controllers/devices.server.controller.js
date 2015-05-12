@@ -20,25 +20,27 @@ exports.initialize = function(req, res) {
   console.log('device.initialize');
   Q.fcall(function(id) {
       step = 'Device.findById';
-      console.log(id);
       return new Q(Device.findById(id).populate('_spark', 'sparkID').exec());
     }, req.body.device._id)
     .then(function(d) {
       step = 'Spark login';
       device = d;
       sparkID = device._spark.sparkID;
-      console.log(device, sparkID);
       return new Q(sparkcore.login({ username: 'leo3@linbeck.com', password: '2january88' }));
     })
     .then(function() {
-      step = 'Spark getDevice';
-      console.log(sparkID);
-      return new Q(sparkcore.getDevice(sparkID));
+      console.log('listDevices', sparkID);
+      step = 'Spark listDevices';
+      return new Q(sparkcore.listDevices());
     })
-    .then(function(sparkDevice) {
+    .then(function(sparkDevices) {
+      var sparkDevice = _.findWhere(sparkDevices, {id: sparkID});
+      console.log('callFunction', sparkDevices, sparkDevice);
       step = 'Spark callFunction';
-      console.log(sparkDevice);
-      return sparkDevice.callFunction('runcommand', 'initialize_device');
+      if (!sparkDevice.attributes.connected) {
+        throw new Error(device.name + ' is not online.');
+      }
+      return new Q(sparkDevice.callFunction('runcommand', 'initialize_device'));
     })
     .then(function(result) {
       step = 'Return response';

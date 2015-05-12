@@ -2,7 +2,14 @@
 	<div class="page-header">
 		<h1 data-ng-bind="spark.name"></h1>
 	</div>
-	<h3>Spark ID: {{spark.sparkID}}</h3>
+	<div>
+		<ul class="list-group">
+			<li class="list-group-item"><b>ID: </b>{{spark.sparkID}}</li>
+			<li class="list-group-item"><b>Connected: </b>{{spark.connected | uppercase}}</li>
+			<li class="list-group-item"><b>Last Heard: </b>{{device.lastHeard}}</li>
+			<li class="list-group-item"><b>Last IP Address: </b>{{device.lastIpAddress}}</li>
+		</ul>
+	</div>
 	<div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == spark.user._id))">
 		<a class="btn btn-primary" href="/#!/sparks/{{spark._id}}/edit">
 			<i class="glyphicon glyphicon-edit"></i>

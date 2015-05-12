@@ -54,7 +54,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 					$scope.initAlerts.push({type: 'success', msg: data.result});
 			  }).
 			  error(function(err, status, headers, config) {
-					console.log(err, status, headers(), config);
+					console.log(err);
 					$scope.deviceInitialized = false;
 					$scope.initAlerts.push({type: 'danger', msg: err.message});
 			  });

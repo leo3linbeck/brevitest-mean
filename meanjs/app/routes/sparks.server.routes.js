@@ -10,7 +10,7 @@ module.exports = function(app) {
 		.post(users.requiresLogin, sparks.create);
 
 	app.route('/sparks/refresh')
-		.all(sparks.refresh);
+		.get(sparks.refresh);
 
 	app.route('/sparks/:sparkId')
 		.get(sparks.read)

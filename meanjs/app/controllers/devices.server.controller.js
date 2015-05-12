@@ -15,28 +15,33 @@ function errorCallback(err) {
 }
 
 exports.initialize = function(req, res) {
-  var device, sparkID;
+  var device, sparkID, step;
 
   console.log('device.initialize');
   Q.fcall(function(id) {
+      step = 'Device.findById';
       console.log(id);
       return new Q(Device.findById(id).populate('_spark', 'sparkID').exec());
     }, req.body.device._id)
     .then(function(d) {
+      step = 'Spark login';
       device = d;
       sparkID = device._spark.sparkID;
       console.log(device, sparkID);
       return new Q(sparkcore.login({ username: 'leo3@linbeck.com', password: '2january88' }));
     })
     .then(function() {
+      step = 'Spark getDevice';
       console.log(sparkID);
       return new Q(sparkcore.getDevice(sparkID));
     })
     .then(function(sparkDevice) {
+      step = 'Spark callFunction';
       console.log(sparkDevice);
       return sparkDevice.callFunction('runcommand', 'initialize_device');
     })
     .then(function(result) {
+      step = 'Return response';
       res.jsonp({
         result: result
       });
@@ -44,7 +49,8 @@ exports.initialize = function(req, res) {
     .fail(function(error) {
       console.error(error);
       return res.status(400).send({
-        message: error.message
+        message: error.message,
+        step: step
       });
     })
     .done();

@@ -11,7 +11,7 @@ angular.module('sparks').config(['$stateProvider',
 		}).
 		state('refreshSpark', {
 			url: '/sparks/refresh',
-			templateUrl: 'modules/sparks/views/list-sparks.client.view.html'
+			templateUrl: 'modules/sparks/views/refresh-sparks.client.view.html'
 		}).
 		state('createSpark', {
 			url: '/sparks/create',

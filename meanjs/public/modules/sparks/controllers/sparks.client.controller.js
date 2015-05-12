@@ -1,9 +1,14 @@
 'use strict';
 
 // Sparks controller
-angular.module('sparks').controller('SparksController', ['$scope', '$stateParams', '$location', 'Authentication', 'Sparks',
-  function($scope, $stateParams, $location, Authentication, Sparks) {
+angular.module('sparks').controller('SparksController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Sparks',
+  function($scope, $http, $stateParams, $location, Authentication, Sparks) {
       $scope.authentication = Authentication;
+
+      $scope.alerts = [];
+  		$scope.closeAlert = function(index) {
+        $scope.alerts.splice(index, 1);
+      };
 
       // Create new Spark
       $scope.create = function() { // Create new Spark object
@@ -55,6 +60,22 @@ angular.module('sparks').controller('SparksController', ['$scope', '$stateParams
           function(errorResponse) {
             $scope.error = errorResponse.data.message;
           });
+      };
+
+      // Refresh a list of Sparks
+      $scope.refresh = function() {
+        $http.get('/sparks/refresh').
+  				success(function(data, status, headers, config) {
+  					$scope.sparks = data;
+  					$scope.alerts.push({type: 'success', msg: 'Spark list refreshed'});
+  			  }).
+  			  error(function(err, status, headers, config) {
+  					console.log(err, status, headers(), config);
+  					$scope.deviceInitialized = false;
+  					$scope.alerts.push({type: 'danger', msg: err.message});
+  			  });
+
+  			$scope.alerts.push({type: 'info', msg: 'Spark refresh begun'});
       };
 
       // Find a list of Sparks

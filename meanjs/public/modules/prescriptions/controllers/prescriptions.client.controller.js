@@ -66,7 +66,7 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 				patientNumber: this.patientNumber,
 				patientGender: this.patientGender,
 				patientDateOfBirth: this.patientDateOfBirth,
-				_assays: _.map(this.prescriptionAssays, function(e) {return {_id: e._id};})
+				_assays: _.pluck(this.prescriptionAssays, '_id')
 			});
 
 			// Redirect after save
@@ -81,6 +81,7 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 				$scope.patientGender = '';
 				$scope.patientDateOfBirth = '';
 				$scope.prescriptionAssays = [];
+				$scope.assays = Assays.query();
 			}, function(errorResponse) {
 				$scope.error = errorResponse.data.message;
 			});

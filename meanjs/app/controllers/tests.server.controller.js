@@ -17,6 +17,31 @@ exports.run = function(req, res) {
   res.send();
 };
 
+var brevitestCommand = {
+	'write_serial_number': '00',
+	'initialize_device': '01',
+	'run_test': '02',
+	'sensor_data': '03',
+	'change_param': '04',
+	'reset_params': '05',
+	'erase_archive': '06',
+	'dump_archive': '07',
+	'archive_size': '08',
+	'firmware_version': '09',
+	'cancel_process': '10',
+	'receive_BCODE': '11',
+	'device_ready': '12',
+	'calibrate': '13'
+};
+
+var brevitestRequest = {
+	'serial_number': '00',
+	'test_record': '01',
+	'test_record_by_uuid': '02',
+	'all_params': '03',
+	'one_param': '04'
+};
+
 var bcmds = [
   {
     num: '0',
@@ -116,6 +141,101 @@ var bcmds = [
   }
 ];
 
+function instruction_time(code, param) {
+  var p, d = 0;
+
+  switch(code) {
+    case 'Delay': // delay
+    case 'Solenoid On': // solenoid on
+      d = parseInt(param[0]);
+      break;
+    case 'Move': // move
+      d = Math.floor(parseInt(param[0]) * parseInt(param[1]) / 1000);
+      break;
+    case 'Blink Device LED': // blink device LED
+      d = 2 * Math.floor(parseInt(param[0]) * parseInt(param[1]));
+      break;
+    case 'Read Sensor': // read sensor
+      d = Math.floor(parseInt(param[0]) * parseInt(param[1]));
+      break;
+    case 'Finish Test': // finish
+      d = 16800;
+      break;
+  }
+
+  return d;
+}
+
+function get_bcode_object(bcode) {
+  return ({ c: bcode.command, p: bcode.params && bcode.params.toString().indexOf(',') !== -1 ? bcode.params.toString().split(',') : bcode.params });
+}
+
+function calculate_BCODE_time(bcode_array) {
+  var a, b, i, level, t;
+  var duration = 0;
+
+  for (i = 0; i < bcode_array.length; i += 1) {
+    if (bcode_array[i]) {
+      b = get_bcode_object(bcode_array[i]);
+      switch(b.c) {
+        case 'Finish Test': // finished
+        case 'Repeat End': // end repeat
+          return (duration + instruction_time(b.c, b.p));
+        case '':
+          break;
+        case 'Repeat Begin': // start repeat
+          a = [];
+          level = 1;
+          do {
+            i += 1;
+            if (i === bcode_array.length) {
+              return -1;
+            }
+            t = get_bcode_object(bcode_array[i]);
+            if (t.c === 'Repeat Begin') {
+              level += 1;
+            }
+            if (t.c === 'Repeat End') {
+              level -= 1;
+            }
+            a.push(bcode_array[i]);
+          } while(!(t.c === 'Repeat End' && level === 0));
+
+          duration += calculate_BCODE_time(a) * parseInt(b.p[0]);
+          break;
+        default:
+          duration += instruction_time(b.c, b.p);
+      }
+    }
+  }
+
+  return -1;
+}
+
+function get_BCODE_duration(a) {
+  var duration = 0;
+  var repLevel = 0;
+
+  if (a && a.length) {
+    a.forEach(function(e) {
+      if (e.command === 'Repeat Begin') {
+        repLevel += 1;
+      }
+      if (e.command === 'Repeat End') {
+        repLevel -= 1;
+      }
+    });
+
+    if (repLevel !== 0) {
+      return -1;
+    }
+
+    duration = calculate_BCODE_time(a);
+  }
+
+  return (duration / 1000);
+}
+
 function zeropad(num, numZeros) {
   var an = Math.abs(num);
   var digitCount = (num === 0 ? 1 : 1 + Math.floor(Math.log(an) / Math.LN10));
@@ -137,21 +257,23 @@ function bObjectToCodeString(bco) {
 }
 
 function send_BCODE_to_spark(sparkDevice, cartridgeId, bco) {
-  var end, i, len, max_payload, num, packets, payload, result, start;
+  var arg, end, i, len, max_payload, num, packets, payload, result, start;
   var promises = [];
   var bstr = bObjectToCodeString(bco);
 
   max_payload = 56 - cartridgeId.length; // max string = 63 - length(command code) - length(num) - length(len) - length(cartridgeId)
   packets = Math.ceil(bstr.length / max_payload);
 
-  promises.push(new Q(sparkDevice.callFunction(sparkDevice.id, 'runcommand', 'receive_BCODE', '000' + zeropad(packets, 2) + cartridgeId)));
+  arg = brevitestCommand.receive_BCODE + '000' + zeropad(packets, 2) + cartridgeId;
+  promises.push(new Q(sparkDevice.callFunction('runcommand', arg)));
   for (i = 1; i <= packets; i += 1) {
     start = (i - 1) * max_payload;
     end = start + max_payload;
     payload = bstr.substring(start, end);
     len = zeropad(payload.length, 2);
     num = zeropad(i, 3);
-    promises.push(new Q(sparkDevice.callFunction(sparkDevice.id, 'runcommand', 'receive_BCODE', num + len + cartridgeId + payload)));
+    arg = brevitestCommand.receive_BCODE + num + len + cartridgeId + payload;
+    promises.push(new Q(sparkDevice.callFunction('runcommand', arg)));
   }
 
   return promises;
@@ -167,7 +289,7 @@ exports.begin = function(req, res) {
       }, {
         status: 'Test in progress'
       }).populate('_spark', 'sparkID').exec());
-    }, req.body.device._id)
+    }, req.body.deviceID)
     .then(function(d) {
       step = 'Spark login';
       device = d;
@@ -184,32 +306,37 @@ exports.begin = function(req, res) {
       return new Q(sparkcore.listDevices());
     })
     .then(function(sparkDevices) {
-      step = 'Initialize device';
+      step = 'Check whether device is online';
       console.log(step, sparkDevices);
 
-      var sparkDevice = _.findWhere(sparkDevices, {
+      sparkDevice = _.findWhere(sparkDevices, {
         id: sparkID
       });
       if (!sparkDevice.attributes.connected) {
         throw new Error(device.name + ' is not online.');
       }
-      return new Q(sparkDevice.callFunction('runcommand', 'initialize_device'));
     })
     .then(function() {
       step = 'Create test';
 
       var test = new Test();
       test.user = req.user;
-      test._assay = req.body.assayId;
-      test._device = req.body.deviceId;
-      test._cartridge = req.body.cartridgeId;
-      test.name = req.body.name ? req.body.name : ('Assay ' + req.body.assayId + ' on device ' + req.body.deviceId + 'using cartridge ' + req.body.cartridgeId);
+      test._assay = req.body.assayID;
+      test._device = req.body.deviceID;
+      test._cartridge = req.body.cartridgeID;
+      test.name = req.body.name ? req.body.name : ('Assay ' + req.body.assayID + ' on device ' + req.body.deviceID + 'using cartridge ' + req.body.cartridgeID);
       test.description = req.body.description;
       test.status = 'Starting';
       test.percentComplete = 0;
       test.startedOn = new Date();
 
-      return new Q(test.save());
+      test.save(function(err) {
+        if (err) {
+          throw new Error(err);
+        }
+      });
+
+      return test;
     })
     .then(function(t) {
       step = 'Update cartridge';
@@ -231,14 +358,21 @@ exports.begin = function(req, res) {
       step = 'Send BCODE';
       console.log(step);
 
-      var promises = send_BCODE_to_spark(sparkDevice, req.body.cartridgeId, a.BCODE);
-      return promises.all();
+      var promises = send_BCODE_to_spark(sparkDevice, req.body.cartridgeID, a.BCODE);
+      Q.all(promises);
+      return get_BCODE_duration(a.BCODE);
     })
-    .then(function(sparkDevices) {
+    .then(function(duration) {
       step = 'Start test';
-      console.log(step, sparkDevices);
-
-      return new Q(sparkDevice.callFunction('runcommand', 'run_test'));
+      console.log(step, duration);
+      var arg = brevitestCommand.run_test + req.body.cartridgeID + zeropad(Math.round(duration), 4);
+      sparkDevice.callFunction('runcommand', arg, function(err, data) {
+        if(err) {
+          throw new Error(err);
+        } else {
+          console.log(data);
+        }
+      });
     })
     .then(function(result) {
       step = 'Return response';

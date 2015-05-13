@@ -93,9 +93,9 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 			}
 
 			$http.post('/tests/begin', {
-					assayId: $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay],
-					deviceId: $scope.devices[$scope.activeDevice],
-					cartridgeId: $scope.cartridges[$scope.activeCartridge]
+					assayID: $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]._id,
+					deviceID: $scope.devices[$scope.activeDevice]._id,
+					cartridgeID: $scope.cartridges[$scope.activeCartridge]._id
 				}).
 				success(function(data, status, headers, config) {
 					$scope.runAlerts.push({type: 'success', msg: data.msg});

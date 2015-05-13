@@ -7,6 +7,5 @@ angular.module('sparks').run(['Menus',
 		Menus.addMenuItem('topbar', 'Sparks', 'sparks', 'dropdown', '/sparks(/create)?');
 		Menus.addSubMenuItem('topbar', 'sparks', 'List Sparks', 'sparks');
 		Menus.addSubMenuItem('topbar', 'sparks', 'New Spark', 'sparks/create');
-		Menus.addSubMenuItem('topbar', 'sparks', 'Refresh Spark Data', 'sparks/refresh');
 	}
 ]);

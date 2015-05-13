@@ -3,13 +3,45 @@
 var _ = window._;
 
 // Assays controller
-angular.module('assays').controller('AssaysController', ['$scope', '$stateParams', '$location', 'Authentication', 'Assays',
-  function($scope, $stateParams, $location, Authentication, Assays) {
+angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Assays',
+  function($scope, $http, $stateParams, $location, Authentication, Assays) {
     $scope.authentication = Authentication;
 
     $scope.analysis = {};
     $scope.standardCurve = [];
     $scope.BCODE = [];
+
+    $scope.cartridgeInventory = 0;
+    $scope.invAlerts = [];
+    $scope.closeInvAlert = function(index) {
+      $scope.invAlerts.splice(index, 1);
+    };
+
+    $scope.recalcInventory = function() {
+      $http.get('/cartridges/get_inventory/' + $scope.assay._id).
+				success(function(data, status, headers, config) {
+          console.log(data);
+					$scope.cartridgeInventory = data;
+			  }).
+			  error(function(err, status, headers, config) {
+					console.log(err);
+					$scope.invAlerts.push({type: 'danger', msg: err.message});
+			  });
+    };
+
+    $scope.make10Cartridges = function() {
+      console.log('Making 10 cartridges');
+      $http.post('/assays/make10cartridges', {
+          assay: $scope.assay
+				}).
+				success(function(data, status, headers, config) {
+					$scope.cartridgeInventory = data;
+			  }).
+			  error(function(err, status, headers, config) {
+					console.log(err);
+					$scope.invAlerts.push({type: 'danger', msg: err.message});
+			  });
+    };
 
     $scope.alerts = [];
     $scope.closeAlert = function(index) {
@@ -157,7 +189,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
     }
 
     function get_bcode_object(bcode) {
-    	return ({ c: bcode.command, p: bcode.params.split(',') });
+    	return ({ c: bcode.command, p: bcode.params && bcode.params.toString().indexOf(',') !== -1 ? bcode.params.toString().split(',') : bcode.params });
     }
 
     function calculate_BCODE_time(bcode_array) {
@@ -204,8 +236,22 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
 
     function get_BCODE_duration(a) {
     	var duration = 0;
+      var repLevel = 0;
 
     	if (a && a.length) {
+        a.forEach(function(e) {
+          if (e.command === 'Repeat Begin') {
+            repLevel += 1;
+          }
+          if (e.command === 'Repeat End') {
+            repLevel -= 1;
+          }
+        });
+
+        if (repLevel !== 0) {
+          return -1;
+        }
+
     		duration = calculate_BCODE_time(a);
     	}
 
@@ -215,8 +261,9 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
     $scope.activeBCODE = 0;
     $scope.estimatedTime = 0;
 
-    $scope.changeCommandDescription = function() {
+    $scope.changeCommand = function() {
       $scope.commandDescription = _.findWhere($scope.BCODECommands, {name: $scope.command}).description;
+      $scope.params = '';
     };
 
     $scope.moveBCODETop = function() {
@@ -405,6 +452,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
       assay.$save(function(response) {
         $location.path('assays/' + response._id);
 
+        $scope.make10Cartridges(response._id);
+
         // Clear form fields
         $scope.name = '';
         $scope.reference = '';
@@ -470,6 +519,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$stateParams
         }
         $scope.analysis = $scope.assay.analysis;
         $scope.standardCurve = $scope.assay.standardCurve;
+        $scope.recalcInventory();
       });
     };
   }

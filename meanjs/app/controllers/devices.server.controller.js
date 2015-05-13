@@ -20,32 +20,43 @@ exports.initialize = function(req, res) {
   console.log('device.initialize');
   Q.fcall(function(id) {
       step = 'Device.findById';
+      console.log(step, id);
       return new Q(Device.findById(id).populate('_spark', 'sparkID').exec());
     }, req.body.device._id)
     .then(function(d) {
       step = 'Spark login';
+      console.log(step, d);
       device = d;
       sparkID = device._spark.sparkID;
       return new Q(sparkcore.login({ username: 'leo3@linbeck.com', password: '2january88' }));
     })
     .then(function() {
-      console.log('listDevices', sparkID);
       step = 'Spark listDevices';
+      console.log(step, sparkID);
       return new Q(sparkcore.listDevices());
     })
     .then(function(sparkDevices) {
       var sparkDevice = _.findWhere(sparkDevices, {id: sparkID});
-      console.log('callFunction', sparkDevices, sparkDevice);
       step = 'Spark callFunction';
+      console.log(step, sparkDevice);
       if (!sparkDevice.attributes.connected) {
         throw new Error(device.name + ' is not online.');
       }
-      return new Q(sparkDevice.callFunction('runcommand', 'initialize_device'));
+      return new Q(sparkDevice.callFunction('runcommand', '01'));
     })
     .then(function(result) {
+      var response;
+
       step = 'Return response';
+      console.log(step, result);
+      if (result.return_value === 1) {
+        response = 'Initialization successfully started';
+      }
+      else {
+        throw new Error('Initialization failed to start');
+      }
       res.jsonp({
-        result: result
+        result: response
       });
     })
     .fail(function(error) {

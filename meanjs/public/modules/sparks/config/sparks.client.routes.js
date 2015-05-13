@@ -9,10 +9,6 @@ angular.module('sparks').config(['$stateProvider',
 			url: '/sparks',
 			templateUrl: 'modules/sparks/views/list-sparks.client.view.html'
 		}).
-		state('refreshSpark', {
-			url: '/sparks/refresh',
-			templateUrl: 'modules/sparks/views/refresh-sparks.client.view.html'
-		}).
 		state('createSpark', {
 			url: '/sparks/create',
 			templateUrl: 'modules/sparks/views/create-spark.client.view.html'

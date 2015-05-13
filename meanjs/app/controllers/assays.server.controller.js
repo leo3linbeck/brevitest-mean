@@ -6,7 +6,38 @@
 var mongoose = require('mongoose'),
 	errorHandler = require('./errors.server.controller'),
 	Assay = mongoose.model('Assay'),
+	Cartridge = mongoose.model('Cartridge'),
+	Q = require('q'),
 	_ = require('lodash');
+
+exports.make10cartridges = function(req, res) {
+	var i, promises = [];
+	var assay = req.body.assay;
+
+	for (i = 0; i < 10; i += 1) {
+		var cartridge = new Cartridge ({
+			name: assay.name + Math.random(),
+			_assay: assay._id,
+			registeredOn: new Date(),
+			_registeredBy: req.user._id
+		});
+		promises.push(new Q(cartridge.save()));
+	}
+
+	Q.allSettled(promises)
+		.then(function() {
+			return new Q(Cartridge.count({ _assay: assay._id, _test: {$exists: false} }).exec());
+		})
+		.then(function(count) {
+			res.jsonp(count);
+		})
+		.fail(function(err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		})
+		.done();
+};
 
 /**
  * Create a Assay
@@ -73,7 +104,7 @@ exports.delete = function(req, res) {
  * List of Assays
  */
 exports.list = function(req, res) {
-	Assay.find().sort('-created').populate('user', 'displayName').exec(function(err, assays) {
+	Assay.find().sort('name').populate('user', 'displayName').exec(function(err, assays) {
 		if (err) {
 			return res.status(400).send({
 				message: errorHandler.getErrorMessage(err)

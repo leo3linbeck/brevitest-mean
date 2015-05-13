@@ -1,19 +1,23 @@
 <section data-ng-controller="SparksController" data-ng-init="find()">
-    <div class="page-header">
-      <h1>Sparks</h1>
-    </div>
-    <div class="list-group">
-        <a data-ng-repeat="spark in sparks" data-ng-href="#!/sparks/{{spark._id}}" class="list-group-item">
-			<small class="list-group-item-text">
-				Posted on
-				<span data-ng-bind="spark.created | date:'medium'"></span>
-				by
-				<span data-ng-bind="spark.user.displayName"></span>
-			</small>
-			<h4 class="list-group-item-heading" data-ng-bind="spark.name"></h4>
-        </a>
-    </div>
-    <div class="alert alert-warning text-center" data-ng-hide="!sparks.$resolved || sparks.length">
-    	No Sparks yet, why don't you <a href="/#!/sparks/create">create one</a>?
-    </div>
+  <div class="page-header">
+    <h1>Sparks
+      <button class="btn btn-warning pull-right glyphicon glyphicon-refresh" ng-click="refresh()"></button>
+    </h1>
+  </div>
+  <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+  <br/>
+  <div class="list-group">
+    <a data-ng-repeat="spark in sparks" data-ng-href="#!/sparks/{{spark._id}}" class="list-group-item">
+      <small class="list-group-item-text">
+        Posted on
+        <span data-ng-bind="spark.created | date:'medium'"></span>
+        by
+        <span data-ng-bind="spark.user.displayName"></span>
+      </small>
+      <span class="badge" ng-class="{'btn btn-success': spark.connected, 'btn btn-default': !spark.connected}"}>{{spark.connected ? 'Online' : 'Offline'}}</span><h4 class="list-group-item-heading" data-ng-bind="spark.name"></h4>
+    </a>
+  </div>
+  <div class="alert alert-warning text-center" data-ng-hide="!sparks.$resolved || sparks.length">
+    No Sparks yet, why don't you <a href="/#!/sparks/create">create one</a>?
+  </div>
 </section>

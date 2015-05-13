@@ -8,6 +8,10 @@ var mongoose = require('mongoose'),
 	Cartridge = mongoose.model('Cartridge'),
 	_ = require('lodash');
 
+exports.get_inventory = function(req, res) {
+	res.jsonp(req.count);
+};
+
 /**
  * Create a Cartridge
  */
@@ -72,7 +76,7 @@ exports.delete = function(req, res) {
 /**
  * List of Cartridges
  */
-exports.list = function(req, res) { 
+exports.list = function(req, res) {
 	Cartridge.find().sort('-created').populate('user', 'displayName').exec(function(err, cartridges) {
 		if (err) {
 			return res.status(400).send({
@@ -87,7 +91,15 @@ exports.list = function(req, res) {
 /**
  * Cartridge middleware
  */
-exports.cartridgeByID = function(req, res, next, id) { 
+exports.cartridgeCountByAssayID = function(req, res, next, id) {
+	Cartridge.count({_assay: id}).exec(function(err, count) {
+		if (err) return next(err);
+		req.count = count ;
+		next();
+	});
+};
+
+exports.cartridgeByID = function(req, res, next, id) {
 	Cartridge.findById(id).populate('user', 'displayName').exec(function(err, cartridge) {
 		if (err) return next(err);
 		if (! cartridge) return next(new Error('Failed to load Cartridge ' + id));

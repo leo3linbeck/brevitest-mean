@@ -73,11 +73,11 @@
             <div class="col-md-6">
               <div class="panel panel-default">
                 <div class="panel-heading">
-                  <h3 class="panel-title">Available Assays</h3>
+                  <h3 class="panel-title">Prescribed Assays</h3>
                 </div>
                 <div class="panel-body">
                   <div class="list-group">
-                    <button type="button" ng_click="prescribeAssay('{{assay._id}}')" class="list-group-item btn btn-default btn-block" ng-repeat="assay in assays">{{assay.name}}</a>
+                    <button type="button" ng_click="removePrescribedAssay('{{presAssay._id}}')" class="list-group-item btn btn-success btn-block" ng-repeat="presAssay in prescriptionAssays">{{presAssay.name}}</a>
                   </div>
                 </div>
               </div>
@@ -85,11 +85,11 @@
             <div class="col-md-6">
               <div class="panel panel-default">
                 <div class="panel-heading">
-                  <h3 class="panel-title">Prescribed Assays</h3>
+                  <h3 class="panel-title">Available Assays</h3>
                 </div>
                 <div class="panel-body">
                   <div class="list-group">
-                    <button type="button" ng_click="removePrescribedAssay('{{presAssay._id}}')" class="list-group-item btn btn-default btn-block" ng-repeat="presAssay in prescriptionAssays">{{presAssay.name}}</a>
+                    <button type="button" ng_click="prescribeAssay('{{assay._id}}')" class="list-group-item btn btn-default btn-block" ng-repeat="assay in assays">{{assay.name}}</a>
                   </div>
                 </div>
               </div>

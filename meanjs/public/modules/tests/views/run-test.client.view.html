@@ -15,7 +15,7 @@
           <button type="button" ng-click="initializeDevice()" class="btn btn-success btn-block">Initialize Device</button>
         </div>
         <br/><br/>
-        <alert ng-repeat="alert in initAlerts" type="{{alert.type}}" close="closeInitAlert($index)">{{alert.msg}}</alert>
+        <alert ng-repeat="initAlert in initAlerts" type="{{initAlert.type}}" close="closeInitAlert($index)">{{initAlert.msg}}</alert>
       </div>
     </div>
   </div>
@@ -56,7 +56,7 @@
           <button type="button" ng-click="beginTest()" class="btn btn-success btn-block">Run Test</button>
         </div>
         <br/><br/>
-        <alert ng-repeat="alert in runAlerts" type="{{alert.type}}" close="closeRunAlert($index)">{{alert.msg}}</alert>
+        <alert ng-repeat="runAlert in runAlerts" type="{{runAlert.type}}" close="closeRunAlert($index)">{{runAlert.msg}}</alert>
       </div>
     </div>
   </div>

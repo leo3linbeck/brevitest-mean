@@ -98,13 +98,11 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 					cartridgeID: $scope.cartridges[$scope.activeCartridge]._id
 				}).
 				success(function(data, status, headers, config) {
-					$scope.runAlerts.push({type: 'success', msg: data.msg});
+					$scope.runAlerts.push({type: 'success', msg: data.message});
 			  }).
 			  error(function(err, status, headers, config) {
 					$scope.runAlerts.push({type: 'danger', msg: err});
 			  });
-
-			$scope.initAlerts.push({type: 'info', msg: 'Test started'});
 		};
 	}
 ]);

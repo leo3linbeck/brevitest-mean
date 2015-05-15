@@ -18,133 +18,116 @@ exports.run = function(req, res) {
 };
 
 var brevitestCommand = {
-	'write_serial_number': '00',
-	'initialize_device': '01',
-	'run_test': '02',
-	'sensor_data': '03',
-	'change_param': '04',
-	'reset_params': '05',
-	'erase_archive': '06',
-	'dump_archive': '07',
-	'archive_size': '08',
-	'firmware_version': '09',
-	'cancel_process': '10',
-	'receive_BCODE': '11',
-	'device_ready': '12',
-	'calibrate': '13'
+  'write_serial_number': '00',
+  'initialize_device': '01',
+  'run_test': '02',
+  'sensor_data': '03',
+  'change_param': '04',
+  'reset_params': '05',
+  'erase_archive': '06',
+  'dump_archive': '07',
+  'archive_size': '08',
+  'firmware_version': '09',
+  'cancel_process': '10',
+  'receive_BCODE': '11',
+  'device_ready': '12',
+  'calibrate': '13'
 };
 
 var brevitestRequest = {
-	'serial_number': '00',
-	'test_record': '01',
-	'test_record_by_uuid': '02',
-	'all_params': '03',
-	'one_param': '04'
+  'serial_number': '00',
+  'test_record': '01',
+  'test_record_by_uuid': '02',
+  'all_params': '03',
+  'one_param': '04'
 };
 
-var bcmds = [
-  {
-    num: '0',
-    name: 'Start Test',
-    param_count: 2,
-    description: 'Starts the test. Required to be the first command. Test executes until Finish Test command. Parameters are (sensor integration time, sensor gain).'
-  },
-  {
-    num: '1',
-    name: 'Delay',
-    param_count: 1,
-    description: 'Waits for specified period of time. Parameter is (delay in milliseconds).'
-  },
-  {
-    num: '2',
-    name: 'Move',
-    param_count: 2,
-    description: 'Moves the stage a specified number of steps at a specified speed. Parameters are (number of steps, step delay time in microseconds).'
-  },
-  {
-    num: '3',
-    name: 'Solenoid On',
-    param_count: 1,
-    description: 'Energizes the solenoid for a specified amount of time. Parameter is (energize period in milliseconds).'
-  },
-  {
-    num: '4',
-    name: 'Device LED On',
-    param_count: 0,
-    description: 'Turns on the device LED, which is visible outside the device. No parameters.'
-  },
-  {
-    num: '5',
-    name: 'Device LED Off',
-    param_count: 0,
-    description: 'Turns off the device LED. No parameters.'
-  },
-  {
-    num: '6',
-    name: 'Device LED Blink',
-    param_count: 2,
-    description: 'Blinks the device LED at a specified rate. Parameters, (number of blinks, period in milliseconds between change in LED state).'
-  },
-  {
-    num: '7',
-    name: 'Sensor LED On',
-    param_count: 1,
-    description: 'Turns on the sensor LED at a given power. Parameter is (power, from 0 to 255).'
-  },
-  {
-    num: '8',
-    name: 'Sensor LED Off',
-    param_count: 0,
-    description: 'Turns off the sensor LED. No parameters.'
-  },
-  {
-    num: '9',
-    name: 'Read Sensors',
-    param_count: 2,
-    description: 'Takes readings from the sensors. Parameters are (number of samples [1-10], milliseconds between samples).'
-  },
-  {
-    num: '10',
-    name: 'Read QR Code',
-    param_count: 0,
-    description: 'Reads the cartridge QR code. No parameters. [NOT IMPLEMENTED]'
-  },
-  {
-    num: '11',
-    name: 'Disable Sensor',
-    param_count: 0,
-    description: 'Disables the sensors, switching them to low-power mode. No parameters.'
-  },
-  {
-    num: '12',
-    name: 'Repeat Begin',
-    param_count: 1,
-    description: 'Begins a block of commands that will be repeated a specified number of times. Nesting is acceptable. Parameter is (number of interations).'
-  },
-  {
-    num: '13',
-    name: 'Repeat End',
-    param_count: 0,
-    description: 'Ends the innermost block of repeated commands. No parameters.'
-  },
-  {
-    num: '14',
-    name: 'Status',
-    param_count: 2,
-    description: 'Changes the device status register, which used in remote monitoring. Parameters are (message length, message text).'
-  },
-  {
-    num: '99',
-    name: 'Finish Test',
-    param_count: 0,
-    description: 'Finishes the test. Required to be the final command. No parameters.'
-  }
-];
+var bcmds = [{
+  num: '0',
+  name: 'Start Test',
+  param_count: 2,
+  description: 'Starts the test. Required to be the first command. Test executes until Finish Test command. Parameters are (sensor integration time, sensor gain).'
+}, {
+  num: '1',
+  name: 'Delay',
+  param_count: 1,
+  description: 'Waits for specified period of time. Parameter is (delay in milliseconds).'
+}, {
+  num: '2',
+  name: 'Move',
+  param_count: 2,
+  description: 'Moves the stage a specified number of steps at a specified speed. Parameters are (number of steps, step delay time in microseconds).'
+}, {
+  num: '3',
+  name: 'Solenoid On',
+  param_count: 1,
+  description: 'Energizes the solenoid for a specified amount of time. Parameter is (energize period in milliseconds).'
+}, {
+  num: '4',
+  name: 'Device LED On',
+  param_count: 0,
+  description: 'Turns on the device LED, which is visible outside the device. No parameters.'
+}, {
+  num: '5',
+  name: 'Device LED Off',
+  param_count: 0,
+  description: 'Turns off the device LED. No parameters.'
+}, {
+  num: '6',
+  name: 'Device LED Blink',
+  param_count: 2,
+  description: 'Blinks the device LED at a specified rate. Parameters, (number of blinks, period in milliseconds between change in LED state).'
+}, {
+  num: '7',
+  name: 'Sensor LED On',
+  param_count: 1,
+  description: 'Turns on the sensor LED at a given power. Parameter is (power, from 0 to 255).'
+}, {
+  num: '8',
+  name: 'Sensor LED Off',
+  param_count: 0,
+  description: 'Turns off the sensor LED. No parameters.'
+}, {
+  num: '9',
+  name: 'Read Sensors',
+  param_count: 2,
+  description: 'Takes readings from the sensors. Parameters are (number of samples [1-10], milliseconds between samples).'
+}, {
+  num: '10',
+  name: 'Read QR Code',
+  param_count: 0,
+  description: 'Reads the cartridge QR code. No parameters. [NOT IMPLEMENTED]'
+}, {
+  num: '11',
+  name: 'Disable Sensor',
+  param_count: 0,
+  description: 'Disables the sensors, switching them to low-power mode. No parameters.'
+}, {
+  num: '12',
+  name: 'Repeat Begin',
+  param_count: 1,
+  description: 'Begins a block of commands that will be repeated a specified number of times. Nesting is acceptable. Parameter is (number of interations).'
+}, {
+  num: '13',
+  name: 'Repeat End',
+  param_count: 0,
+  description: 'Ends the innermost block of repeated commands. No parameters.'
+}, {
+  num: '14',
+  name: 'Status',
+  param_count: 2,
+  description: 'Changes the device status register, which used in remote monitoring. Parameters are (message length, message text).'
+}, {
+  num: '99',
+  name: 'Finish Test',
+  param_count: 0,
+  description: 'Finishes the test. Required to be the final command. No parameters.'
+}];
 
 function instruction_time(code, param) {
   var p, d = 0;
 
-  switch(code) {
+  switch (code) {
     case 'Delay': // delay
     case 'Solenoid On': // solenoid on
       d = parseInt(param[0]);
@@ -167,7 +150,10 @@ function instruction_time(code, param) {
 }
 
 function get_bcode_object(bcode) {
-  return ({ c: bcode.command, p: bcode.params && bcode.params.toString().indexOf(',') !== -1 ? bcode.params.toString().split(',') : bcode.params });
+  return ({
+    c: bcode.command,
+    p: bcode.params && bcode.params.toString().indexOf(',') !== -1 ? bcode.params.toString().split(',') : bcode.params
+  });
 }
 
 function calculate_BCODE_time(bcode_array) {
@@ -177,7 +163,7 @@ function calculate_BCODE_time(bcode_array) {
   for (i = 0; i < bcode_array.length; i += 1) {
     if (bcode_array[i]) {
       b = get_bcode_object(bcode_array[i]);
-      switch(b.c) {
+      switch (b.c) {
         case 'Finish Test': // finished
         case 'Repeat End': // end repeat
           return (duration + instruction_time(b.c, b.p));
@@ -199,7 +185,7 @@ function calculate_BCODE_time(bcode_array) {
               level -= 1;
             }
             a.push(bcode_array[i]);
-          } while(!(t.c === 'Repeat End' && level === 0));
+          } while (!(t.c === 'Repeat End' && level === 0));
 
           duration += calculate_BCODE_time(a) * parseInt(b.p[0]);
           break;
@@ -250,37 +236,16 @@ function bObjectToCodeString(bco) {
   var str = '';
 
   _.each(bco, function(e, i, a) {
-    str += _.findWhere(bcmds, {name: e.command}).num + (e.params ? ',' + e.params : '') + (i < a.length - 1 ? '\n' : '');
+    str += _.findWhere(bcmds, {
+      name: e.command
+    }).num + (e.params !== '' ? ',' + e.params : '') + (i < a.length - 1 ? '\n' : '');
   });
 
   return str;
 }
 
-function send_BCODE_to_spark(sparkDevice, cartridgeId, bco) {
-  var arg, end, i, len, max_payload, num, packets, payload, result, start;
-  var promises = [];
-  var bstr = bObjectToCodeString(bco);
-
-  max_payload = 56 - cartridgeId.length; // max string = 63 - length(command code) - length(num) - length(len) - length(cartridgeId)
-  packets = Math.ceil(bstr.length / max_payload);
-
-  arg = brevitestCommand.receive_BCODE + '000' + zeropad(packets, 2) + cartridgeId;
-  promises.push(new Q(sparkDevice.callFunction('runcommand', arg)));
-  for (i = 1; i <= packets; i += 1) {
-    start = (i - 1) * max_payload;
-    end = start + max_payload;
-    payload = bstr.substring(start, end);
-    len = zeropad(payload.length, 2);
-    num = zeropad(i, 3);
-    arg = brevitestCommand.receive_BCODE + num + len + cartridgeId + payload;
-    promises.push(new Q(sparkDevice.callFunction('runcommand', arg)));
-  }
-
-  return promises;
-}
-
 exports.begin = function(req, res) {
-  var cartridge, device, sparkDevice, sparkID, step;
+  var bcode, bcode_str,cartridge, device,  max_payload,  packet_count, sparkDevice, sparkID, step;
 
   Q.fcall(function(id) {
       step = 'Device.findOneAndUpdate';
@@ -355,30 +320,47 @@ exports.begin = function(req, res) {
       }).exec());
     })
     .then(function(a) {
-      step = 'Send BCODE';
+      step = 'Send BCODE and start test';
       console.log(step);
 
-      var promises = send_BCODE_to_spark(sparkDevice, req.body.cartridgeID, a.BCODE);
-      Q.all(promises);
-      return get_BCODE_duration(a.BCODE);
-    })
-    .then(function(duration) {
-      step = 'Start test';
-      console.log(step, duration);
-      var arg = brevitestCommand.run_test + req.body.cartridgeID + zeropad(Math.round(duration), 4);
-      sparkDevice.callFunction('runcommand', arg, function(err, data) {
-        if(err) {
-          throw new Error(err);
-        } else {
-          console.log(data);
-        }
-      });
+      var end, i, len, num, payload, promises, start;
+      var args = [];
+
+      bcode = a.BCODE;
+      bcode_str = bObjectToCodeString(bcode);
+      max_payload = (56 - req.body.cartridgeID.length); // max string = 63 - length(command code) - length(num) - length(len) - length(cartridgeId)
+      packet_count = Math.ceil(bcode_str.length / max_payload);
+
+      args.push(brevitestCommand.receive_BCODE + '000' + zeropad(packet_count, 2) + req.body.cartridgeID);
+      promises = new Q();
+      for (i = 1; i <= packet_count; i += 1) {
+        start = (i - 1) * max_payload;
+        end = start + max_payload;
+        payload = bcode_str.substring(start, end);
+        len = zeropad(payload.length, 2);
+        num = zeropad(i, 3);
+        args.push(brevitestCommand.receive_BCODE + num + len + req.body.cartridgeID + payload);
+      }
+
+      args.push(brevitestCommand.run_test + req.body.cartridgeID + zeropad(Math.round(get_BCODE_duration(bcode)), 4));
+
+      return args.reduce(function(soFar, arg) {
+        return soFar.then(function() {
+          return sparkDevice.callFunction('runcommand', arg);
+        });
+      }, new Q());
+
     })
     .then(function(result) {
       step = 'Return response';
-      res.jsonp({
-        result: result
-      });
+      if (result.return_value === 1) {
+        res.jsonp({
+          message: 'Test started'
+        });
+      }
+      else {
+        throw new Error('Test not started');
+      }
     })
     .fail(function(err) {
       return res.status(400).send({

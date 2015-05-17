@@ -35,10 +35,6 @@
                 <label class="control-label" for="cartridgeInventory">Cartridge Inventory</label>
                 <input type="text" readonly data-ng-model="cartridgeInventory" id="cartridgeInventory" class="form-control">
               </div>
-              <br/>
-              <div class="col-md-12">
-                <alert ng-repeat="iAlert in invAlerts" type="{{iAlert.type}}" close="closeInvAlert($index)">{{iAlert.msg}}</alert>
-              </div>
             </div>
           </div>
         </div>
@@ -170,7 +166,6 @@
                     <hr/>
                   </div>
                   <div class="col-md-12">
-                    <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
                     <div class="btn-group-vertical" role="group" aria-label="...">
                       <h4 align="center">Move</h4>
                       <button type="button" ng-click="moveBCODETop()" class="btn btn-info">Top</button>

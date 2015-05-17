@@ -1,4 +1,4 @@
-<section data-ng-controller="DevicesController">
+<section data-ng-controller="DevicesController" data-ng-init="loadData()">
   <div class="page-header">
     <h1>New Device</h1>
   </div>
@@ -25,7 +25,13 @@
         </div>
         <label class="control-label" for="calibrationSteps">Calibration Steps</label>
         <div class="controls">
-          <input type="text" data-ng-model="calibrationSteps" id="calibrationSteps" class="form-control" placeholder="Enter number of steps to move device to zero mark">
+          <p class="input-group">
+            <input type="text" data-ng-model="calibrationSteps" id="calibrationSteps" class="form-control" placeholder="Enter number of steps to move device to zero mark">
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-default" ng-click="moveToCalibrationPoint()">Move There Now</button>
+              <button type="button" class="btn btn-default" ng-click="setCalibrationPoint()">Set and Save in Device</button>
+            </span>
+          </p>
         </div>
         <br/>
         <div class="col-md-4">

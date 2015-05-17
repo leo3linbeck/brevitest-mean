@@ -12,6 +12,23 @@ exports.get_inventory = function(req, res) {
 	res.jsonp(req.count);
 };
 
+exports.get_unused = function(req, res) {
+	Cartridge.find({
+		$and: [
+			{_assay: req.body.assayID},
+			{_test: {$exists: false}}
+		]
+	}).sort('-created').exec(function(err, cartridges) {
+		if (err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		} else {
+			res.jsonp(cartridges);
+		}
+	});
+};
+
 /**
  * Create a Cartridge
  */

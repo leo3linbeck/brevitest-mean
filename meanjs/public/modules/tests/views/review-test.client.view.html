@@ -1,0 +1,40 @@
+<section data-ng-controller="ReviewTestController" data-ng-init="setup()">
+  <div class="page-header">
+    <h1>Review Tests</h1>
+  </div>
+  <div class="col-md-12">
+    <ul class="list-group">
+      <li href="" ng-repeat="test in tests" class="list-group-item"><b>Patient Number: {{test._prescription.patientNumber}}</b>
+        <p>
+          <small>Gender:
+            <strong>{{test._prescription.patientGender}}</strong>
+            <span style="margin-left: 1em"></span>DOB:
+            <strong>{{test._prescription.patientDateOfBirth | date: "mediumDate"}}</strong>
+          </small>
+          <span class="badge pull-right" ng-class="{'btn btn-success': !test.failed, 'btn btn-danger': test.failed}">{{test.failed ? 'Failed' : 'OK'}}</span>
+        </p>
+        <p>
+          <small>Test started on {{test._cartridge.startedOn | date: "medium"}}</small>
+        </p>
+        <accordion close-others="true">
+          <accordion-group heading="Details">
+            <ul class="list-group">
+              <li class="list-group-item">Assay: {{test._assay.name}}</li>
+              <li class="list-group-item">Device: {{test._device.name}}</li>
+              <li class="list-group-item">Cartridge: {{test._cartridge.name}}</li>
+            </ul>
+            <accordion close-others="true">
+              <accordion-group heading="Raw Data">
+                <button type="button" class="btn btn-xs btn-default pull-right" ng-click="loadRawData('{{test._cartridge._id}}')">Load</button>
+                <textarea class="small" rows="10" style="width: 100%; margin:0 10;">{{test._cartridge.rawData | rawtestdata}}</textarea>
+              </accordion-group>
+              <accordion-group heading="Graph">
+                <svg id="graph"></svg>
+              </accordion-group>
+            </accordion>
+          </accordion-group>
+        </accordion>
+      </li>
+    </ul>
+  </div>
+</section>

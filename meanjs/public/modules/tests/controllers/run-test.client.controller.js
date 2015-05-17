@@ -1,13 +1,12 @@
 'use strict';
 
 // Tests controller
-angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tests', 'Prescriptions', 'Devices', 'Cartridges',
-	function($scope, $http, Tests, Prescriptions, Devices, Cartridges) {
+angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Notification',
+	function($scope, $http, Tests, Prescriptions, Devices, Cartridges, Notification) {
 
 		$scope.setupRun = function() {
 			$scope.prescriptions = Prescriptions.query();
 			$scope.devices = Devices.query();
-			$scope.cartridges = Cartridges.query();
 		};
 
 		$scope.activePrescription = -1;
@@ -17,6 +16,16 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 		$scope.activeAssay = -1;
 		$scope.clickAssay = function(indx) {
 			$scope.activeAssay = indx;
+			$http.post('/cartridges/unused', {
+					assayID: $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]._id
+				}).
+				success(function(data, status, headers, config) {
+					$scope.cartridges = data;
+			  }).
+			  error(function(err, status, headers, config) {
+					console.log(err);
+					Notification.error(err.message);
+			  });
 		};
 		$scope.deviceInitialized = false;
 		$scope.activeDevice = -1;
@@ -33,17 +42,13 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 			$scope.activeCartridge = $scope.activeCartridge;
 		};
 
-		$scope.initAlerts = [];
-		$scope.closeInitAlert = function(index) {
-      $scope.initAlerts.splice(index, 1);
-    };
 		$scope.initializeDevice = function() {
 			if ($scope.activeDevice < 0) {
-				$scope.initAlerts.push({type: 'danger', msg: 'Please select a device to initialize'});
+				Notification.error('Please select a device to initialize');
 				return;
 			}
 			if (!$scope.devices[$scope.activeDevice]) {
-				$scope.initAlerts.push({type: 'danger', msg: 'Unknown device'});
+				Notification.error('Unknown device');
 				return;
 			}
 			$http.post('/devices/initialize', {
@@ -51,58 +56,57 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 				}).
 				success(function(data, status, headers, config) {
 					$scope.deviceInitialized = true;
-					$scope.initAlerts.push({type: 'success', msg: data.result});
+					Notification.success(data.result);
 			  }).
 			  error(function(err, status, headers, config) {
 					console.log(err);
 					$scope.deviceInitialized = false;
-					$scope.initAlerts.push({type: 'danger', msg: err.message});
+					Notification.error(err.message);
 			  });
 
-			$scope.initAlerts.push({type: 'info', msg: 'Initialization started'});
+			Notification.info('Initialization started');
 		};
 
-		$scope.runAlerts = [];
-		$scope.closeRunAlert = function(index) {
-      $scope.runAlerts.splice(index, 1);
-    };
 		$scope.beginTest = function() {
 			if ($scope.activePrescription < 0 || $scope.activeAssay < 0) {
-				$scope.runAlerts.push({type: 'danger', msg: 'Please select an assay for testing'});
+				Notification.error('Please select an assay for testing');
 				return;
 			}
 			if ($scope.activeDevice < 0) {
-				$scope.runAlerts.push({type: 'danger', msg: 'Please select a device for testing'});
+				Notification.error('Please select a device for testing');
 				return;
 			}
 			if ($scope.activeCartridge < 0) {
-				$scope.runAlerts.push({type: 'danger', msg: 'Please select a cartridge for testing'});
+				Notification.error('Please select a cartridge for testing');
 				return;
 			}
 			if (!$scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]) {
-				$scope.runAlerts.push({type: 'danger', msg: 'Unknown assay'});
+				Notification.error('Unknown assay');
 				return;
 			}
 			if (!$scope.devices[$scope.activeDevice]) {
-				$scope.runAlerts.push({type: 'danger', msg: 'Unknown device'});
+				Notification.error('Unknown device');
 				return;
 			}
 			if (!$scope.cartridges[$scope.activeCartridge]) {
-				$scope.runAlerts.push({type: 'danger', msg: 'Unknown cartridge'});
+				Notification.error('Unknown cartridge');
 				return;
 			}
 
 			$http.post('/tests/begin', {
 					assayID: $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]._id,
 					deviceID: $scope.devices[$scope.activeDevice]._id,
-					cartridgeID: $scope.cartridges[$scope.activeCartridge]._id
+					cartridgeID: $scope.cartridges[$scope.activeCartridge]._id,
+					prescriptionID: $scope.prescriptions[$scope.activePrescription]._id
 				}).
 				success(function(data, status, headers, config) {
-					$scope.runAlerts.push({type: 'success', msg: data.message});
+					Notification.success('Test underway');
 			  }).
 			  error(function(err, status, headers, config) {
-					$scope.runAlerts.push({type: 'danger', msg: err});
+					Notification.error(err.message);
 			  });
+
+			Notification.info('Test started');
 		};
 	}
 ]);

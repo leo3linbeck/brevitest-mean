@@ -245,7 +245,7 @@ function bObjectToCodeString(bco) {
 }
 
 exports.begin = function(req, res) {
-  var bcode, bcode_str,cartridge, device,  max_payload,  packet_count, sparkDevice, sparkID, step;
+  var bcode, bcode_str, cartridge, device, max_payload, packet_count, sparkDevice, sparkID, step;
 
   Q.fcall(function(id) {
       step = 'Device.findOneAndUpdate';
@@ -289,7 +289,8 @@ exports.begin = function(req, res) {
       test._assay = req.body.assayID;
       test._device = req.body.deviceID;
       test._cartridge = req.body.cartridgeID;
-      test.name = req.body.name ? req.body.name : ('Assay ' + req.body.assayID + ' on device ' + req.body.deviceID + 'using cartridge ' + req.body.cartridgeID);
+      test._prescription = req.body.prescriptionID;
+      test.name = req.body.name ? req.body.name : ('Assay ' + req.body.assayID + ' on device ' + req.body.deviceID + ' using cartridge ' + req.body.cartridgeID);
       test.description = req.body.description;
       test.status = 'Starting';
       test.percentComplete = 0;
@@ -309,6 +310,7 @@ exports.begin = function(req, res) {
         _id: t._cartridge
       }, {
         _test: t._id,
+        _device: req.body.deviceID,
         startedOn: t.startedOn,
         _runBy: t.user
       }).exec());
@@ -323,7 +325,7 @@ exports.begin = function(req, res) {
       step = 'Send BCODE and start test';
       console.log(step);
 
-      var end, i, len, num, payload, promises, start;
+      var end, i, len, num, payload, start;
       var args = [];
 
       bcode = a.BCODE;
@@ -332,7 +334,6 @@ exports.begin = function(req, res) {
       packet_count = Math.ceil(bcode_str.length / max_payload);
 
       args.push(brevitestCommand.receive_BCODE + '000' + zeropad(packet_count, 2) + req.body.cartridgeID);
-      promises = new Q();
       for (i = 1; i <= packet_count; i += 1) {
         start = (i - 1) * max_payload;
         end = start + max_payload;
@@ -343,7 +344,7 @@ exports.begin = function(req, res) {
       }
 
       args.push(brevitestCommand.run_test + req.body.cartridgeID + zeropad(Math.round(get_BCODE_duration(bcode)), 4));
-
+      console.log(args);
       return args.reduce(function(soFar, arg) {
         return soFar.then(function() {
           return sparkDevice.callFunction('runcommand', arg);
@@ -353,12 +354,13 @@ exports.begin = function(req, res) {
     })
     .then(function(result) {
       step = 'Return response';
+      console.log(step, result);
+
       if (result.return_value === 1) {
         res.jsonp({
           message: 'Test started'
         });
-      }
-      else {
+      } else {
         throw new Error('Test not started');
       }
     })
@@ -429,6 +431,75 @@ exports.update = function(req, res) {
       });
     } else {
       res.jsonp(test);
+    }
+  });
+};
+
+exports.monitor = function(req, res) {
+  res.jsonp({
+    message: 'Monitoring started'
+  });
+};
+
+exports.underway = function(req, res) {
+  Test.find({
+    percentComplete: {
+      $lt: 100
+    }
+  }).sort('name').populate([{
+    path: 'user',
+    select: 'displayName'
+  }, {
+    path: '_assay',
+    select: '_id name'
+  }, {
+    path: '_device',
+    select: '_id name'
+  }, {
+    path: '_cartridge',
+    select: '_id name result failed BCODE startedOn finishedOn'
+  }]).exec(function(err, tests) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      tests[0].percentComplete = 50;
+      res.jsonp(tests);
+    }
+  });
+};
+
+exports.review = function(req, res) {
+  Test.find({
+    _cartridge: {
+      $exists: true
+    }
+  }).sort('name').populate([{
+    path: 'user',
+    select: 'displayName'
+  }, {
+    path: '_assay',
+    select: '_id name'
+  }, {
+    path: '_device',
+    select: '_id name'
+  }, {
+    path: '_prescription',
+    select: '_id name patientNumber patientGender patientDateOfBirth'
+  }, {
+    path: '_cartridge',
+    select: '_id name result failed rawData startedOn finishedOn'
+  }]).exec(function(err, tests) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      if (tests.length) {
+        tests[0].percentComplete = 50;
+      }
+      res.jsonp(tests);
     }
   });
 };

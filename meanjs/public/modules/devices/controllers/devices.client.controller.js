@@ -1,9 +1,29 @@
 'use strict';
 
 // Devices controller
-angular.module('devices').controller('DevicesController', ['$scope', '$stateParams', '$location', 'Authentication', 'Devices', 'DeviceModels', 'Sparks',
-	function($scope, $stateParams, $location, Authentication, Devices, DeviceModels, Sparks) {
+angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Devices', 'DeviceModels', 'Sparks', 'Notification',
+	function($scope, $http, $stateParams, $location, Authentication, Devices, DeviceModels, Sparks, Notification) {
 		$scope.authentication = Authentication;
+
+		$scope.loadData = function() {
+			$scope.deviceModels = DeviceModels.query();
+			$scope.sparks = Sparks.query();
+		};
+
+		$scope.moveToAndSetCalibrationPoint = function() {
+			$http.post('/devices/move_to_and_set_calibration_point', {
+					device: $scope.device
+				}).
+				success(function(data, status, headers, config) {
+					console.log(data);
+					Notification.success(data.result);
+					$scope.device.$save();
+			  }).
+			  error(function(err, status, headers, config) {
+					console.log(err);
+					Notification.error(err.message);
+			  });
+		};
 
 		$scope.setOnlineButtonText = function() {
 			if ($scope.online) {

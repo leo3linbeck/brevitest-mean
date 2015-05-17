@@ -12,6 +12,9 @@ module.exports = function(app) {
 	app.route('/devices/initialize')
 		.post(devices.initialize);
 
+	app.route('/devices/move_to_and_set_calibration_point')
+		.post(devices.move_to_and_set_calibration_point);
+
 	app.route('/devices/:deviceId')
 		.get(devices.read)
 		.put(users.requiresLogin, devices.hasAuthorization, devices.update)

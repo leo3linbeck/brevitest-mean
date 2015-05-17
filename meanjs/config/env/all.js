@@ -15,6 +15,7 @@ module.exports = {
 			css: [
 				'public/lib/bootstrap/dist/css/bootstrap.css',
 				'public/lib/bootstrap/dist/css/bootstrap-theme.css',
+				'public/lib/angular-ui-notification/dist/angular-ui-notification.min.css',
 			],
 			js: [
 				'public/lib/angular/angular.js',
@@ -26,6 +27,7 @@ module.exports = {
 				'public/lib/angular-ui-router/release/angular-ui-router.js',
 				'public/lib/angular-ui-utils/ui-utils.js',
 				'public/lib/angular-bootstrap/ui-bootstrap-tpls.js',
+				'public/lib/angular-ui-notification/dist/angular-ui-notification.min.js',
 				'public/lib/underscore/underscore.js'
 			]
 		},

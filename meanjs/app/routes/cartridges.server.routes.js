@@ -12,6 +12,9 @@ module.exports = function(app) {
 	app.route('/cartridges/get_inventory/:assayId')
 		.get(cartridges.get_inventory);
 
+	app.route('/cartridges/unused')
+		.post(cartridges.get_unused);
+
 	app.route('/cartridges/:cartridgeId')
 		.get(cartridges.read)
 		.put(users.requiresLogin, cartridges.hasAuthorization, cartridges.update)

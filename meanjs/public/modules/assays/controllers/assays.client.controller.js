@@ -3,19 +3,28 @@
 var _ = window._;
 
 // Assays controller
-angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Assays',
-  function($scope, $http, $stateParams, $location, Authentication, Assays) {
+angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Assays', 'Notification',
+  function($scope, $http, $stateParams, $location, Authentication, Assays, Notification) {
     $scope.authentication = Authentication;
 
     $scope.analysis = {};
     $scope.standardCurve = [];
-    $scope.BCODE = [];
+    $scope.BCODE = [
+      {
+        command: 'Start Test',
+        params: '0,0'
+      },
+      {
+        command: 'Read Sensors',
+        params: '10,500'
+      },
+      {
+        command: 'Finish Test',
+        params: ''
+      },
+    ];
 
     $scope.cartridgeInventory = 0;
-    $scope.invAlerts = [];
-    $scope.closeInvAlert = function(index) {
-      $scope.invAlerts.splice(index, 1);
-    };
 
     $scope.recalcInventory = function() {
       $http.get('/cartridges/get_inventory/' + $scope.assay._id).
@@ -25,7 +34,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 			  }).
 			  error(function(err, status, headers, config) {
 					console.log(err);
-					$scope.invAlerts.push({type: 'danger', msg: err.message});
+					Notification.error(err.message);
 			  });
     };
 
@@ -39,13 +48,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 			  }).
 			  error(function(err, status, headers, config) {
 					console.log(err);
-					$scope.invAlerts.push({type: 'danger', msg: err.message});
+          Notification.error(err.message);
 			  });
-    };
-
-    $scope.alerts = [];
-    $scope.closeAlert = function(index) {
-      $scope.alerts.splice(index, 1);
     };
 
     $scope.stdCurveSort = function() {
@@ -304,7 +308,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 
     function validateCommandParams() {
       if (!$scope.command) {
-        $scope.alerts.push({type: 'danger', msg: 'ERROR: No command selected'});
+        Notification.error('ERROR: No command selected');
         return false;
       }
       var cmd = _.findWhere($scope.BCODECommands, {name: $scope.command});
@@ -313,19 +317,19 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
         return true;
       }
       if (p.length !== cmd.param_count) {
-        $scope.alerts.push({type: 'danger', msg: 'ERROR: Wrong number of parameters (' + p.length + ' found and ' + cmd.param_count + ' expected)'});
+        Notification.error('ERROR: Wrong number of parameters (' + p.length + ' found and ' + cmd.param_count + ' expected)');
         return false;
       }
       if (p.length > 0 && p[0]) {
         if (isNaN(parseInt(p[0], 10))) {
-          $scope.alerts.push({type: 'danger', msg: 'ERROR: Non-numeric parameter (parameter 1 "' + p[0] + '" is not a number)'});
+          Notification.error('ERROR: Non-numeric parameter (parameter 1 "' + p[0] + '" is not a number)');
           return false;
         }
         $scope.params = parseInt(p[0]);
       }
       if (p.length > 1) {
         if (isNaN(parseInt(p[1], 10))) {
-          $scope.alerts.push({type: 'danger', msg: 'ERROR: Non-numeric parameter (parameter 2 "' + p[1] + '" is not a number)'});
+          Notification.error('ERROR: Non-numeric parameter (parameter 2 "' + p[1] + '" is not a number)');
           return false;
         }
         $scope.params += ',' + parseInt(p[1]);

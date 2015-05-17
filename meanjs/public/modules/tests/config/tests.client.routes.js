@@ -17,6 +17,14 @@ angular.module('tests').config(['$stateProvider',
 			url: '/tests/run',
 			templateUrl: 'modules/tests/views/run-test.client.view.html'
 		}).
+		state('monitorTests', {
+			url: '/tests/monitor',
+			templateUrl: 'modules/tests/views/monitor-test.client.view.html'
+		}).
+		state('reviewTests', {
+			url: '/tests/review',
+			templateUrl: 'modules/tests/views/review-test.client.view.html'
+		}).
 		state('viewTest', {
 			url: '/tests/:testId',
 			templateUrl: 'modules/tests/views/view-test.client.view.html'

@@ -14,6 +14,16 @@
           <div class="controls">
             <input type="text" data-ng-model="spark.sparkID" id="sparkID" class="form-control" placeholder="Spark ID (32 hex digits)" required>
           </div>
+          <br/>
+          <br/>
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-primary" ng-click="getNumberOfRecords()">Get Number of Records</button>
+            <button type="button" class="btn btn-primary" ng-click="getFirstRecord()">Get First Record</button>
+            <button type="button" class="btn btn-danger" ng-click="eraseArchivedData()">Erase Archived Data</button>
+          </div>
+        </div>
+        <textarea cols="60" rows="10">{{rawData | rawtestdata}}</textarea>
+        <div>
         </div>
         <div class="form-group">
           <input type="submit" value="Update" class="btn btn-default">

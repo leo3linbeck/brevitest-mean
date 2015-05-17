@@ -14,8 +14,6 @@
         <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
           <button type="button" ng-click="initializeDevice()" class="btn btn-success btn-block">Initialize Device</button>
         </div>
-        <br/><br/>
-        <alert ng-repeat="initAlert in initAlerts" type="{{initAlert.type}}" close="closeInitAlert($index)">{{initAlert.msg}}</alert>
       </div>
     </div>
   </div>
@@ -44,7 +42,7 @@
   <div class="col-md-4">
     <div class="panel panel-default" ng-show="deviceInitialized && activeAssay >= 0">
       <div class="panel-heading">
-        <h3 class="panel-title">Cartridges
+        <h3 class="panel-title">Cartridges ({{cartridges.length}} available)
           <button type="button" class="btn btn-xs btn-default pull-right" ng-click="scanCartridge()">Scan</button>
         </h3>
       </div>
@@ -55,8 +53,6 @@
         <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
           <button type="button" ng-click="beginTest()" class="btn btn-success btn-block">Run Test</button>
         </div>
-        <br/><br/>
-        <alert ng-repeat="runAlert in runAlerts" type="{{runAlert.type}}" close="closeRunAlert($index)">{{runAlert.msg}}</alert>
       </div>
     </div>
   </div>

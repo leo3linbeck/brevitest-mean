@@ -1,13 +1,83 @@
 'use strict';
 
 // Sparks controller
-angular.module('sparks').controller('SparksController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Sparks',
-  function($scope, $http, $stateParams, $location, Authentication, Sparks) {
+angular.module('sparks').controller('SparksController', ['$scope', '$http', '$stateParams', '$location', '$timeout', 'Authentication', 'Sparks', 'Notification',
+  function($scope, $http, $stateParams, $location, $timeout, Authentication, Sparks, Notification) {
       $scope.authentication = Authentication;
 
       $scope.alerts = [];
-  		$scope.closeAlert = function(index) {
+      $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
+      };
+      function timeoutAlert(key) {
+        $scope.alerts.every(function(e, i) {
+          if (e.timeoutKey === key) {
+            $scope.alerts.splice(i, 1);
+            $scope.$apply();
+            return false;
+          }
+          return true;
+        });
+      }
+      function addAlert(alertArray, type, message, timeout) {
+        var key;
+
+        alertArray.push({type: type, msg: message});
+        if (timeout) {
+          key = Math.random().toString();
+          alertArray[alertArray.length - 1].timeoutKey = key;
+          $timeout(timeoutAlert.bind(null, key), timeout, false);
+        }
+      }
+
+      $scope.eraseArchivedData = function() {
+        $http.post('/sparks/erase_archived_data', {
+  					spark: $scope.spark
+  				}).
+  				success(function(data, status, headers, config) {
+            console.log(data);
+            if(data.return_value !== 1) {
+		          Notification.success('Archive erased');
+            }
+  			  }).
+  			  error(function(err, status, headers, config) {
+  					console.log(err);
+  					$scope.deviceInitialized = false;
+  					Notification.error(err.message);
+  			  });
+      };
+
+      $scope.getNumberOfRecords = function() {
+        $http.post('/sparks/archive_size', {
+  					spark: $scope.spark
+  				}).
+  				success(function(data, status, headers, config) {
+            console.log(data);
+            if(data.return_value !== -1) {
+		          Notification.success('Archive contains ' + data.return_value + ' records');
+            }
+  			  }).
+  			  error(function(err, status, headers, config) {
+  					console.log(err);
+  					$scope.deviceInitialized = false;
+  					Notification.error(err.message);
+  			  });
+      };
+
+      $scope.getFirstRecord = function() {
+        $http.post('/sparks/record_by_index', {
+  					spark: $scope.spark,
+            index: 0
+  				}).
+  				success(function(data, status, headers, config) {
+            console.log(data);
+            $scope.rawData = JSON.parse(data);
+  			  }).
+  			  error(function(err, status, headers, config) {
+  					console.log(err);
+  					$scope.deviceInitialized = false;
+  					Notification.error(err.message);
+  			  });
       };
 
       // Create new Spark
@@ -67,15 +137,13 @@ angular.module('sparks').controller('SparksController', ['$scope', '$http', '$st
         $http.get('/sparks/refresh').
   				success(function(data, status, headers, config) {
   					$scope.sparks = data;
-  					$scope.alerts.push({type: 'success', msg: 'Spark list refreshed'});
+            Notification.success('Spark list refreshed');
+  					// addAlert($scope.alerts, 'success', 'Spark list refreshed');
   			  }).
   			  error(function(err, status, headers, config) {
   					console.log(err, status, headers(), config);
-  					$scope.deviceInitialized = false;
-  					$scope.alerts.push({type: 'danger', msg: err.message});
+            Notification.danger(err.message);
   			  });
-
-  			$scope.alerts.push({type: 'info', msg: 'Spark refresh begun'});
       };
 
       // Find a list of Sparks

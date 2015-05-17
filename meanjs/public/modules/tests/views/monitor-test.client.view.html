@@ -1,0 +1,21 @@
+<section data-ng-controller="MonitorTestController" data-ng-init="setup()">
+  <div class="page-header">
+    <h1>Monitor Tests</h1>
+  </div>
+  <h3>Devices</h3>
+  <div class="col-md-12">
+    <ul class="list-group">
+      <li href="" ng-repeat="test in tests" ng_click="clickTest($index)" class="list-group-item {{selectedTest === $index ? 'active' : ''}}"><b>{{test._device.name}}</b>
+        <span class="badge" class="btn btn-success">{{test.status}}</span>
+        <p>
+          <small>Started on {{test._cartridge.startedOn | date: "medium"}}</small>
+        </p>
+        <p>
+          <progressbar type="warning" max="100" value="test.percentComplete">
+            <span style="color:black; white-space:nowrap;">{{test.percentComplete}}</span>
+          </progressbar>
+        </p>
+      </li>
+    </ul>
+  </div>
+</section>

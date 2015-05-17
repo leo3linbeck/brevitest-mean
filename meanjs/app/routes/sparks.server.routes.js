@@ -12,6 +12,18 @@ module.exports = function(app) {
 	app.route('/sparks/refresh')
 		.get(sparks.refresh);
 
+	app.route('/sparks/archive_size')
+		.post(sparks.get_archive_size);
+
+	app.route('/sparks/record_by_index')
+		.post(sparks.get_record_by_index);
+
+	app.route('/sparks/record_by_cartridge_id')
+		.post(sparks.get_record_by_cartridge_id);
+
+	app.route('/sparks/erase_archived_data')
+		.post(sparks.erase_archived_data);
+
 	app.route('/sparks/:sparkId')
 		.get(sparks.read)
 		.put(users.requiresLogin, sparks.hasAuthorization, sparks.update)

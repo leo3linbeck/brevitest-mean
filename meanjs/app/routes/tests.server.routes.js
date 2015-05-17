@@ -9,11 +9,20 @@ module.exports = function(app) {
 		.get(tests.list)
 		.post(users.requiresLogin, tests.create);
 
-	app.route('/tests/run')
-		.all(tests.run);
+	app.route('/tests/underway')
+	  .all(tests.underway);
+
+	app.route('/tests/review')
+	  .all(tests.review);
 
 	app.route('/tests/begin')
 		.post(tests.begin);
+
+	app.route('/tests/monitor')
+	  .all(tests.monitor);
+
+	app.route('/tests/run')
+		.all(tests.run);
 
 	app.route('/tests/:testId')
 		.get(tests.read)

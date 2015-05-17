@@ -25,7 +25,12 @@
         </div>
         <label class="control-label" for="calibrationSteps">Calibration Steps</label>
         <div class="controls">
-          <input type="text" data-ng-model="device.calibrationSteps" id="calibrationSteps" class="form-control" placeholder="Enter number of steps to move device to zero mark">
+          <p class="input-group">
+            <input type="text" data-ng-model="device.calibrationSteps" id="calibrationSteps" class="form-control" placeholder="Enter number of steps to move device to zero mark">
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-default" ng-click="moveToAndSetCalibrationPoint()">Save and Move to Calibration Point</button>
+            </span>
+          </p>
         </div>
         <br/>
         <div class="col-md-4">

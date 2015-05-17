@@ -10,9 +10,80 @@ var mongoose = require('mongoose'),
   Q = require('q'),
   _ = require('lodash');
 
+var brevitestCommand = {
+  'write_serial_number': '00',
+  'initialize_device': '01',
+  'run_test': '02',
+  'sensor_data': '03',
+  'change_param': '04',
+  'reset_params': '05',
+  'erase_archive': '06',
+  'dump_archive': '07',
+  'archive_size': '08',
+  'firmware_version': '09',
+  'cancel_process': '10',
+  'receive_BCODE': '11',
+  'device_ready': '12',
+  'calibrate': '13'
+};
+
 function errorCallback(err) {
   return err;
 }
+
+exports.move_to_and_set_calibration_point = function(req, res) {
+  var device, sparkID, step;
+
+  Q.fcall(function(id) {
+      step = 'Device.findById';
+      console.log(step, id);
+      return new Q(Device.findById(id).populate('_spark', 'sparkID').exec());
+    }, req.body.device._id)
+    .then(function(d) {
+      step = 'Spark login';
+      console.log(step, d);
+      device = d;
+      sparkID = device._spark.sparkID;
+      return new Q(sparkcore.login({ username: 'leo3@linbeck.com', password: '2january88' }));
+    })
+    .then(function() {
+      step = 'Spark listDevices';
+      console.log(step, sparkID);
+      return new Q(sparkcore.listDevices());
+    })
+    .then(function(sparkDevices) {
+      var sparkDevice = _.findWhere(sparkDevices, {id: sparkID});
+      step = 'Spark callFunction';
+      console.log(step, sparkDevice);
+      if (!sparkDevice.attributes.connected) {
+        throw new Error(device.name + ' is not online.');
+      }
+      return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.calibrate + device.calibrationSteps));
+    })
+    .then(function(result) {
+      var response;
+
+      step = 'Return response';
+      console.log(step, result);
+      if (result.return_value === 1) {
+        response = device.name + ' moved to calibration point';
+      }
+      else {
+        throw new Error('Calibration failed');
+      }
+      res.jsonp({
+        result: response
+      });
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        message: error.message,
+        step: step
+      });
+    })
+    .done();
+};
 
 exports.initialize = function(req, res) {
   var device, sparkID, step;
@@ -42,7 +113,7 @@ exports.initialize = function(req, res) {
       if (!sparkDevice.attributes.connected) {
         throw new Error(device.name + ' is not online.');
       }
-      return new Q(sparkDevice.callFunction('runcommand', '01'));
+      return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.initialize_device));
     })
     .then(function(result) {
       var response;

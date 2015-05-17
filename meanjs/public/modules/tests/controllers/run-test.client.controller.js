@@ -101,6 +101,16 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 				}).
 				success(function(data, status, headers, config) {
 					Notification.success('Test underway');
+					$http.post('/cartridges/unused', {
+							assayID: $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]._id
+						}).
+						success(function(data, status, headers, config) {
+							$scope.cartridges = data;
+					  }).
+					  error(function(err, status, headers, config) {
+							console.log(err);
+							Notification.error(err.message);
+					  });
 			  }).
 			  error(function(err, status, headers, config) {
 					Notification.error(err.message);

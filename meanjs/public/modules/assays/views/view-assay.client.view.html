@@ -15,6 +15,16 @@
 					<li class="list-group-item"><b>Positive low: </b>{{assay.analysis.redMin}}</li>
 				</ul>
 			</li>
+			<li class="list-group-item"><b>Standard Curve:</b><br/><br/>
+				<ul class="list-group">
+					<li class="list-group-item" ng-repeat="point in assay.standardCurve"><b>n = </b>{{$index}}<b><span style="margin-left: 2em"><b>X = </b>{{point.x}}<b><span style="margin-left: 2em"></span>Y = </b>{{point.y}}</li>
+				</ul>
+			</li>
+			<li class="list-group-item"><b>BCODE:</b><br/><br/>
+				<ul class="list-group">
+					<li class="list-group-item" ng-repeat="step in assay.BCODE"><b>{{$index}}: </b><span style="margin-left: 2em">{{step.command}} [{{step.params}}]</li>
+				</ul>
+			</li>
 		</ul>
 	</div>
 	<div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == assay.user._id))">

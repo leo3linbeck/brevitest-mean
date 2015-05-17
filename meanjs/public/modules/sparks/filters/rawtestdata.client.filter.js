@@ -19,7 +19,7 @@ var bcode = {
   '99': 'Finish Test'
 };
 
-var sparkSensorHeader = 'S\t n\t       sensor read time       \t  C  \t  R  \t  G  \t  B\n\n';
+var sparkSensorHeader = 'S\t n\t       Reading Start       \t       Reading Finish       \t  Value\n\n';
 
 function string_to_datetime(str) {
 	return new Date(parseInt(str) * 1000);
@@ -33,11 +33,9 @@ function parse_sensor_reading(str) {
 	var data = str.split('\t');
 	var result = (data[0] === 'A' ? 'Assay' : 'Control') + '\t';
 	result += data[1] + '\t';
-	result += string_to_datetime_string(data[2]) + '\t';
-	result += data[3] + '\t';
-	result += data[4] + '\t';
-	result += data[5] + '\t';
-	result += data[6] + '\n';
+  result += string_to_datetime_string(data[2]) + '\t';
+  result += string_to_datetime_string(data[3]) + '\t';
+	result += data[4] + '\n';
 	return result;
 }
 
@@ -98,6 +96,7 @@ function convert_BCODE_string(str) {
 
 	return a;
 }
+
 function parse_test_data(test_str) {
 	var attr, i, i2, num_samples;
 	var data = test_str.split('\n');

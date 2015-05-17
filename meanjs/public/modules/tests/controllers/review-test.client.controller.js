@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = window._;
+
 // Tests controller
 angular.module('tests').controller('ReviewTestController', ['$scope', '$http', 'Tests', 'Sparks', 'Notification',
   function($scope, $http, Tests, Sparks, Notification) {
@@ -7,7 +9,6 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
     $scope.setup = function() {
       $http.get('/tests/review').
       success(function(data, status, headers, config) {
-        console.log(data);
         $scope.tests = data;
       }).
       error(function(err, status, headers, config) {
@@ -15,11 +16,40 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
       });
     };
 
+		$scope.loadGraph = function(testID) {
+			var t = _.findWhere($scope.tests, {_id: testID});
+			$scope.data = t._assay.standardCurve;
+		};
+
+		function updateChart(test_str) {
+			var data = test_str.split('\n');
+			var c, i, index = 2, pos;
+
+			// skip to sensor data
+			do {
+				pos = data[index].indexOf(',');
+				if (pos === -1) {
+					c = data[index];
+				}
+				else {
+					c = data[index].substring(0, pos);
+				}
+				index += 1;
+			} while (index <= data.length && c !== '99');
+
+			for (i = index; i < data.length; i += 2) {
+				console.log(data[i], data[i+1]);
+			}
+
+			console.log(data);
+		}
+
     $scope.loadRawData = function(cartridgeID) {
       $http.post('/sparks/record_by_cartridge_id', {
         cartridgeID: cartridgeID
       }).
       success(function(data, status, headers, config) {
+				console.log(data);
         $scope.tests.forEach(function(e) {
           if (e._cartridge._id === cartridgeID) {
             e._cartridge.rawData = JSON.parse(data);
@@ -32,56 +62,21 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
       Notification.info('Loading data from device');
     };
 
-    $scope.chartType = 'line';
-
-    $scope.data = {
-      series: ['Red', 'Green', 'Blue', 'Clear'],
-      data: [{
-        x: '0',
-        y: [10, 20, 30, 50],
-        tooltip: 'RGB1'
-      }, {
-				x: '1',
-				y: [30, 50, 60, 70],
-        tooltip: 'RGB2'
-			}, {
-				x: '2',
-				y: [40, 60, 70, 75],
-        tooltip: 'RGB3'
-			}, {
-				x: '3',
-				y: [45, 65, 75, 80],
-        tooltip: 'RGB4'
-      }]
-    };
-
-    $scope.config = {
-      title: 'Test Data',
-      tooltips: true,
-      labels: false,
-      mouseover: function() {
-        return;
-      },
-      mouseout: function() {
-        return;
-      },
-      click: function() {
-        return;
-      },
-      legend: {
-        display: false,
-        position: 'right',
-        htmlEnabled: false
-      },
-      colors: ['red', 'green', 'blue', 'black'],
-      lineLegend: 'lineEnd',
-      lineCurveType: 'cardinal',
-      isAnimate: true,
-      yAxisTickFormat: 's',
-      xAxisMaxTicks: 7,
-      xAxisTickFormat: 's',
-      waitForHeightAndWidth: true
-    };
+		$scope.options = {
+		  axes: {
+		    x: {key: 'x', labelFunction: function(value) {return value;}, type: 'linear', ticks: 5},
+		    y: {type: 'linear', ticks: 5}
+		  },
+		  series: [
+		    {y: 'y', color: 'steelblue', thickness: '4px', type: 'line', label: 'Standard Curve'},
+		  ],
+		  lineMode: 'linear',
+		  tension: 0.7,
+		  tooltip: {mode: 'scrubber', formatter: function(x, y, series) {return 'pouet';}},
+		  drawLegend: true,
+		  drawDots: true,
+		  columnsHGap: 5
+		};
 
     $scope.selectedTest = -1;
     $scope.clickTest = function(indx) {

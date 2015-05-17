@@ -480,7 +480,7 @@ exports.review = function(req, res) {
     select: 'displayName'
   }, {
     path: '_assay',
-    select: '_id name'
+    select: '_id name standardCurve'
   }, {
     path: '_device',
     select: '_id name'

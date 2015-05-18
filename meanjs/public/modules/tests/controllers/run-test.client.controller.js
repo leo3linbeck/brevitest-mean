@@ -92,11 +92,11 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 				Notification.error('Unknown cartridge');
 				return;
 			}
-
+			var cartridgeID = $scope.cartridges[$scope.activeCartridge]._id;
 			$http.post('/tests/begin', {
 					assayID: $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]._id,
 					deviceID: $scope.devices[$scope.activeDevice]._id,
-					cartridgeID: $scope.cartridges[$scope.activeCartridge]._id,
+					cartridgeID: cartridgeID,
 					prescriptionID: $scope.prescriptions[$scope.activePrescription]._id
 				}).
 				success(function(data, status, headers, config) {
@@ -106,6 +106,18 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 						}).
 						success(function(data, status, headers, config) {
 							$scope.cartridges = data;
+					  }).
+					  error(function(err, status, headers, config) {
+							console.log(err);
+							Notification.error(err.message);
+					  });
+					$http.post('/tests/start_daemon', {
+							test: data.test,
+							sparkDevice: data.sparkDevice,
+							cartridgeID: cartridgeID
+						}).
+						success(function(data, status, headers, config) {
+							Notification.success('Test complete');
 					  }).
 					  error(function(err, status, headers, config) {
 							console.log(err);

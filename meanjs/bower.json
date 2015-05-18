@@ -17,7 +17,7 @@
     "angular-ui-notification": "~0.0.5",
     "d3": "~3.5.5",
     "angular-charts": "~0.2.7",
-    "n3-line-chart": "~1.1.6"
+    "n3-line-chart": "~1.1.8"
   },
   "resolutions": {
     "d3": "~3.5.5"

@@ -21,6 +21,12 @@ module.exports = function(app) {
 	app.route('/tests/monitor')
 	  .all(tests.monitor);
 
+	app.route('/tests/start_daemon')
+	  .all(tests.start_daemon);
+
+	app.route('/tests/stop_daemon')
+	  .all(tests.stop_daemon);
+
 	app.route('/tests/status')
 	  .all(tests.status);
 

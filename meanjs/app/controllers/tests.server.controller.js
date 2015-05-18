@@ -245,8 +245,81 @@ function bObjectToCodeString(bco) {
   return str;
 }
 
+var updating = false;
+
+function updateTestInProgress(sparkDevice, test) {
+  if (!sparkDevice.attributes.connected) {
+    throw new Error(test._device.name + ' not connected');
+  }
+
+  new Q(sparkDevice.getVariable('testrunning'))
+  .then(function(v) {
+    if (test._cartridge.toHexString() === v.result) { // test t is underway on this device
+      test.status = 'In progress';
+      return true;
+    }
+    else {
+      if (test.status !== 'Cancelled') {
+        test.status = 'Complete';
+      }
+      return false;
+    }
+  })
+  .then(function(test_in_progress) {
+    if (test_in_progress) {
+      return new Q(sparkDevice.getVariable('percentdone'));
+    }
+    else {
+      if (test.status === 'Cancelled') {
+        return {result: test.percentComplete};
+      }
+      else {
+        return {result: 100};
+      }
+    }
+  })
+  .then(function(pctDone) {
+    test.percentComplete = pctDone.result;
+    console.log('save');
+    test.save();
+    return test;
+  })
+  .fail(function(err) {
+    console.log('Error', sparkDevice, test);
+    throw new Error(err);
+  })
+  .done();
+}
+
+exports.start_daemon = function(sparkDevice, test) {
+  var startTime = new Date();
+  var timeoutLimit = 1200000; // timeout after 20 minutes
+  var runInterval = 5000; // check every 5 seconds
+  updating = true;
+  (function doIt() {
+    setTimeout(function() {
+      updateTestInProgress(sparkDevice, test);
+      var now = new Date();
+      if ((now - startTime) > timeoutLimit) {
+        updating = false;
+      }
+    }, runInterval)
+    .then(function() {
+      if (updating) {
+        doIt();
+      }
+    }, function(err) {
+      console.log(err);
+    });
+  })();
+};
+
+exports.stop_daemon = function() {
+  updating = false;
+};
+
 exports.begin = function(req, res) {
-  var bcode, bcode_str, cartridge, device, max_payload, packet_count, sparkDevice, sparkID, step;
+  var bcode, bcode_str, cartridge, device, max_payload, packet_count, sparkDevice, sparkID, step, test;
 
   Q.fcall(function(id) {
       step = 'Device.findOneAndUpdate';
@@ -285,7 +358,7 @@ exports.begin = function(req, res) {
     .then(function() {
       step = 'Create test';
 
-      var test = new Test();
+      test = new Test();
       test.user = req.user;
       test._assay = req.body.assayID;
       test._device = req.body.deviceID;
@@ -359,7 +432,9 @@ exports.begin = function(req, res) {
 
       if (result.return_value === 1) {
         res.jsonp({
-          message: 'Test started'
+          message: 'Test started',
+          test: test,
+          sparkDevice: sparkDevice
         });
       } else {
         throw new Error('Test not started');

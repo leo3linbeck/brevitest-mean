@@ -9,6 +9,7 @@ var mongoose = require('mongoose'),
   Assay = mongoose.model('Assay'),
   Device = mongoose.model('Device'),
   Cartridge = mongoose.model('Cartridge'),
+  Spark = mongoose.model('Spark'),
   sparkcore = require('spark'),
   Q = require('q'),
   _ = require('lodash');
@@ -435,6 +436,120 @@ exports.update = function(req, res) {
   });
 };
 
+function createStatusPromise(sparkDevices, testID) {
+  var c, s, test;
+
+  console.log('status', testID);
+  return Q.fcall(function() {
+    return new Q(Test.findById(testID).populate([{
+        path: '_device',
+        select: '_spark name'
+      }, {
+        path: '_cartridge',
+        select: '_id'
+      }]).exec());
+    })
+    .then(function(t) {
+      test = t;
+      c = test._cartridge._id;
+      return new Q(Spark.findById(test._device._spark).exec());
+    })
+    .then(function(spk) {
+      s = _.findWhere(sparkDevices, {
+        id: spk.sparkID
+      });
+      if (!s.attributes.connected) {
+        throw new Error(test._device.name + ' not connected');
+      }
+      return new Q(s.getVariable('testrunning'));
+    })
+    .then(function(v) {
+      if (c.toHexString() === v.result) { // test t is underway on this device
+        test.status = 'In progress';
+        return true;
+      }
+      else {
+        if (test.status !== 'Cancelled') {
+          test.status = 'Complete';
+        }
+        return false;
+      }
+    })
+    .then(function(test_in_progress) {
+      if (test_in_progress) {
+        return new Q(s.getVariable('percentdone'));
+      }
+      else {
+        if (test.status === 'Cancelled') {
+          return {result: test.percentComplete};
+        }
+        else {
+          return {result: 100};
+        }
+      }
+    })
+    .then(function(pctDone) {
+      test.percentComplete = pctDone.result;
+      console.log('save');
+      test.save();
+      return test;
+    });
+}
+
+exports.status = function(req, res) {
+  console.log('Test status');
+
+  var sparkDevice, sparkID;
+  var tests = req.body.tests;
+  var testIDs = _.uniq(_.pluck(_.pluck(tests, '_device'), '_id'));
+
+  new Q(Device.find({_id : {$in: testIDs}}).populate('_spark', 'sparkID').exec())
+    .then(function(d) {
+      return new Q(sparkcore.login({
+        username: 'leo3@linbeck.com',
+        password: '2january88'
+      }));
+    })
+    .then(function() {
+      return new Q(sparkcore.listDevices());
+    })
+    .then(function(sparkDevices) {
+      var p = [];
+      console.log(sparkDevices);
+      tests.forEach(function(t) {
+        p.push(createStatusPromise(sparkDevices, t._id));
+      });
+      return Q.allSettled(p);
+    })
+    .then(function() {
+      console.log('find');
+      return new Q(Test.find({
+        percentComplete: {
+          $lt: 100
+        }
+      }).sort('-created').populate([{
+        path: 'user',
+        select: 'displayName'
+      }, {
+        path: '_assay',
+        select: '_id name'
+      }, {
+        path: '_device',
+        select: '_id name _spark'
+      }, {
+        path: '_cartridge',
+        select: '_id name result failed BCODE startedOn finishedOn'
+      }]).exec());
+    })
+    .then(function(t) {
+      res.jsonp(t);
+    })
+    .fail(function(err) {
+      console.log('Status update failed');
+    })
+    .done();
+};
+
 exports.monitor = function(req, res) {
   res.jsonp({
     message: 'Monitoring started'
@@ -446,7 +561,7 @@ exports.underway = function(req, res) {
     percentComplete: {
       $lt: 100
     }
-  }).sort('name').populate([{
+  }).sort('-created').populate([{
     path: 'user',
     select: 'displayName'
   }, {
@@ -454,7 +569,7 @@ exports.underway = function(req, res) {
     select: '_id name'
   }, {
     path: '_device',
-    select: '_id name'
+    select: '_id name _spark'
   }, {
     path: '_cartridge',
     select: '_id name result failed BCODE startedOn finishedOn'
@@ -464,7 +579,6 @@ exports.underway = function(req, res) {
         message: errorHandler.getErrorMessage(err)
       });
     } else {
-      tests[0].percentComplete = 50;
       res.jsonp(tests);
     }
   });
@@ -475,7 +589,7 @@ exports.review = function(req, res) {
     _cartridge: {
       $exists: true
     }
-  }).sort('name').populate([{
+  }).sort('-created').populate([{
     path: 'user',
     select: 'displayName'
   }, {
@@ -496,9 +610,6 @@ exports.review = function(req, res) {
         message: errorHandler.getErrorMessage(err)
       });
     } else {
-      if (tests.length) {
-        tests[0].percentComplete = 50;
-      }
       res.jsonp(tests);
     }
   });

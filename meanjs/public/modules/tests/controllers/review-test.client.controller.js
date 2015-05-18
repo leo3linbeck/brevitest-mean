@@ -16,40 +16,42 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
       });
     };
 
-		$scope.loadGraph = function(testID) {
-			var t = _.findWhere($scope.tests, {_id: testID});
-			$scope.data = t._assay.standardCurve;
-		};
+    $scope.loadGraph = function(testID) {
+      var t = _.findWhere($scope.tests, {
+        _id: testID
+      });
+      $scope.data = t._assay.standardCurve;
+    };
 
-		function updateChart(test_str) {
-			var data = test_str.split('\n');
-			var c, i, index = 2, pos;
+    function updateChart(test_str) {
+      var data = test_str.split('\n');
+      var c, i, index = 2,
+        pos;
 
-			// skip to sensor data
-			do {
-				pos = data[index].indexOf(',');
-				if (pos === -1) {
-					c = data[index];
-				}
-				else {
-					c = data[index].substring(0, pos);
-				}
-				index += 1;
-			} while (index <= data.length && c !== '99');
+      // skip to sensor data
+      do {
+        pos = data[index].indexOf(',');
+        if (pos === -1) {
+          c = data[index];
+        } else {
+          c = data[index].substring(0, pos);
+        }
+        index += 1;
+      } while (index <= data.length && c !== '99');
 
-			for (i = index; i < data.length; i += 2) {
-				console.log(data[i], data[i+1]);
-			}
+      for (i = index; i < data.length; i += 2) {
+        console.log(data[i], data[i + 1]);
+      }
 
-			console.log(data);
-		}
+      console.log(data);
+    }
 
     $scope.loadRawData = function(cartridgeID) {
       $http.post('/sparks/record_by_cartridge_id', {
         cartridgeID: cartridgeID
       }).
       success(function(data, status, headers, config) {
-				console.log(data);
+        console.log(data);
         $scope.tests.forEach(function(e) {
           if (e._cartridge._id === cartridgeID) {
             e._cartridge.rawData = JSON.parse(data);
@@ -62,21 +64,40 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
       Notification.info('Loading data from device');
     };
 
-		$scope.options = {
-		  axes: {
-		    x: {key: 'x', labelFunction: function(value) {return value;}, type: 'linear', ticks: 5},
-		    y: {type: 'linear', ticks: 5}
-		  },
-		  series: [
-		    {y: 'y', color: 'steelblue', thickness: '4px', type: 'line', label: 'Standard Curve'},
-		  ],
-		  lineMode: 'linear',
-		  tension: 0.7,
-		  tooltip: {mode: 'scrubber', formatter: function(x, y, series) {return 'pouet';}},
-		  drawLegend: true,
-		  drawDots: true,
-		  columnsHGap: 5
-		};
+    $scope.options = {
+      axes: {
+        x: {
+          key: 'x',
+          labelFunction: function(value) {
+            return value;
+          },
+          type: 'linear',
+          ticks: 5
+        },
+        y: {
+          type: 'linear',
+          ticks: 5
+        }
+      },
+      series: [{
+        y: 'y',
+        color: 'steelblue',
+        thickness: '4px',
+        type: 'line',
+        label: 'Standard Curve'
+      }, ],
+      lineMode: 'linear',
+      tension: 0.7,
+      tooltip: {
+        mode: 'scrubber',
+        formatter: function(x, y, series) {
+          return ('(' + x + ',' + y + ')');
+        }
+      },
+      drawLegend: true,
+      drawDots: true,
+      columnsHGap: 5
+    };
 
     $scope.selectedTest = -1;
     $scope.clickTest = function(indx) {

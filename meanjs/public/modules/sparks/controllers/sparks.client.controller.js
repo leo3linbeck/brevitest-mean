@@ -5,31 +5,6 @@ angular.module('sparks').controller('SparksController', ['$scope', '$http', '$st
   function($scope, $http, $stateParams, $location, $timeout, Authentication, Sparks, Notification) {
       $scope.authentication = Authentication;
 
-      $scope.alerts = [];
-      $scope.closeAlert = function(index) {
-        $scope.alerts.splice(index, 1);
-      };
-      function timeoutAlert(key) {
-        $scope.alerts.every(function(e, i) {
-          if (e.timeoutKey === key) {
-            $scope.alerts.splice(i, 1);
-            $scope.$apply();
-            return false;
-          }
-          return true;
-        });
-      }
-      function addAlert(alertArray, type, message, timeout) {
-        var key;
-
-        alertArray.push({type: type, msg: message});
-        if (timeout) {
-          key = Math.random().toString();
-          alertArray[alertArray.length - 1].timeoutKey = key;
-          $timeout(timeoutAlert.bind(null, key), timeout, false);
-        }
-      }
-
       $scope.eraseArchivedData = function() {
         $http.post('/sparks/erase_archived_data', {
   					spark: $scope.spark
@@ -76,6 +51,19 @@ angular.module('sparks').controller('SparksController', ['$scope', '$http', '$st
   			  error(function(err, status, headers, config) {
   					console.log(err);
   					$scope.deviceInitialized = false;
+  					Notification.error(err.message);
+  			  });
+      };
+
+      $scope.reflash = function() {
+        $http.post('/sparks/reflash', {
+  					spark: $scope.spark
+  				}).
+  				success(function(data, status, headers, config) {
+            Notification.success('Firmware flashed successfully');
+  			  }).
+  			  error(function(err, status, headers, config) {
+  					console.log(err);
   					Notification.error(err.message);
   			  });
       };

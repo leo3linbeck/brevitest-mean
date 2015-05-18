@@ -10,6 +10,7 @@ var mongoose = require('mongoose'),
   Cartridge = mongoose.model('Cartridge'),
   _ = require('lodash'),
   sparkcore = require('spark'),
+  fs = require('fs'),
   Q = require('q');
 
 /**
@@ -40,6 +41,47 @@ var mongoose = require('mongoose'),
    'all_params': '03',
    'one_param': '04'
  };
+
+exports.reflash = function(req, res) {
+   console.log('Flash firmware', req.body.spark);
+
+   Q.fcall(function(auth) {
+       return new Q(sparkcore.login(auth));
+       }, {
+         username: 'leo3@linbeck.com',
+         password: '2january88'
+       })
+     .then(function(token) {
+       return new Q(sparkcore.listDevices());
+     })
+     .then(function(devices) {
+       console.log('Flashing firmware', devices);
+
+       var sparkDevice = _.findWhere(devices, {id: req.body.spark.sparkID});
+       console.log(sparkDevice);
+
+       return [sparkDevice, fs.readdirSync('app/firmware')];
+     })
+     .spread(function(sparkDevice, files) {
+       console.log(sparkDevice, files);
+       if (!files || !files.length || files.length > 1) {
+         throw new Error('Firmware folder must have exactly one file');
+       }
+       var f = files[0];
+       if (f.substring(0, 8) !== 'firmware' || f.substring(f.length - 4) !== '.bin') {
+         throw new Error('Firmware file not found');
+       }
+       return new Q(sparkDevice.flash('app/firmware/' + f));
+     })
+     .then(function(result) {
+       res.jsonp(result);
+     })
+     .fail(
+       function(err) {
+         console.log('Flashing firmware failed', err);
+       })
+     .done();
+};
 
 exports.erase_archived_data = function(req, res) {
     console.log('Erase archived data', req.body.spark);

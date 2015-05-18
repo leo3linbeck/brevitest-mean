@@ -12,6 +12,9 @@ module.exports = function(app) {
 	app.route('/sparks/refresh')
 		.get(sparks.refresh);
 
+	app.route('/sparks/reflash')
+		.post(sparks.reflash);
+
 	app.route('/sparks/archive_size')
 		.post(sparks.get_archive_size);
 

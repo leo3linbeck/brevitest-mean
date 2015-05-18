@@ -12,7 +12,12 @@
           </div>
           <label class="control-label" for="sparkID">Spark ID</label>
           <div class="controls">
-            <input type="text" data-ng-model="spark.sparkID" id="sparkID" class="form-control" placeholder="Spark ID (32 hex digits)" required>
+            <p class="input-group">
+              <input type="text" data-ng-model="spark.sparkID" id="sparkID" class="form-control" placeholder="Spark ID (32 hex digits)" required>
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default" ng-click="reflash()">Reflash Firmware</button>
+              </span>
+            </p>
           </div>
           <br/>
           <br/>

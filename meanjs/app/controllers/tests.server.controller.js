@@ -245,84 +245,11 @@ function bObjectToCodeString(bco) {
   return str;
 }
 
-var updating = false;
-
-function updateTestInProgress(sparkDevice, test) {
-  if (!sparkDevice.attributes.connected) {
-    throw new Error(test._device.name + ' not connected');
-  }
-
-  new Q(sparkDevice.getVariable('testrunning'))
-  .then(function(v) {
-    if (test._cartridge.toHexString() === v.result) { // test t is underway on this device
-      test.status = 'In progress';
-      return true;
-    }
-    else {
-      if (test.status !== 'Cancelled') {
-        test.status = 'Complete';
-      }
-      return false;
-    }
-  })
-  .then(function(test_in_progress) {
-    if (test_in_progress) {
-      return new Q(sparkDevice.getVariable('percentdone'));
-    }
-    else {
-      if (test.status === 'Cancelled') {
-        return {result: test.percentComplete};
-      }
-      else {
-        return {result: 100};
-      }
-    }
-  })
-  .then(function(pctDone) {
-    test.percentComplete = pctDone.result;
-    console.log('save');
-    test.save();
-    return test;
-  })
-  .fail(function(err) {
-    console.log('Error', sparkDevice, test);
-    throw new Error(err);
-  })
-  .done();
-}
-
-exports.start_daemon = function(sparkDevice, test) {
-  var startTime = new Date();
-  var timeoutLimit = 1200000; // timeout after 20 minutes
-  var runInterval = 5000; // check every 5 seconds
-  updating = true;
-  (function doIt() {
-    setTimeout(function() {
-      updateTestInProgress(sparkDevice, test);
-      var now = new Date();
-      if ((now - startTime) > timeoutLimit) {
-        updating = false;
-      }
-    }, runInterval)
-    .then(function() {
-      if (updating) {
-        doIt();
-      }
-    }, function(err) {
-      console.log(err);
-    });
-  })();
-};
-
-exports.stop_daemon = function() {
-  updating = false;
-};
-
 exports.begin = function(req, res) {
-  var bcode, bcode_str, cartridge, device, max_payload, packet_count, sparkDevice, sparkID, step, test;
+  var cartridge, device, sparkDevice, sparkID, step, test;
 
   Q.fcall(function(id) {
-      step = 'Device.findOneAndUpdate';
+      console.log('Device.findOneAndUpdate');
       return new Q(Device.findOneAndUpdate({
         _id: id
       }, {
@@ -330,7 +257,7 @@ exports.begin = function(req, res) {
       }).populate('_spark', 'sparkID').exec());
     }, req.body.deviceID)
     .then(function(d) {
-      step = 'Spark login';
+      console.log('Spark login');
       device = d;
       sparkID = device._spark.sparkID;
       return new Q(sparkcore.login({
@@ -339,14 +266,12 @@ exports.begin = function(req, res) {
       }));
     })
     .then(function() {
-      step = 'Spark listDevices';
-      console.log(step, sparkID);
+      console.log('Spark listDevices', sparkID);
 
       return new Q(sparkcore.listDevices());
     })
     .then(function(sparkDevices) {
-      step = 'Check whether device is online';
-      console.log(step, sparkDevices);
+      console.log('Check whether device is online', sparkDevices);
 
       sparkDevice = _.findWhere(sparkDevices, {
         id: sparkID
@@ -356,7 +281,7 @@ exports.begin = function(req, res) {
       }
     })
     .then(function() {
-      step = 'Create test';
+      console.log('Create test');
 
       test = new Test();
       test.user = req.user;
@@ -379,7 +304,7 @@ exports.begin = function(req, res) {
       return test;
     })
     .then(function(t) {
-      step = 'Update cartridge';
+      console.log('Update cartridge');
       return new Q(Cartridge.findOneAndUpdate({
         _id: t._cartridge
       }, {
@@ -390,15 +315,15 @@ exports.begin = function(req, res) {
       }).exec());
     })
     .then(function(c) {
-      step = 'Load BCODE';
+      console.log('Load BCODE');
       return new Q(Assay.findById({
         _id: c._assay
       }).exec());
     })
     .then(function(a) {
-      step = 'Send BCODE and start test';
-      console.log(step);
+      console.log('Send BCODE and start test');
 
+      var bcode, bcode_str, max_payload, packet_count;
       var end, i, len, num, payload, start;
       var args = [];
 
@@ -427,14 +352,12 @@ exports.begin = function(req, res) {
 
     })
     .then(function(result) {
-      step = 'Return response';
-      console.log(step, result);
-
+      console.log('Return response', result);
+      var testID = test._id.toHexString();
       if (result.return_value === 1) {
         res.jsonp({
           message: 'Test started',
-          test: test,
-          sparkDevice: sparkDevice
+          testID: testID
         });
       } else {
         throw new Error('Test not started');
@@ -538,9 +461,12 @@ function createStatusPromise(sparkDevices, testID) {
       }
       return new Q(s.getVariable('testrunning'));
     })
-    .then(function(v) {
-      if (c.toHexString() === v.result) { // test t is underway on this device
-        test.status = 'In progress';
+    .then(function(testrunning) {
+      return [testrunning, new Q(s.getVariable('status'))];
+    })
+    .spread(function(testrunning, status) {
+      if (c.toHexString() === testrunning.result) { // test t is underway on this device
+        test.status = status.result;
         return true;
       }
       else {
@@ -565,10 +491,11 @@ function createStatusPromise(sparkDevices, testID) {
     })
     .then(function(pctDone) {
       test.percentComplete = pctDone.result;
-      console.log('save');
+      console.log('save', test);
       test.save();
       return test;
-    });
+    })
+    .done();
 }
 
 exports.status = function(req, res) {
@@ -625,12 +552,6 @@ exports.status = function(req, res) {
     .done();
 };
 
-exports.monitor = function(req, res) {
-  res.jsonp({
-    message: 'Monitoring started'
-  });
-};
-
 exports.underway = function(req, res) {
   Test.find({
     percentComplete: {
@@ -648,7 +569,7 @@ exports.underway = function(req, res) {
   }, {
     path: '_cartridge',
     select: '_id name result failed BCODE startedOn finishedOn'
-  }]).exec(function(err, tests) {
+  }]).limit(20).exec(function(err, tests) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -658,6 +579,8 @@ exports.underway = function(req, res) {
     }
   });
 };
+
+exports.monitor = exports.underway;
 
 exports.review = function(req, res) {
   Test.find({
@@ -679,7 +602,7 @@ exports.review = function(req, res) {
   }, {
     path: '_cartridge',
     select: '_id name result failed rawData startedOn finishedOn'
-  }]).exec(function(err, tests) {
+  }]).limit(20).exec(function(err, tests) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -711,7 +634,7 @@ exports.delete = function(req, res) {
  * List of Tests
  */
 exports.list = function(req, res) {
-  Test.find().sort('-created').populate('user', 'displayName').exec(function(err, tests) {
+  Test.find().limit(20).sort('-created').populate('user', 'displayName').exec(function(err, tests) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)

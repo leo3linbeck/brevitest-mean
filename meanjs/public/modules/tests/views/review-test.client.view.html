@@ -1,6 +1,6 @@
 <section data-ng-controller="ReviewTestController" data-ng-init="setup()">
   <div class="page-header">
-    <h1>Review Tests</h1>
+    <h1>Review Tests ({{tests.length}})</h1>
   </div>
   <div class="col-md-12">
     <ul class="list-group">
@@ -11,7 +11,7 @@
             <span style="margin-left: 1em"></span>DOB:
             <strong>{{test._prescription.patientDateOfBirth | date: "mediumDate"}}</strong>
           </small>
-          <span class="badge pull-right" ng-class="{'btn btn-success': !test.failed, 'btn btn-danger': test.failed}">{{test.failed ? 'Failed' : 'OK'}}</span>
+          <span class="badge pull-right" ng-class="{'btn btn-success': !test.failed, 'btn btn-danger': test.failed}">{{test.failed ? 'Failure' : 'Success'}}</span>
         </p>
         <p>
           <small>Test started on {{test._cartridge.startedOn | date: "medium"}}</small>

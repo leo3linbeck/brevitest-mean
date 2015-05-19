@@ -1,39 +1,26 @@
 'use strict';
 
 // Tests controller
-angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$timeout', 'Tests', 'Notification',
-	function($scope, $http, $timeout, Tests, Notification) {
-		function runChronjob() {
-			console.log('runChronjob');
-			var startTime = new Date();
-			var timeoutLimit = 1000000;
-			var runInterval = 5000;
-			(function doIt() {
-				$timeout(function() {
-					$scope.chronjob();
-					var now = new Date();
-					if ((now - startTime) > timeoutLimit) {
-						$scope.updateOn = false;
-						Notification.info('Update timeout');
-					}
-				}, runInterval)
-				.then(function() {
-					if ($scope.updateOn) {
-						doIt();
-					}
-				}, function(err) {
-					console.log(err);
-				});
-			})();
-		}
+angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$interval', 'Tests', 'Notification',
+	function($scope, $http, $interval, Tests, Notification) {
 
 		$scope.updateOn = false;
 		$scope.toggleChronjob = function() {
 			console.log('runChronjob');
 			$scope.updateOn = !$scope.updateOn;
 			if ($scope.updateOn) {
-				Notification.info('Starting updates');
-				runChronjob();
+				Notification.info('Updates started');
+				var numberOfIntervals = 20;
+				var intervalTime = 10000;
+				$scope.chronjob();
+				return $interval(function() {
+						$scope.chronjob();
+				}, intervalTime, numberOfIntervals)
+				.then(function(intervalPromise) {
+					if (!$scope.updateOn) {
+						$interval.cancel(intervalPromise);
+					}
+				});
 			}
 			else {
 				Notification.info('Updates stopped');
@@ -45,6 +32,11 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 				success(function(data, status, headers, config) {
 					console.log(data);
 					$scope.tests = data;
+					$scope.updateOn = false;
+					if (data.length !== 0) {
+						$scope.toggleChronjob();
+					}
+
 			  }).
 			  error(function(err, status, headers, config) {
 					Notification.error(err.message);
@@ -52,16 +44,19 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 		};
 
 		$scope.chronjob = function() {
-			$http.post('/tests/status', {
-				tests: $scope.tests
-			}).
-				success(function(data, status, headers, config) {
-					console.log(data);
-					$scope.tests = data;
-			  }).
-			  error(function(err, status, headers, config) {
-					Notification.error(err.message);
-			  });
+			if ($scope.updateOn) {
+				$http.post('/tests/status', {
+					tests: $scope.tests
+				}).
+					success(function(data, status, headers, config) {
+						console.log(data);
+						$scope.tests = data;
+						$scope.updateOn = (data.length !== 0);
+				  }).
+				  error(function(err, status, headers, config) {
+						Notification.error(err.message);
+				  });
+			}
 		};
 
 		$scope.selectedTest = -1;

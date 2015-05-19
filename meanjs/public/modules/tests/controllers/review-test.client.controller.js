@@ -23,29 +23,6 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
       $scope.data = t._assay.standardCurve;
     };
 
-    function updateChart(test_str) {
-      var data = test_str.split('\n');
-      var c, i, index = 2,
-        pos;
-
-      // skip to sensor data
-      do {
-        pos = data[index].indexOf(',');
-        if (pos === -1) {
-          c = data[index];
-        } else {
-          c = data[index].substring(0, pos);
-        }
-        index += 1;
-      } while (index <= data.length && c !== '99');
-
-      for (i = index; i < data.length; i += 2) {
-        console.log(data[i], data[i + 1]);
-      }
-
-      console.log(data);
-    }
-
     $scope.loadRawData = function(cartridgeID) {
       $http.post('/sparks/record_by_cartridge_id', {
         cartridgeID: cartridgeID

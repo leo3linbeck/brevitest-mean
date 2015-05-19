@@ -109,7 +109,12 @@ exports.list = function(req, res) {
  * Cartridge middleware
  */
 exports.cartridgeCountByAssayID = function(req, res, next, id) {
-	Cartridge.count({_assay: id}).exec(function(err, count) {
+	Cartridge.count({
+		$and: [
+			{_assay: id},
+			{_test: {$exists: false}}
+		]
+	}).exec(function(err, count) {
 		if (err) return next(err);
 		req.count = count ;
 		next();

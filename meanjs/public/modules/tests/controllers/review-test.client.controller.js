@@ -16,6 +16,41 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
       });
     };
 
+    $scope.testClass = function(index) {
+      var test = $scope.tests[index];
+      var analysis = test._assay.analysis;
+      if (test._cartridge.finishedOn) {
+        if (test.result > analysis.redMax || test.result < analysis.redMin) {
+          return 'btn btn-lg btn-danger pull-right';
+        }
+        if (test.result > analysis.greenMax || test.result < analysis.greenMin) {
+          return 'btn btn-lg btn-warning pull-right';
+        }
+        return 'btn btn-lg btn-success pull-right';
+      }
+      return '';
+    };
+
+    $scope.updateTest = function(index) {
+      console.log($scope.tests[index]);
+      if ($scope.tests[index]._cartridge.finishedOn) {
+        Notification.error('Test already updated');
+      }
+      else {
+        $http.post('/tests/update_one_test', {
+          testID: $scope.tests[index]._id
+        }).
+        success(function(data, status, headers, config) {
+          console.log(data);
+          $scope.tests[index] = data;
+        }).
+        error(function(err, status, headers, config) {
+          Notification.error(err.message);
+        });
+        Notification.success('Test record updated');
+      }
+    };
+
     $scope.loadGraph = function(testID) {
       var t = _.findWhere($scope.tests, {
         _id: testID

@@ -11,6 +11,7 @@ var mongoose = require('mongoose'),
   Cartridge = mongoose.model('Cartridge'),
   Spark = mongoose.model('Spark'),
   sparkcore = require('spark'),
+  sparks = require('../../app/controllers/sparks.server.controller'),
   Q = require('q'),
   _ = require('lodash');
 
@@ -434,6 +435,127 @@ exports.update = function(req, res) {
   });
 };
 
+var readResult;
+
+function requestAndReadRegister(id, sparkDevice, requestIndex, requestCode, requestParam) {
+  var param = id + zeropad(requestIndex, 6) + requestCode + (requestParam ? requestParam : '');
+  console.log(param);
+
+  return Q.fcall(function(p) {
+    return new Q(sparkDevice.callFunction('requestdata', p));
+  }, param)
+  .then(function(result) {
+    console.log('requestdata', result);
+    if (result.return_value < 0) {
+      throw new Error('Request to read register failed');
+    }
+    var register = new Q(sparkDevice.getVariable('register'));
+    return [result.return_value, register];
+  })
+  .spread(function(index, register) {
+    console.log('get register', index, register);
+    readResult += register.result;
+    if(index === 0) {
+      console.log('Last call');
+      return new Q(sparkDevice.callFunction('requestdata', id + '999999'));
+    }
+    else {
+      return requestAndReadRegister(id, sparkDevice, index, requestCode, requestParam);
+    }
+  });
+}
+
+exports.update_one_test = function(req, res) {
+  console.log('Updating one test', req.body.testID);
+
+  var cartridge, sparkDevice, sparkID, test;
+  readResult = '';
+
+  Q.fcall(function(id) {
+      return new Q(Test.findById(id).populate([{
+        path: 'user',
+        select: 'displayName'
+      }, {
+        path: '_assay',
+        select: '_id name standardCurve analysis'
+      }, {
+        path: '_device',
+        select: '_id name'
+      }, {
+        path: '_prescription',
+        select: '_id name patientNumber patientGender patientDateOfBirth'
+      }, {
+        path: '_cartridge',
+        select: '_id name result failed rawData startedOn finishedOn'
+      }]).exec());
+    }, req.body.testID)
+    .then(function(t) {
+      test = t;
+      return new Q(Cartridge.findById(test._cartridge._id).exec());
+    })
+    .then(function(c) {
+      cartridge = c;
+      return new Q(Device.findById(test._device._id).populate('_spark', 'sparkID').exec());
+    })
+    .then(function(device) {
+      sparkID = device._spark.sparkID;
+      return new Q(sparkcore.login({
+        username: 'leo3@linbeck.com',
+        password: '2january88'
+      }));
+    })
+    .then(function(token) {
+      return new Q(sparkcore.listDevices());
+    })
+    .then(function(devices) {
+      console.log('Spark devices', devices);
+
+      var sparkDevice = _.findWhere(devices, {id: sparkID});
+      console.log(sparkDevice);
+      if (!sparkDevice.attributes.connected) {
+        throw new Error(test._device.name + ' is not online.');
+      }
+      return new Q(requestAndReadRegister(test._cartridge, sparkDevice, 0, brevitestRequest.test_record_by_uuid));
+    })
+    .then(function() {
+      var data, cmd, i = 2, params;
+
+      cartridge.rawData = readResult;
+      data = cartridge.rawData.split('\n');
+      params = data[0].split('\t');
+      cartridge.startedOn = Date(parseInt(params[1]));
+      cartridge.finishedOn = Date(parseInt(params[2]));
+      do {
+        cmd = data[i++].substring(0, 2);
+      } while (cmd !== '99' && i < data.length);
+
+      cartridge.result = -parseInt(data[i].split('\t')[4]) + parseInt(data[i + 1].split('\t')[4]);
+      cartridge.result += parseInt(data[data.length - 3].split('\t')[4]) - parseInt(data[data.length - 2].split('\t')[4]);
+      console.log(cartridge.result);
+      cartridge.failed = test.percentComplete >= 100;
+      return new Q(cartridge.save());
+    })
+    .then(function() {
+      test.percentComplete = test.percentComplete > 100 ? 100 : test.percentComplete;
+      test.startedOn = cartridge.startedOn;
+      test.finishedOn = cartridge.finishedOn;
+      test.result = cartridge.result;
+      test._cartridge.startedOn = cartridge.startedOn;
+      test._cartridge.finishedOn = cartridge.finishedOn;
+      test._cartridge.rawData = cartridge.rawData;
+      test._cartridge.failed = cartridge.failed;
+      return new Q(test.save());
+    })
+    .then(function() {
+      res.jsonp(test);
+    })
+    .fail(
+      function(err) {
+        console.log('Record retrieval failed', err);
+      })
+    .done();
+};
+
 function createStatusPromise(sparkDevices, testID) {
   var c, s, test;
 
@@ -562,13 +684,16 @@ exports.underway = function(req, res) {
     select: 'displayName'
   }, {
     path: '_assay',
-    select: '_id name'
+    select: '_id name standardCurve analysis'
   }, {
     path: '_device',
-    select: '_id name _spark'
+    select: '_id name'
+  }, {
+    path: '_prescription',
+    select: '_id name patientNumber patientGender patientDateOfBirth'
   }, {
     path: '_cartridge',
-    select: '_id name result failed BCODE startedOn finishedOn'
+    select: '_id name result failed rawData startedOn finishedOn'
   }]).limit(20).exec(function(err, tests) {
     if (err) {
       return res.status(400).send({
@@ -592,7 +717,7 @@ exports.review = function(req, res) {
     select: 'displayName'
   }, {
     path: '_assay',
-    select: '_id name standardCurve'
+    select: '_id name standardCurve analysis'
   }, {
     path: '_device',
     select: '_id name'

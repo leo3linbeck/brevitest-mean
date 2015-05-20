@@ -10,7 +10,7 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			$scope.updateOn = !$scope.updateOn;
 			if ($scope.updateOn) {
 				Notification.info('Updates started');
-				var numberOfIntervals = 20;
+				var numberOfIntervals = 120;
 				var intervalTime = 10000;
 				$scope.chronjob();
 				return $interval(function() {

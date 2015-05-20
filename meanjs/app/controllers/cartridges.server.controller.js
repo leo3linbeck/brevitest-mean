@@ -6,7 +6,11 @@
 var mongoose = require('mongoose'),
 	errorHandler = require('./errors.server.controller'),
 	Cartridge = mongoose.model('Cartridge'),
+	Device = mongoose.model('Device'),
+	Spark = mongoose.model('Spark'),
+	Q = require('q'),
 	_ = require('lodash');
+	require('mongoose-pagination');
 
 exports.get_inventory = function(req, res) {
 	res.jsonp(req.count);
@@ -101,6 +105,23 @@ exports.list = function(req, res) {
 			});
 		} else {
 			res.jsonp(cartridges);
+		}
+	});
+};
+
+exports.load = function(req, res) {
+	Cartridge.find().paginate(req.body.start_item, req.body.end_item).sort('-created').populate('user', 'displayName').exec(function(err, cartridges, total) {
+		if (err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		} else {
+			Cartridge.count().exec(function(err, count) {
+				res.jsonp({
+					cartridges: cartridges,
+					number_of_items: count
+				});
+			});
 		}
 	});
 };

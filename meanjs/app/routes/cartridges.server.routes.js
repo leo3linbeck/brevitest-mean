@@ -12,6 +12,9 @@ module.exports = function(app) {
 	app.route('/cartridges/get_inventory/:assayId')
 		.get(cartridges.get_inventory);
 
+	app.route('/cartridges/load')
+		.post(cartridges.load);
+
 	app.route('/cartridges/unused')
 		.post(cartridges.get_unused);
 

@@ -1,8 +1,8 @@
 'use strict';
 
 // Cartridges controller
-angular.module('cartridges').controller('CartridgesController', ['$scope', '$stateParams', '$location', 'Authentication', 'Cartridges',
-	function($scope, $stateParams, $location, Authentication, Cartridges) {
+angular.module('cartridges').controller('CartridgesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Cartridges',
+	function($scope, $http, $stateParams, $location, Authentication, Cartridges) {
 		$scope.authentication = Authentication;
 
 		$scope.showResultsOnOpen = true;
@@ -53,9 +53,31 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$sta
 			});
 		};
 
+		$scope.currentPage = 0;
+
+		$scope.changePage = function() {
+			console.log($scope.currentPage);
+		};
+
 		// Find a list of Cartridges
 		$scope.find = function() {
-			$scope.cartridges = Cartridges.query();
+			$scope.cartridges = Cartridges.query({page: $scope.currentPage, pageSize: $scope.itemsPerPage});
+		};
+
+		$scope.load = function() {
+	      $http.post('/cartridges/load', {
+					page: $scope.currentPage,
+					pageSize: $scope.itemsPerPage
+				}).
+					success(function(data, status, headers, config) {
+	          console.log(data);
+						$scope.cartridges = data.cartridges;
+						$scope.totalItems = data.number_of_items;
+				  }).
+				  error(function(err, status, headers, config) {
+						console.log(err);
+						Notification.error(err.message);
+				  });
 		};
 
 		// Find existing Cartridge

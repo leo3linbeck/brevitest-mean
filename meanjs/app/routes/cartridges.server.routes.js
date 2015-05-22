@@ -9,14 +9,14 @@ module.exports = function(app) {
 		.get(cartridges.list)
 		.post(users.requiresLogin, cartridges.create);
 
-	app.route('/cartridges/get_inventory/:assayId')
-		.get(cartridges.get_inventory);
-
 	app.route('/cartridges/load')
 		.post(cartridges.load);
 
 	app.route('/cartridges/unused')
 		.post(cartridges.get_unused);
+
+	app.route('/cartridges/get_inventory/:assayId')
+		.get(cartridges.get_inventory);
 
 	app.route('/cartridges/:cartridgeId')
 		.get(cartridges.read)

@@ -9,240 +9,271 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 
     $scope.analysis = {};
     $scope.standardCurve = [];
-    $scope.BCODE = [
-      {
-        command: 'Start Test',
-        params: '0,0'
-      },
-      {
-        command: 'Read Sensors',
-        params: '10,500'
-      },
-      {
-        command: 'Finish Test',
-        params: ''
-      },
-    ];
+    var initialBCODE = [{
+      command: 'Start Test',
+      params: '0,0'
+    }, {
+      command: 'Read Sensors',
+      params: ''
+    }, {
+      command: 'Finish Test',
+      params: ''
+    }];
+    $scope.BCODE = angular.copy(initialBCODE);
 
     $scope.cartridgeInventory = 0;
 
     $scope.recalcInventory = function() {
       $http.get('/cartridges/get_inventory/' + $scope.assay._id).
-				success(function(data, status, headers, config) {
-          console.log(data);
-					$scope.cartridgeInventory = data;
-			  }).
-			  error(function(err, status, headers, config) {
-					console.log(err);
-					Notification.error(err.message);
-			  });
+      success(function(data, status, headers, config) {
+        console.log(data);
+        $scope.cartridgeInventory = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
     };
 
     $scope.make10Cartridges = function() {
       console.log('Making 10 cartridges');
       $http.post('/assays/make10cartridges', {
-          assay: $scope.assay
-				}).
-				success(function(data, status, headers, config) {
-					$scope.cartridgeInventory = data;
-			  }).
-			  error(function(err, status, headers, config) {
-					console.log(err);
-          Notification.error(err.message);
-			  });
+        assay: $scope.assay
+      }).
+      success(function(data, status, headers, config) {
+        $scope.cartridgeInventory = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
     };
 
     $scope.stdCurveSort = function() {
-      $scope.standardCurve.sort(function(a, b) {return (a.x - b.x);});
+      $scope.standardCurve.sort(function(a, b) {
+        return (a.x - b.x);
+      });
     };
 
     $scope.stdCurveAppend = function() {
-      $scope.standardCurve.push({x: 0, y: 0});
+      $scope.standardCurve.push({
+        x: 0,
+        y: 0
+      });
     };
 
     $scope.stdCurvePrepend = function() {
-      $scope.standardCurve.splice(0, 0, {x: 0, y: 0});
+      $scope.standardCurve.splice(0, 0, {
+        x: 0,
+        y: 0
+      });
     };
 
     $scope.stdCurveDelete = function(indx) {
       $scope.standardCurve.splice(indx, 1);
     };
 
-    $scope.BCODECommands = [
-      {
-    		num: '0',
-    		name: 'Start Test',
-        param_count: 2,
-    		description: 'Starts the test. Required to be the first command. Test executes until Finish Test command. Parameters are (sensor integration time, sensor gain).'
-    	},
-    	{
-    		num: '1',
-    		name: 'Delay',
-        param_count: 1,
-    		description: 'Waits for specified period of time. Parameter is (delay in milliseconds).'
-    	},
-    	{
-    		num: '2',
-    		name: 'Move',
-        param_count: 2,
-    		description: 'Moves the stage a specified number of steps at a specified speed. Parameters are (number of steps, step delay time in microseconds).'
-    	},
-    	{
-    		num: '3',
-    		name: 'Solenoid On',
-        param_count: 1,
-    		description: 'Energizes the solenoid for a specified amount of time. Parameter is (energize period in milliseconds).'
-    	},
-    	{
-    		num: '4',
-    		name: 'Device LED On',
-        param_count: 0,
-    		description: 'Turns on the device LED, which is visible outside the device. No parameters.'
-    	},
-    	{
-    		num: '5',
-    		name: 'Device LED Off',
-        param_count: 0,
-    		description: 'Turns off the device LED. No parameters.'
-    	},
-    	{
-    		num: '6',
-    		name: 'Device LED Blink',
-        param_count: 2,
-    		description: 'Blinks the device LED at a specified rate. Parameters, (number of blinks, period in milliseconds between change in LED state).'
-    	},
-    	{
-    		num: '7',
-    		name: 'Sensor LED On',
-        param_count: 1,
-    		description: 'Turns on the sensor LED at a given power. Parameter is (power, from 0 to 255).'
-    	},
-    	{
-    		num: '8',
-    		name: 'Sensor LED Off',
-        param_count: 0,
-    		description: 'Turns off the sensor LED. No parameters.'
-    	},
-    	{
-    		num: '9',
-    		name: 'Read Sensors',
-        param_count: 2,
-    		description: 'Takes readings from the sensors. Parameters are (number of samples [1-10], milliseconds between samples).'
-    	},
-    	{
-    		num: '10',
-    		name: 'Read QR Code',
-        param_count: 0,
-    		description: 'Reads the cartridge QR code. No parameters. [NOT IMPLEMENTED]'
-    	},
-    	{
-    		num: '11',
-    		name: 'Disable Sensor',
-        param_count: 0,
-    		description: 'Disables the sensors, switching them to low-power mode. No parameters.'
-    	},
-    	{
-    		num: '12',
-    		name: 'Repeat Begin',
-        param_count: 1,
-    		description: 'Begins a block of commands that will be repeated a specified number of times. Nesting is acceptable. Parameter is (number of interations).'
-    	},
-    	{
-    		num: '13',
-    		name: 'Repeat End',
-        param_count: 0,
-    		description: 'Ends the innermost block of repeated commands. No parameters.'
-    	},
-    	{
-    		num: '14',
-    		name: 'Status',
-        param_count: 2,
-    		description: 'Changes the device status register, which used in remote monitoring. Parameters are (message length, message text).'
-    	},
-    	{
-    		num: '99',
-    		name: 'Finish Test',
-        param_count: 0,
-    		description: 'Finishes the test. Required to be the final command. No parameters.'
-    	}
-    ];
+    $scope.BCODECommands = [{
+      num: '0',
+      name: 'Start Test',
+      param_count: 2,
+      canMove: false,
+      canDelete: false,
+      canInsert: false,
+      description: 'Starts the test. Required to be the first command. Test executes until Finish Test command. Parameters are (sensor integration time, sensor gain).'
+    }, {
+      num: '1',
+      name: 'Delay',
+      param_count: 1,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Waits for specified period of time. Parameter is (delay in milliseconds).'
+    }, {
+      num: '2',
+      name: 'Move',
+      param_count: 2,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Moves the stage a specified number of steps at a specified speed. Parameters are (number of steps, step delay time in microseconds).'
+    }, {
+      num: '3',
+      name: 'Solenoid On',
+      param_count: 1,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Energizes the solenoid for a specified amount of time. Parameter is (energize period in milliseconds).'
+    }, {
+      num: '4',
+      name: 'Device LED On',
+      param_count: 0,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Turns on the device LED, which is visible outside the device. No parameters.'
+    }, {
+      num: '5',
+      name: 'Device LED Off',
+      param_count: 0,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Turns off the device LED. No parameters.'
+    }, {
+      num: '6',
+      name: 'Device LED Blink',
+      param_count: 2,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Blinks the device LED at a specified rate. Parameters, (number of blinks, period in milliseconds between change in LED state).'
+    }, {
+      num: '7',
+      name: 'Sensor LED On',
+      param_count: 1,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Turns on the sensor LED at a given power. Parameter is (power, from 0 to 255).'
+    }, {
+      num: '8',
+      name: 'Sensor LED Off',
+      param_count: 0,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Turns off the sensor LED. No parameters.'
+    }, {
+      num: '9',
+      name: 'Read Sensors',
+      param_count: 0,
+      canMove: true,
+      canDelete: false,
+      canInsert: false,
+      description: 'Takes readings from the sensors. No parameters. Only one allowed per assay'
+    }, {
+      num: '10',
+      name: 'Read QR Code',
+      param_count: 0,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Reads the cartridge QR code. No parameters. [NOT IMPLEMENTED]'
+    }, {
+      num: '11',
+      name: 'Disable Sensor',
+      param_count: 0,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Disables the sensors, switching them to low-power mode. No parameters.'
+    }, {
+      num: '12',
+      name: 'Repeat Begin',
+      param_count: 1,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Begins a block of commands that will be repeated a specified number of times. Nesting is acceptable. Parameter is (number of interations).'
+    }, {
+      num: '13',
+      name: 'Repeat End',
+      param_count: 0,
+      canMove: true,
+      canDelete: true,
+      canInsert: true,
+      description: 'Ends the innermost block of repeated commands. No parameters.'
+    }, {
+      num: '99',
+      name: 'Finish Test',
+      param_count: 0,
+      canMove: false,
+      canDelete: false,
+      canInsert: false,
+      description: 'Finishes the test. Required to be the final command. No parameters.'
+    }];
 
     function instruction_time(code, param) {
-    	var p, d = 0;
+      var p, d = 0;
 
-    	switch(code) {
-    		case 'Delay': // delay
-    		case 'Solenoid On': // solenoid on
-    			d = parseInt(param[0]);
-    			break;
-    		case 'Move': // move
-    			d = Math.floor(parseInt(param[0]) * parseInt(param[1]) / 1000);
-    			break;
+      switch (code) {
+        case 'Delay': // delay
+        case 'Solenoid On': // solenoid on
+          d = parseInt(param[0]);
+          break;
+        case 'Move': // move
+          d = Math.floor(parseInt(param[0]) * parseInt(param[1]) / 1000);
+          break;
         case 'Blink Device LED': // blink device LED
           d = 2 * Math.floor(parseInt(param[0]) * parseInt(param[1]));
           break;
-    		case 'Read Sensor': // read sensor
-    			d = Math.floor(parseInt(param[0]) * parseInt(param[1]));
-    			break;
-    		case 'Finish Test': // finish
-    			d = 16800;
-    			break;
-    	}
+        case 'Read Sensor': // read sensor
+          d = Math.floor(parseInt(param[0]) * parseInt(param[1]));
+          break;
+        case 'Finish Test': // finish
+          d = 16800;
+          break;
+      }
 
-    	return d;
+      return d;
     }
 
     function get_bcode_object(bcode) {
-    	return ({ c: bcode.command, p: bcode.params && bcode.params.toString().indexOf(',') !== -1 ? bcode.params.toString().split(',') : bcode.params });
+      return ({
+        c: bcode.command,
+        p: bcode.params && bcode.params.toString().indexOf(',') !== -1 ? bcode.params.toString().split(',') : bcode.params
+      });
     }
 
     function calculate_BCODE_time(bcode_array) {
       var a, b, i, level, t;
-    	var duration = 0;
+      var duration = 0;
 
-    	for (i = 0; i < bcode_array.length; i += 1) {
-    		if (bcode_array[i]) {
-    			b = get_bcode_object(bcode_array[i]);
-    			switch(b.c) {
-    				case 'Finish Test': // finished
-    				case 'Repeat End': // end repeat
-    					return (duration + instruction_time(b.c, b.p));
-    				case '':
-    					break;
-    				case 'Repeat Begin': // start repeat
-    					a = [];
-    					level = 1;
-    					do {
-    						i += 1;
-    						if (i === bcode_array.length) {
-    							return -1;
-    						}
-    						t = get_bcode_object(bcode_array[i]);
-    						if (t.c === 'Repeat Begin') {
-    							level += 1;
-    						}
-    						if (t.c === 'Repeat End') {
-    							level -= 1;
-    						}
-    						a.push(bcode_array[i]);
-    					} while(!(t.c === 'Repeat End' && level === 0));
+      for (i = 0; i < bcode_array.length; i += 1) {
+        if (bcode_array[i]) {
+          b = get_bcode_object(bcode_array[i]);
+          switch (b.c) {
+            case 'Finish Test': // finished
+            case 'Repeat End': // end repeat
+              return (duration + instruction_time(b.c, b.p));
+            case '':
+              break;
+            case 'Repeat Begin': // start repeat
+              a = [];
+              level = 1;
+              do {
+                i += 1;
+                if (i === bcode_array.length) {
+                  return -1;
+                }
+                t = get_bcode_object(bcode_array[i]);
+                if (t.c === 'Repeat Begin') {
+                  level += 1;
+                }
+                if (t.c === 'Repeat End') {
+                  level -= 1;
+                }
+                a.push(bcode_array[i]);
+              } while (!(t.c === 'Repeat End' && level === 0));
 
-    					duration += calculate_BCODE_time(a) * parseInt(b.p[0]);
-    					break;
-    				default:
-    					duration += instruction_time(b.c, b.p);
-    			}
-    		}
-    	}
+              duration += calculate_BCODE_time(a) * parseInt(b.p[0]);
+              break;
+            default:
+              duration += instruction_time(b.c, b.p);
+          }
+        }
+      }
 
-    	return -1;
+      return -1;
     }
 
     function get_BCODE_duration(a) {
-    	var duration = 0;
+      var duration = 0;
       var repLevel = 0;
 
-    	if (a && a.length) {
+      if (a && a.length) {
         a.forEach(function(e) {
           if (e.command === 'Repeat Begin') {
             repLevel += 1;
@@ -256,30 +287,39 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
           return -1;
         }
 
-    		duration = calculate_BCODE_time(a);
-    	}
+        duration = calculate_BCODE_time(a);
+      }
 
-    	return (duration / 1000);
+      return (duration / 1000);
     }
 
     $scope.activeBCODE = 0;
-    $scope.estimatedTime = 0;
+    $scope.command = $scope.BCODE[0].command;
+    $scope.params = $scope.BCODE[0].params;
+    $scope.canMove = false;
+    $scope.canDelete = false;
+    $scope.canInsert = false;
+    $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
 
     $scope.changeCommand = function() {
-      $scope.commandDescription = _.findWhere($scope.BCODECommands, {name: $scope.command}).description;
+      $scope.commandDescription = _.findWhere($scope.BCODECommands, {
+        name: $scope.command
+      }).description;
       $scope.params = '';
     };
 
     $scope.moveBCODETop = function() {
-      $scope.BCODE.splice(0, 0, $scope.BCODE.splice($scope.activeBCODE, 1)[0]);
-      $scope.activeBCODE = 0;
-      $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      if ($scope.canMove) {
+        $scope.BCODE.splice(1, 0, $scope.BCODE.splice($scope.activeBCODE, 1)[0]);
+        $scope.activeBCODE = 1;
+        $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      }
     };
 
     $scope.moveBCODEUp = function() {
       var code;
 
-      if ($scope.activeBCODE > 0) {
+      if ($scope.activeBCODE > 1 && $scope.canMove) {
         code = $scope.BCODE.splice($scope.activeBCODE, 1)[0];
         $scope.activeBCODE -= 1;
         $scope.activeBCODE = ($scope.activeBCODE < 0 ? 0 : $scope.activeBCODE);
@@ -291,7 +331,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     $scope.moveBCODEDown = function() {
       var code;
 
-      if ($scope.activeBCODE < $scope.BCODE.length - 1) {
+      if ($scope.activeBCODE < $scope.BCODE.length - 2 && $scope.canMove) {
         code = $scope.BCODE.splice($scope.activeBCODE, 1)[0];
         $scope.activeBCODE += 1;
         $scope.activeBCODE = ($scope.activeBCODE > $scope.BCODE.length ? $scope.BCODE.length : $scope.activeBCODE);
@@ -301,9 +341,11 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     };
 
     $scope.moveBCODEBottom = function() {
-      $scope.BCODE.push($scope.BCODE.splice($scope.activeBCODE, 1)[0]);
-      $scope.activeBCODE = $scope.BCODE.length - 1;
-      $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      if ($scope.canMove) {
+        $scope.BCODE.splice($scope.BCODE.length - 2, 0, $scope.BCODE.splice($scope.activeBCODE, 1)[0]);
+        $scope.activeBCODE = $scope.BCODE.length - 2;
+        $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
+      }
     };
 
     function validateCommandParams() {
@@ -311,7 +353,9 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
         Notification.error('ERROR: No command selected');
         return false;
       }
-      var cmd = _.findWhere($scope.BCODECommands, {name: $scope.command});
+      var cmd = _.findWhere($scope.BCODECommands, {
+        name: $scope.command
+      });
       var p = $scope.params.split(',');
       if (cmd.param_count === 0 && p.length === 1 && p[0] === '') {
         return true;
@@ -338,38 +382,50 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     }
 
     $scope.insertBCODETop = function() {
-      if (validateCommandParams()) {
-        $scope.BCODE.splice(0, 0, {command: $scope.command, params: $scope.params});
-        $scope.activeBCODE = 0;
+      if (validateCommandParams() && $scope.canInsert) {
+        $scope.BCODE.splice(1, 0, {
+          command: $scope.command,
+          params: $scope.params
+        });
+        $scope.activeBCODE = 1;
         $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
       }
     };
 
     $scope.insertBCODEAbove = function() {
-      if (validateCommandParams()) {
-        $scope.BCODE.splice($scope.activeBCODE, 0, {command: $scope.command, params: $scope.params});
+      if (validateCommandParams() && $scope.activeBCODE > 0 && $scope.canInsert) {
+        $scope.BCODE.splice($scope.activeBCODE, 0, {
+          command: $scope.command,
+          params: $scope.params
+        });
         $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
       }
     };
 
     $scope.insertBCODEBelow = function() {
-      if (validateCommandParams()) {
+      if (validateCommandParams() && $scope.activeBCODE < $scope.BCODE.length - 1 && $scope.canInsert) {
         $scope.activeBCODE += 1;
-        $scope.BCODE.splice($scope.activeBCODE, 0, {command: $scope.command, params: $scope.params});
+        $scope.BCODE.splice($scope.activeBCODE, 0, {
+          command: $scope.command,
+          params: $scope.params
+        });
         $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
       }
     };
 
     $scope.insertBCODEBottom = function() {
-      if (validateCommandParams()) {
-        $scope.BCODE.push({command: $scope.command, params: $scope.params});
-        $scope.activeBCODE = $scope.BCODE.length - 1;
+      if (validateCommandParams() && $scope.canInsert) {
+        $scope.BCODE.splice($scope.BCODE.length - 2, 0, {
+          command: $scope.command,
+          params: $scope.params
+        });
+        $scope.activeBCODE = $scope.BCODE.length - 2;
         $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
       }
     };
 
     $scope.cutBCODE = function() {
-      if ($scope.BCODE.length && $scope.activeBCODE) {
+      if ($scope.BCODE.length && $scope.activeBCODE && $scope.canDelete) {
         $scope.clipboard = $scope.BCODE.splice($scope.activeBCODE, 1);
         delete $scope.clipboard._id;
         $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
@@ -381,45 +437,56 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     };
 
     $scope.copyAllBCODE = function() {
-      $scope.clipboard = $scope.BCODE.slice();
+      $scope.clipboard = _.filter($scope.BCODE.slice(1, $scope.BCODE.length - 2), function(e) {return e.command !== 'Read Sensors';});
     };
 
     $scope.pasteBCODE = function() {
-      $scope.activeBCODE += 1;
-      if (angular.isArray($scope.clipboard)) {
-        $scope.clipboard.forEach(function(e, i) {
-          $scope.BCODE.splice($scope.activeBCODE + i, 0, angular.copy(e));
-        });
+      if ($scope.activeBCODE > 0 && $scope.activeBCODE < $scope.BCODE.length - 1) {
+        $scope.activeBCODE += 1;
+        if (angular.isArray($scope.clipboard)) {
+          $scope.clipboard.forEach(function(e, i) {
+            $scope.BCODE.splice($scope.activeBCODE + i, 0, angular.copy(e));
+          });
+        } else {
+          $scope.BCODE.splice($scope.activeBCODE, 0, angular.copy($scope.clipboard));
+        }
+        $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
       }
-      else {
-        $scope.BCODE.splice($scope.activeBCODE, 0, angular.copy($scope.clipboard));
-      }
-      $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
     };
 
     $scope.updateBCODE = function() {
       if (validateCommandParams()) {
-        $scope.BCODE[$scope.activeBCODE] = {command: $scope.command, params: $scope.params};
+        $scope.BCODE[$scope.activeBCODE] = {
+          command: $scope.command,
+          params: $scope.params
+        };
         $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
       }
     };
 
     $scope.deleteBCODE = function() {
-      if ($scope.BCODE.length && $scope.activeBCODE) {
+      if ($scope.BCODE.length && $scope.activeBCODE && $scope.canDelete) {
         $scope.BCODE.splice($scope.activeBCODE, 1);
         $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
       }
     };
 
     $scope.deleteAllBCODE = function() {
-      $scope.BCODE= [];
-      $scope.estimatedTime = 0;
+      $scope.BCODE = angular.copy(initialBCODE);
+      $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
     };
 
     $scope.clickBCODECode = function(indx) {
       $scope.activeBCODE = indx;
       $scope.command = $scope.BCODE[indx].command;
       $scope.params = $scope.BCODE[indx].params;
+      var b = _.findWhere($scope.BCODECommands, {
+          name: $scope.BCODE[$scope.activeBCODE].command
+        });
+      $scope.canMove = b.canMove;
+      $scope.canDelete = b.canDelete;
+      $scope.canInsert = b.canInsert;
+      $scope.commandDescription = b.description;
     };
 
     $scope.saveBCODE = function() {
@@ -518,7 +585,9 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
           $scope.activeBCODE = 0;
           $scope.command = $scope.BCODE[0].command;
           $scope.params = $scope.BCODE[0].params;
-          $scope.commandDescription = _.findWhere($scope.BCODECommands, {name: $scope.command}).description;
+          $scope.commandDescription = _.findWhere($scope.BCODECommands, {
+            name: $scope.command
+          }).description;
           $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
         }
         $scope.analysis = $scope.assay.analysis;

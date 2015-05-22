@@ -110,7 +110,7 @@ exports.list = function(req, res) {
 };
 
 exports.load = function(req, res) {
-	Cartridge.find().paginate(req.body.start_item, req.body.end_item).sort('-created').populate('user', 'displayName').exec(function(err, cartridges, total) {
+	Cartridge.find().paginate(req.body.page, req.body.pageSize).sort('-created').populate('user', 'displayName').exec(function(err, cartridges, total) {
 		if (err) {
 			return res.status(400).send({
 				message: errorHandler.getErrorMessage(err)

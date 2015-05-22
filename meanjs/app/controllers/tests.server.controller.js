@@ -15,214 +15,15 @@ var mongoose = require('mongoose'),
   Q = require('q'),
   _ = require('lodash');
 
+var brevitestCommand = require('../../app/modules/brevitest-command');
+var brevitestRequest = require('../../app/modules/brevitest-request');
+var bt = require('../../app/modules/brevitest-BCODE');
+var bcmds = bt.BCODE;
+var get_BCODE_duration = bt.calculate_duration;
+
 exports.run = function(req, res) {
   res.send();
 };
-
-var brevitestCommand = {
-  'write_serial_number': '00',
-  'initialize_device': '01',
-  'run_test': '02',
-  'sensor_data': '03',
-  'change_param': '04',
-  'reset_params': '05',
-  'erase_archive': '06',
-  'dump_archive': '07',
-  'archive_size': '08',
-  'firmware_version': '09',
-  'cancel_process': '10',
-  'receive_BCODE': '11',
-  'device_ready': '12',
-  'calibrate': '13'
-};
-
-var brevitestRequest = {
-  'serial_number': '00',
-  'test_record': '01',
-  'test_record_by_uuid': '02',
-  'all_params': '03',
-  'one_param': '04'
-};
-
-var bcmds = [{
-  num: '0',
-  name: 'Start Test',
-  param_count: 2,
-  description: 'Starts the test. Required to be the first command. Test executes until Finish Test command. Parameters are (sensor integration time, sensor gain).'
-}, {
-  num: '1',
-  name: 'Delay',
-  param_count: 1,
-  description: 'Waits for specified period of time. Parameter is (delay in milliseconds).'
-}, {
-  num: '2',
-  name: 'Move',
-  param_count: 2,
-  description: 'Moves the stage a specified number of steps at a specified speed. Parameters are (number of steps, step delay time in microseconds).'
-}, {
-  num: '3',
-  name: 'Solenoid On',
-  param_count: 1,
-  description: 'Energizes the solenoid for a specified amount of time. Parameter is (energize period in milliseconds).'
-}, {
-  num: '4',
-  name: 'Device LED On',
-  param_count: 0,
-  description: 'Turns on the device LED, which is visible outside the device. No parameters.'
-}, {
-  num: '5',
-  name: 'Device LED Off',
-  param_count: 0,
-  description: 'Turns off the device LED. No parameters.'
-}, {
-  num: '6',
-  name: 'Device LED Blink',
-  param_count: 2,
-  description: 'Blinks the device LED at a specified rate. Parameters, (number of blinks, period in milliseconds between change in LED state).'
-}, {
-  num: '7',
-  name: 'Sensor LED On',
-  param_count: 1,
-  description: 'Turns on the sensor LED at a given power. Parameter is (power, from 0 to 255).'
-}, {
-  num: '8',
-  name: 'Sensor LED Off',
-  param_count: 0,
-  description: 'Turns off the sensor LED. No parameters.'
-}, {
-  num: '9',
-  name: 'Read Sensors',
-  param_count: 2,
-  description: 'Takes readings from the sensors. Parameters are (number of samples [1-10], milliseconds between samples).'
-}, {
-  num: '10',
-  name: 'Read QR Code',
-  param_count: 0,
-  description: 'Reads the cartridge QR code. No parameters. [NOT IMPLEMENTED]'
-}, {
-  num: '11',
-  name: 'Disable Sensor',
-  param_count: 0,
-  description: 'Disables the sensors, switching them to low-power mode. No parameters.'
-}, {
-  num: '12',
-  name: 'Repeat Begin',
-  param_count: 1,
-  description: 'Begins a block of commands that will be repeated a specified number of times. Nesting is acceptable. Parameter is (number of interations).'
-}, {
-  num: '13',
-  name: 'Repeat End',
-  param_count: 0,
-  description: 'Ends the innermost block of repeated commands. No parameters.'
-}, {
-  num: '14',
-  name: 'Status',
-  param_count: 2,
-  description: 'Changes the device status register, which used in remote monitoring. Parameters are (message length, message text).'
-}, {
-  num: '99',
-  name: 'Finish Test',
-  param_count: 0,
-  description: 'Finishes the test. Required to be the final command. No parameters.'
-}];
-
-function instruction_time(code, param) {
-  var p, d = 0;
-
-  switch (code) {
-    case 'Delay': // delay
-    case 'Solenoid On': // solenoid on
-      d = parseInt(param[0]);
-      break;
-    case 'Move': // move
-      d = Math.floor(parseInt(param[0]) * parseInt(param[1]) / 1000);
-      break;
-    case 'Blink Device LED': // blink device LED
-      d = 2 * Math.floor(parseInt(param[0]) * parseInt(param[1]));
-      break;
-    case 'Read Sensor': // read sensor
-      d = Math.floor(parseInt(param[0]) * parseInt(param[1]));
-      break;
-    case 'Finish Test': // finish
-      d = 16800;
-      break;
-  }
-
-  return d;
-}
-
-function get_bcode_object(bcode) {
-  return ({
-    c: bcode.command,
-    p: bcode.params && bcode.params.toString().indexOf(',') !== -1 ? bcode.params.toString().split(',') : bcode.params
-  });
-}
-
-function calculate_BCODE_time(bcode_array) {
-  var a, b, i, level, t;
-  var duration = 0;
-
-  for (i = 0; i < bcode_array.length; i += 1) {
-    if (bcode_array[i]) {
-      b = get_bcode_object(bcode_array[i]);
-      switch (b.c) {
-        case 'Finish Test': // finished
-        case 'Repeat End': // end repeat
-          return (duration + instruction_time(b.c, b.p));
-        case '':
-          break;
-        case 'Repeat Begin': // start repeat
-          a = [];
-          level = 1;
-          do {
-            i += 1;
-            if (i === bcode_array.length) {
-              return -1;
-            }
-            t = get_bcode_object(bcode_array[i]);
-            if (t.c === 'Repeat Begin') {
-              level += 1;
-            }
-            if (t.c === 'Repeat End') {
-              level -= 1;
-            }
-            a.push(bcode_array[i]);
-          } while (!(t.c === 'Repeat End' && level === 0));
-
-          duration += calculate_BCODE_time(a) * parseInt(b.p[0]);
-          break;
-        default:
-          duration += instruction_time(b.c, b.p);
-      }
-    }
-  }
-
-  return -1;
-}
-
-function get_BCODE_duration(a) {
-  var duration = 0;
-  var repLevel = 0;
-
-  if (a && a.length) {
-    a.forEach(function(e) {
-      if (e.command === 'Repeat Begin') {
-        repLevel += 1;
-      }
-      if (e.command === 'Repeat End') {
-        repLevel -= 1;
-      }
-    });
-
-    if (repLevel !== 0) {
-      return -1;
-    }
-
-    duration = calculate_BCODE_time(a);
-  }
-
-  return (duration / 1000);
-}
 
 function zeropad(num, numZeros) {
   var an = Math.abs(num);
@@ -435,41 +236,10 @@ exports.update = function(req, res) {
   });
 };
 
-var readResult;
-
-function requestAndReadRegister(id, sparkDevice, requestIndex, requestCode, requestParam) {
-  var param = id + zeropad(requestIndex, 6) + requestCode + (requestParam ? requestParam : '');
-  console.log(param);
-
-  return Q.fcall(function(p) {
-    return new Q(sparkDevice.callFunction('requestdata', p));
-  }, param)
-  .then(function(result) {
-    console.log('requestdata', result);
-    if (result.return_value < 0) {
-      throw new Error('Request to read register failed');
-    }
-    var register = new Q(sparkDevice.getVariable('register'));
-    return [result.return_value, register];
-  })
-  .spread(function(index, register) {
-    console.log('get register', index, register);
-    readResult += register.result;
-    if(index === 0) {
-      console.log('Last call');
-      return new Q(sparkDevice.callFunction('requestdata', id + '999999'));
-    }
-    else {
-      return requestAndReadRegister(id, sparkDevice, index, requestCode, requestParam);
-    }
-  });
-}
-
 exports.update_one_test = function(req, res) {
   console.log('Updating one test', req.body.testID);
 
   var cartridge, sparkDevice, sparkID, test;
-  readResult = '';
 
   Q.fcall(function(id) {
       return new Q(Test.findById(id).populate([{
@@ -510,29 +280,35 @@ exports.update_one_test = function(req, res) {
     .then(function(devices) {
       console.log('Spark devices', devices);
 
-      var sparkDevice = _.findWhere(devices, {id: sparkID});
+      var sparkDevice = _.findWhere(devices, {
+        id: sparkID
+      });
       console.log(sparkDevice);
       if (!sparkDevice.attributes.connected) {
         throw new Error(test._device.name + ' is not online.');
       }
-      return new Q(requestAndReadRegister(test._cartridge, sparkDevice, 0, brevitestRequest.test_record_by_uuid));
+      return new Q(sparkDevice.callFunction('requestdata', test._cartridge + '000000' + brevitestRequest.test_record_by_uuid));
     })
-    .then(function() {
+    .then(function(result) {
+      console.log('requestdata', result);
+      if (result.return_value < 0) {
+        throw new Error('Request to read register failed');
+      }
+      return new Q(sparkDevice.getVariable('register'));
+    })
+    .then(function(register) {
+      console.log('register', register);
       var data, cmd, i = 2, params;
 
-      cartridge.rawData = readResult;
+      cartridge.rawData = register.result;
       data = cartridge.rawData.split('\n');
       params = data[0].split('\t');
       cartridge.startedOn = Date(parseInt(params[1]));
       cartridge.finishedOn = Date(parseInt(params[2]));
-      do {
-        cmd = data[i++].substring(0, 2);
-      } while (cmd !== '99' && i < data.length);
-
-      cartridge.result = -parseInt(data[i].split('\t')[4]) + parseInt(data[i + 1].split('\t')[4]);
-      cartridge.result += parseInt(data[data.length - 3].split('\t')[4]) - parseInt(data[data.length - 2].split('\t')[4]);
-      console.log(cartridge.result);
-      cartridge.failed = test.percentComplete >= 100;
+      cartridge.result = parseInt(data[4].split('\t')[3]) - parseInt(data[2].split('\t')[3]);
+      cartridge.control = parseInt(data[5].split('\t')[3]) - parseInt(data[3].split('\t')[3]);
+      cartridge.failed = test.percentComplete < 100;
+      console.log(cartridge.result, cartridge.control);
       return new Q(cartridge.save());
     })
     .then(function() {
@@ -561,7 +337,7 @@ function createStatusPromise(sparkDevices, testID) {
 
   console.log('status', testID);
   return Q.fcall(function() {
-    return new Q(Test.findById(testID).populate([{
+      return new Q(Test.findById(testID).populate([{
         path: '_device',
         select: '_spark name'
       }, {
@@ -590,8 +366,7 @@ function createStatusPromise(sparkDevices, testID) {
       if (c.toHexString() === testrunning.result) { // test t is underway on this device
         test.status = status.result;
         return true;
-      }
-      else {
+      } else {
         if (test.status !== 'Cancelled') {
           test.status = 'Complete';
         }
@@ -601,13 +376,15 @@ function createStatusPromise(sparkDevices, testID) {
     .then(function(test_in_progress) {
       if (test_in_progress) {
         return new Q(s.getVariable('percentdone'));
-      }
-      else {
+      } else {
         if (test.status === 'Cancelled') {
-          return {result: test.percentComplete};
-        }
-        else {
-          return {result: 100};
+          return {
+            result: test.percentComplete
+          };
+        } else {
+          return {
+            result: 100
+          };
         }
       }
     })
@@ -627,7 +404,11 @@ exports.status = function(req, res) {
   var tests = req.body.tests;
   var testIDs = _.uniq(_.pluck(_.pluck(tests, '_device'), '_id'));
 
-  new Q(Device.find({_id : {$in: testIDs}}).populate('_spark', 'sparkID').exec())
+  new Q(Device.find({
+      _id: {
+        $in: testIDs
+      }
+    }).populate('_spark', 'sparkID').exec())
     .then(function(d) {
       return new Q(sparkcore.login({
         username: 'leo3@linbeck.com',

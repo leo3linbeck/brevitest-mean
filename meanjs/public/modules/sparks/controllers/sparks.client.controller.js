@@ -11,7 +11,7 @@ angular.module('sparks').controller('SparksController', ['$scope', '$http', '$st
   				}).
   				success(function(data, status, headers, config) {
             console.log(data);
-            if(data.return_value !== 1) {
+            if(data.return_value === 1) {
 		          Notification.success('Archive erased');
             }
   			  }).

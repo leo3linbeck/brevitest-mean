@@ -1,8 +1,8 @@
 'use strict';
 
 // Cartridges controller
-angular.module('cartridges').controller('CartridgesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Cartridges',
-	function($scope, $http, $stateParams, $location, Authentication, Cartridges) {
+angular.module('cartridges').controller('CartridgesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Notification', 'Cartridges',
+	function($scope, $http, $stateParams, $location, Authentication, Notification, Cartridges) {
 		$scope.authentication = Authentication;
 
 		$scope.showResultsOnOpen = true;
@@ -55,13 +55,14 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 
 		$scope.currentPage = 0;
 
-		$scope.changePage = function() {
+		$scope.pageChanged = function() {
 			console.log($scope.currentPage);
+			$scope.load();
 		};
 
 		// Find a list of Cartridges
 		$scope.find = function() {
-			$scope.cartridges = Cartridges.query({page: $scope.currentPage, pageSize: $scope.itemsPerPage});
+			$scope.cartridges = Cartridges.query();
 		};
 
 		$scope.load = function() {

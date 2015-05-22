@@ -17,10 +17,10 @@ function instruction_time(code, param) {
       d = 2 * Math.floor(parseInt(param[0]) * parseInt(param[1]));
       break;
     case 'Read Sensor': // read sensor
-      d = 5000;
+      d = 10000;
       break;
     case 'Start Test': // finish
-      d = 6000;
+      d = 11000;
       break;
     case 'Finish Test': // finish
       d = 16800;

@@ -11,12 +11,12 @@
             <span style="margin-left: 1em"></span>DOB:
             <strong>{{test._prescription.patientDateOfBirth | date: "mediumDate"}}</strong>
           </small>
-          <button type="button" ng-show="test._cartridge.finishedOn" ng-class="testClass($index)">Result: {{test._cartridge.result}}</button>
+          <button type="button" ng-show="test._cartridge.finishedOn && !test._cartridge.failed" class="btn btn-lg pull-right" ng-class="{'btn-danger': test.result === 'Positive', 'btn-warning': test.result === 'Borderline', 'btn-success': test.result === 'Negative'}">{{test._cartridge.result}} – {{test.result}}</button>
         </p>
         <p>
           <small>Test started on {{test._cartridge.startedOn | date: "medium"}}</small>&nbsp;&nbsp;&nbsp;
-          <span class="btn btn-xs" ng-class="{'btn btn-default': !test.failed, 'btn btn-danger': test.failed}">{{test.failed ? 'Failure' : 'Success'}}</span>
-          <button type="button" class="btn btn-sm btn-info" ng-click="updateTest($index)">Update</button>
+          <span class="btn btn-xs" disabled ng-class="{'btn btn-default': !test._cartridge.failed, 'btn btn-danger': test._cartridge.failed}">{{test._cartridge.failed ? 'Failure' : 'Success'}}</span>
+          <button type="button" ng-hide="test.result" class="btn btn-sm btn-info" ng-click="updateTest($index)">Update</button>
         </p>
         <accordion close-others="true">
           <accordion-group heading="Details">

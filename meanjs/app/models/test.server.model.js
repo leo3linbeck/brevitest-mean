@@ -26,6 +26,9 @@ var TestSchema = new Schema({
 	percentComplete: {
 		type: Number
 	},
+	result: {
+		type: String
+	},
 	_prescription: {
 		type: Schema.ObjectId,
 		ref: 'Prescription'

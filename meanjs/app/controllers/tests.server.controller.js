@@ -151,7 +151,6 @@ exports.begin = function(req, res) {
           return sparkDevice.callFunction('runcommand', arg);
         });
       }, new Q());
-
     })
     .then(function(result) {
       console.log('Return response', result);
@@ -278,16 +277,14 @@ exports.update_one_test = function(req, res) {
       return new Q(sparkcore.listDevices());
     })
     .then(function(devices) {
-      console.log('Spark devices', devices);
-
-      var sparkDevice = _.findWhere(devices, {
+      sparkDevice = _.findWhere(devices, {
         id: sparkID
       });
       console.log(sparkDevice);
       if (!sparkDevice.attributes.connected) {
         throw new Error(test._device.name + ' is not online.');
       }
-      return new Q(sparkDevice.callFunction('requestdata', test._cartridge + '000000' + brevitestRequest.test_record_by_uuid));
+      return new Q(sparkDevice.callFunction('requestdata', test._cartridge._id + '000000' + brevitestRequest.test_record_by_uuid));
     })
     .then(function(result) {
       console.log('requestdata', result);
@@ -306,20 +303,29 @@ exports.update_one_test = function(req, res) {
       cartridge.startedOn = Date(parseInt(params[1]));
       cartridge.finishedOn = Date(parseInt(params[2]));
       cartridge.result = parseInt(data[4].split('\t')[3]) - parseInt(data[2].split('\t')[3]);
-      cartridge.control = parseInt(data[5].split('\t')[3]) - parseInt(data[3].split('\t')[3]);
       cartridge.failed = test.percentComplete < 100;
-      console.log(cartridge.result, cartridge.control);
       return new Q(cartridge.save());
     })
     .then(function() {
+      var analysis = test._assay.analysis;
+
       test.percentComplete = test.percentComplete > 100 ? 100 : test.percentComplete;
       test.startedOn = cartridge.startedOn;
       test.finishedOn = cartridge.finishedOn;
-      test.result = cartridge.result;
+      if (cartridge.result > analysis.redMax || cartridge.result < analysis.redMin) {
+        test.result = 'Positive';
+      }
+      else if (cartridge.result > analysis.greenMax || cartridge.result < analysis.greenMin) {
+        test.result = 'Borderline';
+      }
+      else {
+        test.result = 'Negative';
+      }
       test._cartridge.startedOn = cartridge.startedOn;
       test._cartridge.finishedOn = cartridge.finishedOn;
       test._cartridge.rawData = cartridge.rawData;
       test._cartridge.failed = cartridge.failed;
+      test._cartridge.result = cartridge.result;
       return new Q(test.save());
     })
     .then(function() {
@@ -391,7 +397,9 @@ function createStatusPromise(sparkDevices, testID) {
     .then(function(pctDone) {
       test.percentComplete = pctDone.result;
       console.log('save', test);
-      test.save();
+      return new Q(test.save());
+    })
+    .then(function() {
       return test;
     })
     .done();
@@ -420,7 +428,6 @@ exports.status = function(req, res) {
     })
     .then(function(sparkDevices) {
       var p = [];
-      console.log(sparkDevices);
       tests.forEach(function(t) {
         p.push(createStatusPromise(sparkDevices, t._id));
       });

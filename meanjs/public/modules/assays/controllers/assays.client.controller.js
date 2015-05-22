@@ -26,7 +26,6 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     $scope.recalcInventory = function() {
       $http.get('/cartridges/get_inventory/' + $scope.assay._id).
       success(function(data, status, headers, config) {
-        console.log(data);
         $scope.cartridgeInventory = data;
       }).
       error(function(err, status, headers, config) {

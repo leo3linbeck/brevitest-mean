@@ -53,16 +53,16 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 			});
 		};
 
+		// Find a list of Cartridges
+		$scope.find = function() {
+			$scope.cartridges = Cartridges.query();
+		};
+
 		$scope.currentPage = 0;
 
 		$scope.pageChanged = function() {
 			console.log($scope.currentPage);
 			$scope.load();
-		};
-
-		// Find a list of Cartridges
-		$scope.find = function() {
-			$scope.cartridges = Cartridges.query();
 		};
 
 		$scope.load = function() {

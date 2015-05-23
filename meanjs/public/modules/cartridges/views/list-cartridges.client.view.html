@@ -1,6 +1,6 @@
 <section data-ng-controller="CartridgesController" data-ng-init="load()">
     <div class="page-header">
-        <h1>Cartridges</h1>
+        <h1>Cartridges ({{number_of_items}})</h1>
         <pagination boundary-links="true" class="pagination-sm" total-items="totalItems" max-size="8" ng-model="currentPage" ng-change="pageChanged()" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></pagination>
     </div>
     <div class="list-group">

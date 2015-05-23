@@ -172,6 +172,110 @@ exports.begin = function(req, res) {
     .done();
 };
 
+exports.cancel = function(req, res) {
+  console.log('Cancelling test', req.body.testID);
+
+  var cartridge, sparkDevice, sparkID, test;
+
+  Q.fcall(function(id) {
+      return new Q(Test.findById(id).populate([{
+        path: 'user',
+        select: 'displayName'
+      }, {
+        path: '_assay',
+        select: '_id name standardCurve analysis'
+      }, {
+        path: '_device',
+        select: '_id name'
+      }, {
+        path: '_prescription',
+        select: '_id name patientNumber patientGender patientDateOfBirth'
+      }, {
+        path: '_cartridge',
+        select: '_id name result failed rawData startedOn finishedOn'
+      }]).exec());
+    }, req.body.testID)
+    .then(function(t) {
+      test = t;
+      return new Q(Cartridge.findById(test._cartridge._id).exec());
+    })
+    .then(function(c) {
+      cartridge = c;
+      return new Q(Device.findById(test._device._id).populate('_spark', 'sparkID').exec());
+    })
+    .then(function(device) {
+      sparkID = device._spark.sparkID;
+      return new Q(sparkcore.login({
+        username: 'leo3@linbeck.com',
+        password: '2january88'
+      }));
+    })
+    .then(function(token) {
+      return new Q(sparkcore.listDevices());
+    })
+    .then(function(devices) {
+      sparkDevice = _.findWhere(devices, {
+        id: sparkID
+      });
+      console.log(sparkDevice);
+      if (!sparkDevice.attributes.connected) {
+        throw new Error(test._device.name + ' is not online.');
+      }
+      return new Q(sparkDevice.callFunction('runcommand', 'cancel_process'));
+    })
+    .then(function() {
+      var data, cmd, i = 2,
+        params;
+
+      cartridge.finishedOn = new Date();
+      cartridge.failed = true;
+      return new Q(cartridge.save());
+    })
+    .then(function() {
+      test.startedOn = cartridge.startedOn;
+      test.finishedOn = cartridge.finishedOn;
+      test.status = 'Cancelled';
+      test._cartridge.startedOn = cartridge.startedOn;
+      test._cartridge.finishedOn = cartridge.finishedOn;
+      test._cartridge.failed = cartridge.failed;
+      return new Q(test.save());
+    })
+    .then(function() {
+      console.log('find');
+      return new Q(Test.find({
+        $and: [{
+          percentComplete: {
+            $lt: 100
+          }
+        }, {
+          status: {
+            $ne: 'Cancelled'
+          }
+        }]
+      }).sort('-created').populate([{
+        path: 'user',
+        select: 'displayName'
+      }, {
+        path: '_assay',
+        select: '_id name'
+      }, {
+        path: '_device',
+        select: '_id name _spark'
+      }, {
+        path: '_cartridge',
+        select: '_id name result failed BCODE startedOn finishedOn'
+      }]).exec());
+    })
+    .then(function(tests) {
+      res.jsonp(tests);
+    })
+    .fail(
+      function(err) {
+        console.log('Cancel process failed', err);
+      })
+    .done();
+};
+
 /**
  * Create a Test
  */
@@ -295,7 +399,8 @@ exports.update_one_test = function(req, res) {
     })
     .then(function(register) {
       console.log('register', register);
-      var data, cmd, i = 2, params;
+      var data, cmd, i = 2,
+        params;
 
       cartridge.rawData = register.result;
       data = cartridge.rawData.split('\n');
@@ -314,11 +419,9 @@ exports.update_one_test = function(req, res) {
       test.finishedOn = cartridge.finishedOn;
       if (cartridge.result > analysis.redMax || cartridge.result < analysis.redMin) {
         test.result = 'Positive';
-      }
-      else if (cartridge.result > analysis.greenMax || cartridge.result < analysis.greenMin) {
+      } else if (cartridge.result > analysis.greenMax || cartridge.result < analysis.greenMin) {
         test.result = 'Borderline';
-      }
-      else {
+      } else {
         test.result = 'Negative';
       }
       test._cartridge.startedOn = cartridge.startedOn;
@@ -436,9 +539,15 @@ exports.status = function(req, res) {
     .then(function() {
       console.log('find');
       return new Q(Test.find({
-        percentComplete: {
-          $lt: 100
-        }
+        $and: [{
+          percentComplete: {
+            $lt: 100
+          }
+        }, {
+          status: {
+            $ne: 'Cancelled'
+          }
+        }]
       }).sort('-created').populate([{
         path: 'user',
         select: 'displayName'
@@ -464,9 +573,15 @@ exports.status = function(req, res) {
 
 exports.underway = function(req, res) {
   Test.find({
-    percentComplete: {
-      $lt: 100
-    }
+    $and: [{
+      percentComplete: {
+        $lt: 100
+      }
+    }, {
+      status: {
+        $ne: 'Cancelled'
+      }
+    }]
   }).sort('-created').populate([{
     path: 'user',
     select: 'displayName'
@@ -554,6 +669,42 @@ exports.list = function(req, res) {
       });
     } else {
       res.jsonp(tests);
+    }
+  });
+};
+
+exports.load = function(req, res) {
+  Test.find({
+    _cartridge: {
+      $exists: true
+    }
+  }).paginate(req.body.page, req.body.pageSize).sort('-created').populate([{
+    path: 'user',
+    select: 'displayName'
+  }, {
+    path: '_assay',
+    select: '_id name standardCurve analysis'
+  }, {
+    path: '_device',
+    select: '_id name'
+  }, {
+    path: '_prescription',
+    select: '_id name patientNumber patientGender patientDateOfBirth'
+  }, {
+    path: '_cartridge',
+    select: '_id name result failed rawData startedOn finishedOn'
+  }]).exec(function(err, tests, total) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      Test.count().exec(function(err, count) {
+        res.jsonp({
+          tests: tests,
+          total_count: count
+        });
+      });
     }
   });
 };

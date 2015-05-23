@@ -43,6 +43,20 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			  });
 		};
 
+		$scope.cancelTest = function(index) {
+			$http.post('/tests/cancel', {
+				testID: $scope.tests[index]._id
+			}).
+				success(function(data, status, headers, config) {
+					console.log(data);
+					$scope.tests = data;
+					$scope.updateOn = (data.length !== 0);
+				}).
+				error(function(err, status, headers, config) {
+					Notification.error(err.message);
+				});
+		};
+
 		$scope.chronjob = function() {
 			if ($scope.updateOn) {
 				$http.post('/tests/status', {

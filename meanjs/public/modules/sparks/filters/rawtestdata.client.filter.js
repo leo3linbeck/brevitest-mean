@@ -2,6 +2,21 @@
 
 var sparkSensorHeader = 'Sensor\t    Type\t            Reading Start       \t          Value\n\n';
 
+var int_time = {
+	0: '700ms',
+	192: '154ms',
+	213: '101ms',
+	235: '50ms',
+	246: '24ms',
+	255: '2.4ms'
+};
+var gain = {
+	0: '1X',
+	1: '4X',
+	2: '16X',
+	3: '64X'
+};
+
 function string_to_datetime(str) {
 	return new Date(parseInt(str) * 1000);
 }
@@ -13,7 +28,7 @@ function string_to_datetime_string(str) {
 function parse_sensor_reading(str) {
 	var data = str.split('\t');
 	var result = (data[0] === 'A' ? 'Assay' : 'Control') + '\t';
-	result += (parseInt(data[1]) ? 'Result' : 'Baseline') + '\t';
+	result += (parseInt(data[1], 10) ? 'Result' : 'Baseline') + '\t';
   result += string_to_datetime_string(data[2]) + '\t';
 	result += data[3] + '\n';
 	return result;
@@ -28,6 +43,8 @@ function parse_test_header(str) {
 	result += 'Cartridge ID: ' + data[3] + '\n';
 	result += 'BCODE version: ' + data[4] + '\n';
 	result += 'BCODE length: ' + data[5] + '\n';
+	result += 'Integration time: ' + int_time[parseInt(data[6], 10)] + '\n';
+	result += 'Gain: ' + gain[parseInt(data[7], 10)] + '\n';
 	result += '\n';
 	return result;
 }

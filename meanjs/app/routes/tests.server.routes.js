@@ -9,6 +9,12 @@ module.exports = function(app) {
 		.get(tests.list)
 		.post(users.requiresLogin, tests.create);
 
+	app.route('/tests/load')
+	  .all(tests.load);
+
+	app.route('/tests/cancel')
+	  .all(tests.cancel);
+
 	app.route('/tests/underway')
 	  .all(tests.underway);
 

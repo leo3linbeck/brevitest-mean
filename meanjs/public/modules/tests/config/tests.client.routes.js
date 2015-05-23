@@ -9,6 +9,11 @@ angular.module('tests').config(['$stateProvider',
 			url: '/tests',
 			templateUrl: 'modules/tests/views/list-tests.client.view.html'
 		}).
+		state('loadTests', {
+			url: '/tests/load',
+			templateUrl: 'modules/tests/views/review-test.client.view.html',
+			css: 'modules/tests/css/review-test.client.css'
+		}).
 		state('createTest', {
 			url: '/tests/create',
 			templateUrl: 'modules/tests/views/create-test.client.view.html'

@@ -6,15 +6,28 @@ var _ = window._;
 angular.module('tests').controller('ReviewTestController', ['$scope', '$http', 'Tests', 'Sparks', 'Notification',
   function($scope, $http, Tests, Sparks, Notification) {
 
-    $scope.setup = function() {
-      $http.get('/tests/review').
-      success(function(data, status, headers, config) {
-        $scope.tests = data;
-      }).
-      error(function(err, status, headers, config) {
-        Notification.error(err.message);
-      });
-    };
+    $scope.currentPage = 0;
+
+		$scope.pageChanged = function() {
+			console.log($scope.currentPage);
+			$scope.load();
+		};
+
+		$scope.load = function() {
+	      $http.post('/tests/load', {
+					page: $scope.currentPage,
+					pageSize: $scope.itemsPerPage
+				}).
+					success(function(data, status, headers, config) {
+	          console.log(data);
+						$scope.tests = data.tests;
+            $scope.totalItems = data.total_count;
+				  }).
+				  error(function(err, status, headers, config) {
+						console.log(err);
+						Notification.error(err.message);
+				  });
+		};
 
     $scope.updateTest = function(index) {
       console.log($scope.tests[index]);

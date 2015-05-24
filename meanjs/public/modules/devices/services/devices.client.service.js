@@ -7,9 +7,6 @@ angular.module('devices').factory('Devices', ['$resource',
 		}, {
 			update: {
 				method: 'PUT'
-			},
-			save: {
-				method: 'PUT'
 			}
 		});
 	}

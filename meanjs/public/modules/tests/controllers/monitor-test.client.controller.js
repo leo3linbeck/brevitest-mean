@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = window._;
+
 // Tests controller
 angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$interval', 'Tests', 'Notification',
 	function($scope, $http, $interval, Tests, Notification) {
@@ -10,8 +12,8 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			$scope.updateOn = !$scope.updateOn;
 			if ($scope.updateOn) {
 				Notification.info('Updates started');
-				var numberOfIntervals = 240;
-				var intervalTime = 5000;
+				var numberOfIntervals = 120;
+				var intervalTime = 10000;
 				$scope.chronjob();
 				return $interval(function() {
 						$scope.chronjob();
@@ -64,18 +66,23 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 				}).
 					success(function(data, status, headers, config) {
 						console.log(data);
-						$scope.tests = data;
-						$scope.updateOn = (data.length !== 0);
+						$scope.tests.forEach(function(e) {
+							data.forEach(function(d) {
+								if (d.value && d.value.testID === e._id) {
+									e.status = d.value.status || '';
+									e.percentComplete = d.value.percentComplete || 0;
+								}
+							});
+						});
+						$scope.tests = _.filter($scope.tests, function(e) {return e.status !== 'Complete';});
+						if ($scope.tests.length === 0) {
+							$scope.toggleChronjob();
+						}
 				  }).
 				  error(function(err, status, headers, config) {
 						Notification.error(err.message);
 				  });
 			}
-		};
-
-		$scope.selectedTest = -1;
-		$scope.clickTest = function(indx) {
-			$scope.selectedTest = indx;
 		};
 	}
 ]);

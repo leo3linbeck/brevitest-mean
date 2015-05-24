@@ -7,14 +7,16 @@ var mongoose = require('mongoose'),
   errorHandler = require('./errors.server.controller'),
   Test = mongoose.model('Test'),
   Assay = mongoose.model('Assay'),
-  Device = mongoose.model('Device'),
   Cartridge = mongoose.model('Cartridge'),
+  Device = mongoose.model('Device'),
+  Prescription = mongoose.model('Prescription'),
   Spark = mongoose.model('Spark'),
   sparkcore = require('spark'),
   sparks = require('../../app/controllers/sparks.server.controller'),
   Q = require('q'),
   _ = require('lodash');
 
+var brevitestSpark = require('../../app/modules/brevitest-particle');
 var brevitestCommand = require('../../app/modules/brevitest-command');
 var brevitestRequest = require('../../app/modules/brevitest-request');
 var bt = require('../../app/modules/brevitest-BCODE');
@@ -48,103 +50,42 @@ function bObjectToCodeString(bco) {
 }
 
 exports.begin = function(req, res) {
-  var cartridge, device, sparkDevice, sparkID, step, test;
+  console.log(req.body);
+  var assayID = req.body.assayID;
+  var assayName = req.body.assayName;
+  var assayBCODE = req.body.assayBCODE;
+  var cartridgeID = req.body.cartridgeID;
+  var deviceID = req.body.deviceID;
+  var deviceName = req.body.deviceName;
+  var prescriptionID = req.body.prescriptionID;
+  var test = new Test();
+  var bcodeString;
 
-  Q.fcall(function(id) {
-      console.log('Device.findOneAndUpdate');
-      return new Q(Device.findOneAndUpdate({
-        _id: id
-      }, {
-        status: 'Test in progress'
-      }).populate('_spark', 'sparkID').exec());
-    }, req.body.deviceID)
-    .then(function(d) {
-      console.log('Spark login');
-      device = d;
-      sparkID = device._spark.sparkID;
-      return new Q(sparkcore.login({
-        username: 'leo3@linbeck.com',
-        password: '2january88'
-      }));
-    })
-    .then(function() {
-      console.log('Spark listDevices', sparkID);
-
-      return new Q(sparkcore.listDevices());
-    })
-    .then(function(sparkDevices) {
-      console.log('Check whether device is online', sparkDevices);
-
-      sparkDevice = _.findWhere(sparkDevices, {
-        id: sparkID
-      });
-      if (!sparkDevice.attributes.connected) {
-        throw new Error(device.name + ' is not online.');
-      }
-    })
-    .then(function() {
-      console.log('Create test');
-
-      test = new Test();
-      test.user = req.user;
-      test._assay = req.body.assayID;
-      test._device = req.body.deviceID;
-      test._cartridge = req.body.cartridgeID;
-      test._prescription = req.body.prescriptionID;
-      test.name = req.body.name ? req.body.name : ('Assay ' + req.body.assayID + ' on device ' + req.body.deviceID + ' using cartridge ' + req.body.cartridgeID);
-      test.description = req.body.description;
-      test.status = 'Starting';
-      test.percentComplete = 0;
-      test.startedOn = new Date();
-
-      test.save(function(err) {
-        if (err) {
-          throw new Error(err);
-        }
-      });
-
-      return test;
-    })
-    .then(function(t) {
-      console.log('Update cartridge');
-      return new Q(Cartridge.findOneAndUpdate({
-        _id: t._cartridge
-      }, {
-        _test: t._id,
-        _device: req.body.deviceID,
-        startedOn: t.startedOn,
-        _runBy: t.user
-      }).exec());
-    })
-    .then(function(c) {
-      console.log('Load BCODE');
-      return new Q(Assay.findById({
-        _id: c._assay
-      }).exec());
-    })
-    .then(function(a) {
+  brevitestSpark.get_spark_device_from_deviceID(req.user, deviceID)
+    .then(function(sparkDevice) {
       console.log('Send BCODE and start test');
 
-      var bcode, bcode_str, max_payload, packet_count;
+      var duration, max_payload, packet_count;
       var end, i, len, num, payload, start;
       var args = [];
 
-      bcode = a.BCODE;
-      bcode_str = bObjectToCodeString(bcode);
-      max_payload = (56 - req.body.cartridgeID.length); // max string = 63 - length(command code) - length(num) - length(len) - length(cartridgeId)
-      packet_count = Math.ceil(bcode_str.length / max_payload);
+      bcodeString = bObjectToCodeString(assayBCODE);
+      duration = get_BCODE_duration(assayBCODE);
+      console.log('BCODE duration', duration);
+      max_payload = (56 - cartridgeID.length); // max string = 63 - length(command code) - length(num) - length(len) - length(cartridgeId)
+      packet_count = Math.ceil(bcodeString.length / max_payload);
 
-      args.push(brevitestCommand.receive_BCODE + '000' + zeropad(packet_count, 2) + req.body.cartridgeID);
+      args.push(brevitestCommand.receive_BCODE + '000' + zeropad(packet_count, 2) + cartridgeID);
       for (i = 1; i <= packet_count; i += 1) {
         start = (i - 1) * max_payload;
         end = start + max_payload;
-        payload = bcode_str.substring(start, end);
+        payload = bcodeString.substring(start, end);
         len = zeropad(payload.length, 2);
         num = zeropad(i, 3);
-        args.push(brevitestCommand.receive_BCODE + num + len + req.body.cartridgeID + payload);
+        args.push(brevitestCommand.receive_BCODE + num + len + cartridgeID + payload);
       }
 
-      args.push(brevitestCommand.run_test + req.body.cartridgeID + zeropad(Math.round(get_BCODE_duration(bcode)), 4));
+      args.push(brevitestCommand.run_test + cartridgeID + zeropad(Math.round(duration), 4));
       console.log(args);
       return args.reduce(function(soFar, arg) {
         return soFar.then(function() {
@@ -154,19 +95,51 @@ exports.begin = function(req, res) {
     })
     .then(function(result) {
       console.log('Return response', result);
-      var testID = test._id.toHexString();
-      if (result.return_value === 1) {
-        res.jsonp({
-          message: 'Test started',
-          testID: testID
-        });
-      } else {
+
+      if (result.return_value !== 1) {
         throw new Error('Test not started');
       }
+
+      test.user = req.user;
+      test._assay = assayID;
+      test._device = deviceID;
+      test._cartridge = cartridgeID;
+      test._prescription = prescriptionID;
+      test.name = req.body.name ? req.body.name : ('Assay ' + assayName + ' on device ' + deviceName + ' using cartridge ' + cartridgeID);
+      test.status = 'Starting';
+      test.percentComplete = 0;
+      test.startedOn = new Date();
+      console.log('Saving test');
+      return new Q(test.save());
+    })
+    .then(function() {
+      return new Q(Cartridge.findOneAndUpdate({
+        _id: cartridgeID
+      }, {
+        _test: test._id,
+        _device: deviceID,
+        startedOn: test.startedOn,
+        _runBy: test.user
+      }).exec());
+    })
+    .then(function() {
+      return new Q(Prescription.findOne({
+        _id: prescriptionID
+      }).exec());
+    })
+    .then(function(prescription) {
+      prescription._tests.push(test._id);
+      return new Q(prescription.save());
+    })
+    .then(function(success) {
+      res.jsonp({
+        message: 'Test started',
+        test: test
+      });
     })
     .fail(function(err) {
       return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
+        message: err.message
       });
     })
     .done();
@@ -441,129 +414,63 @@ exports.update_one_test = function(req, res) {
     .done();
 };
 
-function createStatusPromise(sparkDevices, testID) {
-  var c, s, test;
+function createStatusPromise(user, test) {
+  var deviceID = test._device._id;
+  var cartridgeID = test._cartridge._id;
+  var status, percentComplete;
 
-  console.log('status', testID);
-  return Q.fcall(function() {
-      return new Q(Test.findById(testID).populate([{
-        path: '_device',
-        select: '_spark name'
-      }, {
-        path: '_cartridge',
-        select: '_id'
-      }]).exec());
+  return brevitestSpark.get_spark_device_from_deviceID(user, deviceID)
+    .then(function(sparkDevice) {
+      return new Q(sparkDevice.getVariable('status'));
     })
-    .then(function(t) {
-      test = t;
-      c = test._cartridge._id;
-      return new Q(Spark.findById(test._device._spark).exec());
-    })
-    .then(function(spk) {
-      s = _.findWhere(sparkDevices, {
-        id: spk.sparkID
-      });
-      if (!s.attributes.connected) {
-        throw new Error(test._device.name + ' not connected');
+    .then(function(response) {
+      var data = response.result.split('\n');
+
+      if (cartridgeID !== data[1]) { // test is not running on this device
+        status = 'Complete';
+        percentComplete = 100;
       }
-      return new Q(s.getVariable('testrunning'));
-    })
-    .then(function(testrunning) {
-      return [testrunning, new Q(s.getVariable('status'))];
-    })
-    .spread(function(testrunning, status) {
-      if (c.toHexString() === testrunning.result) { // test t is underway on this device
-        test.status = status.result;
-        return true;
-      } else {
-        if (test.status !== 'Cancelled') {
-          test.status = 'Complete';
+      else {   // test t is underway on this device
+        percentComplete = data[2] ? parseInt(data[2]) : 0;
+        if (percentComplete === 100) {
+          status = 'Complete';
         }
-        return false;
-      }
-    })
-    .then(function(test_in_progress) {
-      if (test_in_progress) {
-        return new Q(s.getVariable('percentdone'));
-      } else {
-        if (test.status === 'Cancelled') {
-          return {
-            result: test.percentComplete
-          };
-        } else {
-          return {
-            result: 100
-          };
+        else {
+          status = data[0];
         }
       }
-    })
-    .then(function(pctDone) {
-      test.percentComplete = pctDone.result;
-      console.log('save', test);
-      return new Q(test.save());
+
+      return new Q(Test.findOneAndUpdate({_id: test._id},
+      {
+        status: status,
+        percentComplete: percentComplete
+      }).exec());
     })
     .then(function() {
-      return test;
+      return {testID: test._id, status: status, percentComplete: percentComplete};
     })
-    .done();
+    .fail(function(err) {
+      console.log('Status update failed', err);
+    });
 }
 
 exports.status = function(req, res) {
   console.log('Test status');
 
-  var sparkDevice, sparkID;
   var tests = req.body.tests;
-  var testIDs = _.uniq(_.pluck(_.pluck(tests, '_device'), '_id'));
 
-  new Q(Device.find({
-      _id: {
-        $in: testIDs
-      }
-    }).populate('_spark', 'sparkID').exec())
-    .then(function(d) {
-      return new Q(sparkcore.login({
-        username: 'leo3@linbeck.com',
-        password: '2january88'
-      }));
-    })
-    .then(function() {
-      return new Q(sparkcore.listDevices());
-    })
-    .then(function(sparkDevices) {
-      var p = [];
-      tests.forEach(function(t) {
-        p.push(createStatusPromise(sparkDevices, t._id));
+  Q.fcall(function(t) {
+      var promises = [];
+      t.forEach(function(test) {
+        if (test.status !== 'Cancelled') {
+          promises.push(createStatusPromise(req.user, test));
+        }
       });
-      return Q.allSettled(p);
-    })
-    .then(function() {
-      console.log('find');
-      return new Q(Test.find({
-        $and: [{
-          percentComplete: {
-            $lt: 100
-          }
-        }, {
-          status: {
-            $ne: 'Cancelled'
-          }
-        }]
-      }).sort('-created').populate([{
-        path: 'user',
-        select: 'displayName'
-      }, {
-        path: '_assay',
-        select: '_id name'
-      }, {
-        path: '_device',
-        select: '_id name _spark'
-      }, {
-        path: '_cartridge',
-        select: '_id name result failed BCODE startedOn finishedOn'
-      }]).exec());
-    })
-    .then(function(t) {
-      res.jsonp(t);
+      return Q.allSettled(promises);
+    }, tests)
+    .then(function(resolution) {
+      console.log('find', resolution);
+      res.jsonp(resolution);
     })
     .fail(function(err) {
       console.log('Status update failed');
@@ -600,7 +507,7 @@ exports.underway = function(req, res) {
   }]).limit(20).exec(function(err, tests) {
     if (err) {
       return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
+        message: err
       });
     } else {
       res.jsonp(tests);

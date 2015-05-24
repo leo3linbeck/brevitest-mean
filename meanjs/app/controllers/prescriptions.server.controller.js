@@ -85,22 +85,11 @@ exports.delete = function(req, res) {
 /**
  * List of Prescriptions
  */
-// exports.list = function(req, res) {
-// 	Prescription.find().sort('-created').populate('user', 'displayName').exec(function(err, prescriptions) {
-// 		if (err) {
-// 			return res.status(400).send({
-// 				message: errorHandler.getErrorMessage(err)
-// 			});
-// 		} else {
-// 			res.jsonp(prescriptions);
-// 		}
-// 	});
-// };
 
 exports.list = function(req, res) {
 	Prescription.find().sort('-created').populate([{
 		path: '_assays',
-		select: '_id name'
+		select: '_id name BCODE'
 	}, {
 		path: 'user',
 		select: 'displayName'

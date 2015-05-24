@@ -5,16 +5,26 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 	function($scope, $http, Tests, Prescriptions, Devices, Cartridges, Notification) {
 
 		$scope.setupRun = function() {
+			$scope.testUnderway = false;
+			$scope.activePrescription = -1;
+			$scope.activeAssay = -1;
+			$scope.deviceInitialized = false;
+			$scope.activeDevice = -1;
+			$scope.activeCartridge = -1;
 			$scope.prescriptions = Prescriptions.query();
-			$scope.devices = Devices.query();
+			$http.get('/devices/available').
+				success(function(data, status, headers, config) {
+					$scope.devices = data;
+			  }).
+			  error(function(err, status, headers, config) {
+					console.log(err);
+					Notification.error(err.message);
+			  });
 		};
-		$scope.testUnderway = false;
 
-		$scope.activePrescription = -1;
 		$scope.clickPrescription = function(indx) {
 			$scope.activePrescription = indx;
 		};
-		$scope.activeAssay = -1;
 		$scope.clickAssay = function(indx) {
 			$scope.activeAssay = indx;
 			$http.post('/cartridges/unused', {
@@ -28,12 +38,9 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 					Notification.error(err.message);
 			  });
 		};
-		$scope.deviceInitialized = false;
-		$scope.activeDevice = -1;
 		$scope.clickDevice = function(indx) {
 			$scope.activeDevice = indx;
 		};
-		$scope.activeCartridge = -1;
 		$scope.clickCartridge = function(indx) {
 			$scope.activeCartridge = indx;
 		};
@@ -93,21 +100,26 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 				Notification.error('Unknown cartridge');
 				return;
 			}
-			var cartridgeID = $scope.cartridges[$scope.activeCartridge]._id;
-			var assayID = $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]._id;
-			var deviceID = $scope.devices[$scope.activeDevice]._id;
+			var assay = $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay];
+			var cartridge = $scope.cartridges[$scope.activeCartridge];
+			var device = $scope.devices[$scope.activeDevice];
+			var prescription = $scope.prescriptions[$scope.activePrescription];
+			console.log(assay, $scope.devices[$scope.activeDevice], $scope.cartridges[$scope.activeCartridge], $scope.prescriptions[$scope.activePrescription]);
 			$http.post('/tests/begin', {
-					assayID: assayID,
-					deviceID: deviceID,
-					cartridgeID: cartridgeID,
-					prescriptionID: $scope.prescriptions[$scope.activePrescription]._id
+					assayID: assay._id,
+				  assayName: assay.name,
+				  assayBCODE: assay.BCODE,
+				  cartridgeID: cartridge._id,
+				  deviceID: device._id,
+				  deviceName: device.name,
+				  prescriptionID: prescription._id
 				}).
 				success(function(data, status, headers, config) {
 					console.log('Test begun', data);
 					Notification.success('Test underway');
 					$scope.testUnderway = true;
 					$http.post('/cartridges/unused', {
-							assayID: assayID
+							assayID: assay._id
 						}).
 						success(function(data, status, headers, config) {
 							$scope.cartridges = data;
@@ -116,20 +128,9 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 							console.log(err);
 							Notification.error(err.message);
 					  });
-					// $http.post('/tests/start_daemon', {
-					// 		testID: data.testID,
-					// 		cartridgeID: cartridgeID,
-					// 		deviceID: deviceID
-					// 	}).
-					// 	success(function(data, status, headers, config) {
-					// 		Notification.success('Test complete');
-					//   }).
-					//   error(function(err, status, headers, config) {
-					// 		console.log(err);
-					// 		Notification.error(err.message);
-					//   });
 			  }).
 			  error(function(err, status, headers, config) {
+					console.log(err);
 					Notification.error(err.message);
 			  });
 

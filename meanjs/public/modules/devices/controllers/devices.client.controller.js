@@ -73,7 +73,6 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 			var device = new Devices ({
 				name: this.name,
 				serialNumber: this.serialNumber,
-				online: this.online,
 				calibrationSteps: this.calibrationSteps,
 				status: this.status,
 				manufacturedOn: this.manufacturedOn,
@@ -89,7 +88,6 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 				// Clear form fields
 				$scope.name = '';
 				$scope.serialNumber = '';
-				$scope.online = false;
 				$scope.calibrationSteps = '';
 				$scope.status = '';
 				$scope.manufacturedOn = '';
@@ -123,7 +121,6 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 			var device = $scope.device;
 			device._deviceModel = $scope.deviceModel ? $scope.deviceModel._id : '';
 			device._spark = $scope.spark ? $scope.spark._id : '';
-			device.online = $scope.online;
 
 			device.$update(function() {
 				$location.path('devices/' + device._id);
@@ -144,7 +141,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 			}, function() {
 				$scope.deviceModels = $scope.deviceModels || DeviceModels.query();
 				$scope.sparks = $scope.sparks || Sparks.query();
-				$scope.online = $scope.device.online;
+				$scope.online = $scope.device._spark.connected;
 				$scope.setOnlineButtonText();
 				$scope.deviceModel = $scope.device._deviceModel ? $scope.device._deviceModel : {};
 				$scope.spark = $scope.device._spark ? $scope.device._spark : {};

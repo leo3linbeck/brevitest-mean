@@ -1,39 +1,40 @@
 'use strict';
 
-// brevitest-command.js
+// brevitest-BCODE.js
 
 function instruction_time(code, param) {
-  var p, d = 0;
+  var d = 0;
 
   switch (code) {
     case 'Delay': // delay
     case 'Solenoid On': // solenoid on
-      d = parseInt(param[0]);
+      d = parseInt(param);
       break;
     case 'Move': // move
-      d = Math.floor(parseInt(param[0]) * parseInt(param[1]) / 1000);
+      d = Math.floor(Math.abs(parseInt(param[0])) * parseInt(param[1]) / 1000);
       break;
     case 'Blink Device LED': // blink device LED
       d = 2 * Math.floor(parseInt(param[0]) * parseInt(param[1]));
       break;
-    case 'Read Sensor': // read sensor
-      d = 10000;
+    case 'Read Sensors': // read sensor
+      d = 5000;
       break;
-    case 'Start Test': // finish
-      d = 11000;
+    case 'Start Test': // starting sensor reading plus LED warmup
+      d = 6000;
       break;
-    case 'Finish Test': // finish
-      d = 16800;
-      break;
+    // case 'Finish Test': // write to flash and reset stage
+    //   d = 16800;
+    //   break;
   }
 
   return d;
 }
 
 function get_bcode_object(bcode) {
+  var p, indx = bcode.params.indexOf(',');
   return ({
     c: bcode.command,
-    p: bcode.params && bcode.params.toString().indexOf(',') !== -1 ? bcode.params.toString().split(',') : bcode.params
+    p: indx !== -1 ? bcode.params.split(',') : bcode.params
   });
 }
 
@@ -68,7 +69,7 @@ function calculate_BCODE_time(bcode_array) {
             a.push(bcode_array[i]);
           } while (!(t.c === 'Repeat End' && level === 0));
 
-          duration += calculate_BCODE_time(a) * parseInt(b.p[0]);
+          duration += calculate_BCODE_time(a) * parseInt(b.p);
           break;
         default:
           duration += instruction_time(b.c, b.p);

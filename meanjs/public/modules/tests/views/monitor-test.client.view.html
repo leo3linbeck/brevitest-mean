@@ -1,13 +1,28 @@
 <section data-ng-controller="MonitorTestController" data-ng-init="setup()">
   <div class="page-header">
-    <h1>Monitor Tests</h1>
+    <div class="col-xs-12">
+      <h1>Manage Brevitests™</h1>
+    </div>
+    <div class="col-xs-12">
+      <div class="btn-group" role="group">
+        <a class="btn btn-default" href="/#!/prescriptions/create">Prescribe</a>
+        <a class="btn btn-default" href="/#!/tests/run">Run</a>
+        <a class="btn btn-default" disabled href="/#!/tests/monitor">Monitor</a>
+        <a class="btn btn-default" href="/#!/tests/review">Review</a>
+      </div>
+      <h3>Listed by Device</h3>
+    </div>
   </div>
-  <h3>Devices
-    <a class="btn btn-info btn-sm pull-right" href="/#!/tests/review" type="button">Go
-      To Review Page</a>
-    <button class="btn btn-primary btn-sm pull-right" ng-click="toggleChronjob()"
-      type="button">{{updateOn ? 'Turn Off Updating' : 'Turn On Updating'}}</button>
-  </h3>
+  <div class="panel panel-warning col-xs-12" ng-hide="tests.length">
+    <div class="panel-heading">
+      No tests in progress found
+    </div>
+    <div class="panel-body">
+      If you started a test, try refreshing this page. Also, make sure your device is
+      still connected to the network - if it's not, don't panic, because your test
+      will still run and store the results for later access.
+    </div>
+  </div>
   <div class="list-group col-xs-12">
     <a class="list-group-item" ng-repeat="test in tests">
       <h4 class="list-group-item-heading">{{test._device.name}}

@@ -5,136 +5,93 @@
  */
 var mongoose = require('mongoose'),
   errorHandler = require('./errors.server.controller'),
+  Cartridge = mongoose.model('Cartridge'),
   Device = mongoose.model('Device'),
   sparkcore = require('spark'),
   Q = require('q'),
   _ = require('lodash');
 
-var brevitestCommand = {
-  'write_serial_number': '00',
-  'initialize_device': '01',
-  'run_test': '02',
-  'sensor_data': '03',
-  'change_param': '04',
-  'reset_params': '05',
-  'erase_archive': '06',
-  'dump_archive': '07',
-  'archive_size': '08',
-  'firmware_version': '09',
-  'cancel_process': '10',
-  'receive_BCODE': '11',
-  'device_ready': '12',
-  'calibrate': '13'
-};
+  var brevitestCommand = require('../../app/modules/brevitest-command');
+  var brevitestSpark = require('../../app/modules/brevitest-particle');
 
 function errorCallback(err) {
   return err;
 }
 
 exports.move_to_and_set_calibration_point = function(req, res) {
-  var device, sparkID, step;
-
-  Q.fcall(function(id) {
-      step = 'Device.findById';
-      console.log(step, id);
-      return new Q(Device.findById(id).populate('_spark', 'sparkID').exec());
-    }, req.body.device._id)
-    .then(function(d) {
-      step = 'Spark login';
-      console.log(step, d);
-      device = d;
-      sparkID = device._spark.sparkID;
-      return new Q(sparkcore.login({ username: 'leo3@linbeck.com', password: '2january88' }));
-    })
-    .then(function() {
-      step = 'Spark listDevices';
-      console.log(step, sparkID);
-      return new Q(sparkcore.listDevices());
-    })
-    .then(function(sparkDevices) {
-      var sparkDevice = _.findWhere(sparkDevices, {id: sparkID});
-      step = 'Spark callFunction';
-      console.log(step, sparkDevice);
-      if (!sparkDevice.attributes.connected) {
-        throw new Error(device.name + ' is not online.');
-      }
-      return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.calibrate + device.calibrationSteps));
+  brevitestSpark.get_spark_device_from_device(req.user, req.body.device)
+    .then(function(sparkDevice) {
+      return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.calibrate + req.body.device.calibrationSteps));
     })
     .then(function(result) {
-      var response;
-
-      step = 'Return response';
-      console.log(step, result);
-      if (result.return_value === 1) {
-        response = device.name + ' moved to calibration point';
-      }
-      else {
-        throw new Error('Calibration failed');
+      if (result.return_value !== 1) {
+        throw new Error('Calibration failed, error code ' + result.return_value);
       }
       res.jsonp({
-        result: response
+        result: req.body.device.name + ' moved to calibration point'
       });
     })
     .fail(function(error) {
       console.error(error);
       return res.status(400).send({
-        message: error.message,
-        step: step
+        message: error.message
       });
     })
     .done();
 };
 
-exports.initialize = function(req, res) {
-  var device, sparkID, step;
+exports.available = function(req, res) {
+  console.log('Available devices');
+  Q.fcall(function() {
+      return Cartridge.find({
+        $and: [{
+          startedOn: {$exists: true}
+        }, {
+          finishedOn: {$exists: false}
+        }]
+      }).exec();
+    })
+    .then(function(activeCartridges) {
+      console.log('Active cartridges', activeCartridges);
+      var activeDevices = _.pluck(activeCartridges, '_device');
+      return new Q(Device.find({
+        _id: {$nin: activeDevices}
+      }).sort('name').populate([{
+        path: '_deviceModel',
+        select: '_id name'
+      }, {
+        path: '_spark',
+        select: '_id name sparkID connected'
+      }]).exec());
+    })
+    .then(function(availableDevices) {
+      console.log('Available devices', availableDevices);
+      res.jsonp(_.filter(availableDevices, function(e) {return e._spark.connected;}));
+    })
+    .fail(function(err) {
+      console.log('Error searching for active devices', err);
+    })
+    .done();
+};
 
-  console.log('device.initialize');
-  Q.fcall(function(id) {
-      step = 'Device.findById';
-      console.log(step, id);
-      return new Q(Device.findById(id).populate('_spark', 'sparkID').exec());
-    }, req.body.device._id)
-    .then(function(d) {
-      step = 'Spark login';
-      console.log(step, d);
-      device = d;
-      sparkID = device._spark.sparkID;
-      return new Q(sparkcore.login({ username: 'leo3@linbeck.com', password: '2january88' }));
-    })
-    .then(function() {
-      step = 'Spark listDevices';
-      console.log(step, sparkID);
-      return new Q(sparkcore.listDevices());
-    })
-    .then(function(sparkDevices) {
-      var sparkDevice = _.findWhere(sparkDevices, {id: sparkID});
-      step = 'Spark callFunction';
-      console.log(step, sparkDevice);
-      if (!sparkDevice.attributes.connected) {
-        throw new Error(device.name + ' is not online.');
-      }
+exports.initialize = function(req, res) {
+  console.log(req.body);
+  brevitestSpark.get_spark_device_from_device(req.user, req.body.device)
+    .then(function(sparkDevice) {
       return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.initialize_device));
     })
     .then(function(result) {
-      var response;
-
-      step = 'Return response';
-      console.log(step, result);
-      if (result.return_value === 1) {
-        response = 'Initialization successfully started';
-      }
-      else {
+      if (result.return_value !== 1) {
         throw new Error('Initialization failed to start');
       }
       res.jsonp({
-        result: response
+        result: 'Initialization successfully started'
       });
     })
     .fail(function(error) {
       console.error(error);
       return res.status(400).send({
-        message: error.message,
-        step: step
+        message: error.message
       });
     })
     .done();
@@ -169,7 +126,7 @@ exports.read = function(req, res) {
     select: '_id name'
   }, {
     path: '_spark',
-    select: '_id name sparkID'
+    select: '_id name sparkID connected'
   }], function(err) {
     if (err) {
       return res.status(400).send({
@@ -221,7 +178,13 @@ exports.delete = function(req, res) {
  * List of Devices
  */
 exports.list = function(req, res) {
-  Device.find().sort('-created').populate('user', 'displayName').exec(function(err, devices) {
+  Device.find().sort('-created').populate([{
+    path: 'user',
+    select: 'displayName'
+  }, {
+    path: '_spark',
+    select: '_id name sparkID connected'
+  }]).exec(function(err, devices) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -241,7 +204,7 @@ exports.deviceByID = function(req, res, next, id) {
     select: 'displayName'
   }, {
     path: '_spark',
-    select: '_id name'
+    select: '_id name sparkID'
   }, {
     path: '_deviceModel',
     select: '_id name'

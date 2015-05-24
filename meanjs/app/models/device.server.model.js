@@ -20,10 +20,6 @@ var DeviceSchema = new Schema({
 		type: String,
 		default: ''
 	},
-	online: {
-		type: Boolean,
-		default: false
-	},
 	status: {
 		type: String
 	},

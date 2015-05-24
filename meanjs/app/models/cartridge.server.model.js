@@ -22,6 +22,9 @@ var CartridgeSchema = new Schema({
 	rawData: {
 		type: String
 	},
+	bcodeString: {
+		type: String
+	},
 	failed: {
 		type: Boolean
 	},

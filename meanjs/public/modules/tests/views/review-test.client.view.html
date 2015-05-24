@@ -1,23 +1,46 @@
 <section data-ng-controller="ReviewTestController" data-ng-init="load()">
   <div class="page-header">
-    <h1>Review Tests ({{totalItems}})</h1>
-    <pagination boundary-links="true" class="pagination-sm" total-items="totalItems" max-size="8" ng-model="currentPage" ng-change="pageChanged()" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></pagination>
+    <div class="col-xs-12">
+      <h1>Manage Brevitests™</h1>
+    </div>
+    <div class="col-xs-12">
+      <div class="btn-group" role="group">
+        <a class="btn btn-default" href="/#!/prescriptions/create">Prescribe</a>
+        <a class="btn btn-default" href="/#!/tests/run">Run</a>
+        <a class="btn btn-default" href="/#!/tests/monitor">Monitor</a>
+        <a class="btn btn-default" disabled href="/#!/tests/review">Review</a>
+      </div>
+    </div>
+    <div class="col-xs-12">
+      <pagination boundary-links="true" class="pagination" first-text="&laquo;"
+        last-text="&raquo;" max-size="8" next-text="&rsaquo;" ng-change="pageChanged()" ng-model="currentPage"
+        previous-text="&lsaquo;" total-items="totalItems"></pagination>
+    </div>
   </div>
-  <div class="col-md-12">
+  <div class="col-xs-12">
     <ul class="list-group">
-      <li href="" ng-repeat="test in tests" class="list-group-item"><b>Patient Number: {{test._prescription.patientNumber}}</b>
+      <li class="list-group-item" href="" ng-repeat="test in tests"><b>Patient Number:
+        {{test._prescription.patientNumber}}</b>
         <p>
           <small>Gender:
             <strong>{{test._prescription.patientGender}}</strong>
             <span style="margin-left: 1em"></span>DOB:
             <strong>{{test._prescription.patientDateOfBirth | date: "mediumDate"}}</strong>
           </small>
-          <button type="button" ng-show="test._cartridge.finishedOn && !test._cartridge.failed" class="btn btn-lg pull-right" ng-class="{'btn-danger': test.result === 'Positive', 'btn-warning': test.result === 'Borderline', 'btn-success': test.result === 'Negative'}">{{test._cartridge.result}} – {{test.result}}</button>
+          <button class="btn btn-lg pull-right"
+            ng-class="{'btn-danger': test.result === 'Positive', 'btn-warning': test.result
+            === 'Borderline', 'btn-success': test.result ===
+            'Negative'}" ng-show="test._cartridge.finishedOn && !test._cartridge.failed"
+            type="button">{{test._cartridge.result}}
+            – {{test.result}}</button>
         </p>
         <p>
           <small>Test started on {{test._cartridge.startedOn | date: "medium"}}</small>&nbsp;&nbsp;&nbsp;
-          <span class="btn btn-xs" disabled ng-class="{'btn btn-default': !test._cartridge.failed, 'btn btn-danger': test._cartridge.failed}">{{test._cartridge.failed ? 'Failure' : 'Success'}}</span>
-          <button type="button" ng-hide="test.result || test._cartridge.failed" class="btn btn-sm btn-info" ng-click="updateTest($index)">Update</button>
+          <span class="btn btn-xs" disabled
+            ng-class="{'btn btn-default': !test._cartridge.failed, 'btn btn-danger':
+            test._cartridge.failed}">{{test._cartridge.failed ? 'Failure' : 'Success'}}</span>
+          <button class="btn btn-sm btn-info" ng-click="updateTest($index)"
+            ng-hide="test.result || test._cartridge.failed" type="button">Download</button>
         </p>
         <accordion close-others="true">
           <accordion-group heading="Details">
@@ -28,7 +51,8 @@
             </ul>
             <accordion close-others="true">
               <accordion-group heading="Raw Data">
-                <button type="button" class="btn btn-xs btn-default pull-right" ng-click="loadRawData('{{test._cartridge._id}}')">Reload</button>
+                <!-- <button class="btn btn-xs btn-default pull-right"
+                  ng-click="loadRawData('{{test._cartridge._id}}')" type="button">Reload</button> -->
                 <textarea class="small" rows="10" style="width: 100%; margin:0 10;">{{test._cartridge.rawData | rawtestdata}}</textarea>
               </accordion-group>
               <accordion-group>
@@ -36,7 +60,7 @@
                   <div ng-click="loadGraph('{{test._id}}')">Graph</div>
                 </accordion-heading>
                 <div>
-                  <linechart data="data" options="options" width="400" height="300"></linechart>
+                  <linechart data="data" height="300" options="options" width="400"></linechart>
                 </div>
               </accordion-group>
             </accordion>
@@ -44,5 +68,10 @@
         </accordion>
       </li>
     </ul>
+  </div>
+  <div class="col-xs-12">
+    <pagination boundary-links="true" class="pagination" first-text="&laquo;"
+      last-text="&raquo;" max-size="8" next-text="&rsaquo;" ng-change="pageChanged()" ng-model="currentPage"
+      previous-text="&lsaquo;" total-items="totalItems"></pagination>
   </div>
 </section>

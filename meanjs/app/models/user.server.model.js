@@ -75,6 +75,12 @@ var UserSchema = new Schema({
 		}],
 		default: ['user']
 	},
+	sparkAccessToken: {
+		type: String
+	},
+	sparkTokenExpires: {
+		type: Date
+	},
 	updated: {
 		type: Date
 	},

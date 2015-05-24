@@ -23,6 +23,23 @@ var bt = require('../../app/modules/brevitest-BCODE');
 var bcmds = bt.BCODE;
 var get_BCODE_duration = bt.calculate_duration;
 
+var testPopulate = [{
+  path: 'user',
+  select: 'displayName'
+}, {
+  path: '_assay',
+  select: '_id name standardCurve analysis'
+}, {
+  path: '_device',
+  select: '_id name'
+}, {
+  path: '_prescription',
+  select: '_id name patientNumber patientGender patientDateOfBirth'
+}, {
+  path: '_cartridge',
+  select: '_id name result failed rawData startedOn finishedOn'
+}];
+
 exports.run = function(req, res) {
   res.send();
 };
@@ -146,72 +163,35 @@ exports.begin = function(req, res) {
 };
 
 exports.cancel = function(req, res) {
-  console.log('Cancelling test', req.body.testID);
+  console.log('Cancelling test', req.body);
 
-  var cartridge, sparkDevice, sparkID, test;
+  var testID = req.body.testID;
+  var cartridgeID = req.body.cartridgeID;
+  var deviceID = req.body.deviceID;
 
-  Q.fcall(function(id) {
-      return new Q(Test.findById(id).populate([{
-        path: 'user',
-        select: 'displayName'
-      }, {
-        path: '_assay',
-        select: '_id name standardCurve analysis'
-      }, {
-        path: '_device',
-        select: '_id name'
-      }, {
-        path: '_prescription',
-        select: '_id name patientNumber patientGender patientDateOfBirth'
-      }, {
-        path: '_cartridge',
-        select: '_id name result failed rawData startedOn finishedOn'
-      }]).exec());
-    }, req.body.testID)
-    .then(function(t) {
-      test = t;
-      return new Q(Cartridge.findById(test._cartridge._id).exec());
-    })
-    .then(function(c) {
-      cartridge = c;
-      return new Q(Device.findById(test._device._id).populate('_spark', 'sparkID').exec());
-    })
-    .then(function(device) {
-      sparkID = device._spark.sparkID;
-      return new Q(sparkcore.login({
-        username: 'leo3@linbeck.com',
-        password: '2january88'
-      }));
-    })
-    .then(function(token) {
-      return new Q(sparkcore.listDevices());
-    })
-    .then(function(devices) {
-      sparkDevice = _.findWhere(devices, {
-        id: sparkID
-      });
-      console.log(sparkDevice);
-      if (!sparkDevice.attributes.connected) {
-        throw new Error(test._device.name + ' is not online.');
-      }
+  brevitestSpark.get_spark_device_from_deviceID(req.user, deviceID)
+    .then(function(sparkDevice) {
       return new Q(sparkDevice.callFunction('runcommand', 'cancel_process'));
     })
-    .then(function() {
-      var data, cmd, i = 2,
-        params;
+    .then(function(register) {
+      console.log('register', register);
 
-      cartridge.finishedOn = new Date();
-      cartridge.failed = true;
-      return new Q(cartridge.save());
+      return new Q(Cartridge.findOneAndUpdate({
+        _id: cartridgeID
+      }, {
+        finishedOn: new Date(),
+        failed: true
+      }, {
+        new: true
+      }).exec());
     })
-    .then(function() {
-      test.startedOn = cartridge.startedOn;
-      test.finishedOn = cartridge.finishedOn;
-      test.status = 'Cancelled';
-      test._cartridge.startedOn = cartridge.startedOn;
-      test._cartridge.finishedOn = cartridge.finishedOn;
-      test._cartridge.failed = cartridge.failed;
-      return new Q(test.save());
+    .then(function(cartridge) {
+      return new Q(Test.findOneAndUpdate({
+        _id: testID
+      }, {
+        finishedOn: cartridge.finishedOn,
+        status: 'Cancelled'
+      }).exec());
     })
     .then(function() {
       console.log('find');
@@ -225,22 +205,10 @@ exports.cancel = function(req, res) {
             $ne: 'Cancelled'
           }
         }]
-      }).sort('-created').populate([{
-        path: 'user',
-        select: 'displayName'
-      }, {
-        path: '_assay',
-        select: '_id name'
-      }, {
-        path: '_device',
-        select: '_id name _spark'
-      }, {
-        path: '_cartridge',
-        select: '_id name result failed BCODE startedOn finishedOn'
-      }]).exec());
+      }).sort('-created').populate(testPopulate).exec());
     })
-    .then(function(tests) {
-      res.jsonp(tests);
+    .then(function() {
+      res.jsonp(testID);
     })
     .fail(
       function(err) {
@@ -273,16 +241,7 @@ exports.create = function(req, res) {
 exports.read = function(req, res) {
   var test = req.test;
 
-  test.populate([{
-    path: '_assay',
-    select: '_id name'
-  }, {
-    path: '_device',
-    select: '_id name'
-  }, {
-    path: '_cartridge',
-    select: '_id name result failed BCODE startedOn finishedOn'
-  }], function(err) {
+  test.populate(testPopulate, function(err) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -313,55 +272,21 @@ exports.update = function(req, res) {
 };
 
 exports.update_one_test = function(req, res) {
-  console.log('Updating one test', req.body.testID);
+  console.log('Updating one test', req.body);
 
-  var cartridge, sparkDevice, sparkID, test;
+  var testID = req.body.testID;
+  var cartridgeID = req.body.cartridgeID;
+  var deviceID = req.body.deviceID;
+  var analysis = req.body.analysis;
+  var sparkDevice, result = {};
+  result.percentComplete = req.body.percentComplete > 100 ? 100 : req.body.percentComplete;
 
-  Q.fcall(function(id) {
-      return new Q(Test.findById(id).populate([{
-        path: 'user',
-        select: 'displayName'
-      }, {
-        path: '_assay',
-        select: '_id name standardCurve analysis'
-      }, {
-        path: '_device',
-        select: '_id name'
-      }, {
-        path: '_prescription',
-        select: '_id name patientNumber patientGender patientDateOfBirth'
-      }, {
-        path: '_cartridge',
-        select: '_id name result failed rawData startedOn finishedOn'
-      }]).exec());
-    }, req.body.testID)
-    .then(function(t) {
-      test = t;
-      return new Q(Cartridge.findById(test._cartridge._id).exec());
-    })
-    .then(function(c) {
-      cartridge = c;
-      return new Q(Device.findById(test._device._id).populate('_spark', 'sparkID').exec());
-    })
-    .then(function(device) {
-      sparkID = device._spark.sparkID;
-      return new Q(sparkcore.login({
-        username: 'leo3@linbeck.com',
-        password: '2january88'
-      }));
-    })
-    .then(function(token) {
-      return new Q(sparkcore.listDevices());
-    })
-    .then(function(devices) {
-      sparkDevice = _.findWhere(devices, {
-        id: sparkID
-      });
-      console.log(sparkDevice);
-      if (!sparkDevice.attributes.connected) {
-        throw new Error(test._device.name + ' is not online.');
-      }
-      return new Q(sparkDevice.callFunction('requestdata', test._cartridge._id + '000000' + brevitestRequest.test_record_by_uuid));
+  brevitestSpark.get_spark_device_from_deviceID(req.user, deviceID)
+    .then(function(s) {
+      sparkDevice = s;
+      console.log('Update test');
+
+      return new Q(sparkDevice.callFunction('requestdata', cartridgeID + '000000' + brevitestRequest.test_record_by_uuid));
     })
     .then(function(result) {
       console.log('requestdata', result);
@@ -372,40 +297,46 @@ exports.update_one_test = function(req, res) {
     })
     .then(function(register) {
       console.log('register', register);
-      var data, cmd, i = 2,
-        params;
 
-      cartridge.rawData = register.result;
-      data = cartridge.rawData.split('\n');
-      params = data[0].split('\t');
-      cartridge.startedOn = Date(parseInt(params[1]));
-      cartridge.finishedOn = Date(parseInt(params[2]));
-      cartridge.result = parseInt(data[4].split('\t')[3]) - parseInt(data[2].split('\t')[3]);
-      cartridge.failed = test.percentComplete < 100;
-      return new Q(cartridge.save());
+      var data = register.result.split('\n');
+      var params = data[0].split('\t');
+      result.rawData = register.result;
+      result.startedOn = Date(parseInt(params[1]));
+      result.finishedOn = Date(parseInt(params[2]));
+      result.value = parseInt(data[4].split('\t')[3]) - parseInt(data[2].split('\t')[3]);
+      result.failed = result.percentComplete < 100;
+
+      return new Q(Cartridge.findOneAndUpdate({
+        _id: cartridgeID
+      }, {
+        rawData: register.result,
+        startedOn: result.startedOn,
+        finishedOn: result.finishedOn,
+        result: result.value,
+        failed: result.failed
+      }, {
+        new: true
+      }).exec());
     })
-    .then(function() {
-      var analysis = test._assay.analysis;
-
-      test.percentComplete = test.percentComplete > 100 ? 100 : test.percentComplete;
-      test.startedOn = cartridge.startedOn;
-      test.finishedOn = cartridge.finishedOn;
+    .then(function(cartridge) {
       if (cartridge.result > analysis.redMax || cartridge.result < analysis.redMin) {
-        test.result = 'Positive';
+        result.result = 'Positive';
       } else if (cartridge.result > analysis.greenMax || cartridge.result < analysis.greenMin) {
-        test.result = 'Borderline';
+        result.result = 'Borderline';
       } else {
-        test.result = 'Negative';
+        result.result = 'Negative';
       }
-      test._cartridge.startedOn = cartridge.startedOn;
-      test._cartridge.finishedOn = cartridge.finishedOn;
-      test._cartridge.rawData = cartridge.rawData;
-      test._cartridge.failed = cartridge.failed;
-      test._cartridge.result = cartridge.result;
-      return new Q(test.save());
+      return new Q(Test.findOneAndUpdate({
+        _id: testID
+      }, {
+        percentComplete: result.percentComplete,
+        startedOn: result.startedOn,
+        finishedOn: result.finishedOn,
+        result: result.result
+      }).exec());
     })
     .then(function() {
-      res.jsonp(test);
+      res.jsonp(result);
     })
     .fail(
       function(err) {
@@ -429,25 +360,28 @@ function createStatusPromise(user, test) {
       if (cartridgeID !== data[1]) { // test is not running on this device
         status = 'Complete';
         percentComplete = 100;
-      }
-      else {   // test t is underway on this device
+      } else { // test t is underway on this device
         percentComplete = data[2] ? parseInt(data[2]) : 0;
         if (percentComplete === 100) {
           status = 'Complete';
-        }
-        else {
+        } else {
           status = data[0];
         }
       }
 
-      return new Q(Test.findOneAndUpdate({_id: test._id},
-      {
+      return new Q(Test.findOneAndUpdate({
+        _id: test._id
+      }, {
         status: status,
         percentComplete: percentComplete
       }).exec());
     })
     .then(function() {
-      return {testID: test._id, status: status, percentComplete: percentComplete};
+      return {
+        testID: test._id,
+        status: status,
+        percentComplete: percentComplete
+      };
     })
     .fail(function(err) {
       console.log('Status update failed', err);
@@ -481,30 +415,15 @@ exports.status = function(req, res) {
 exports.underway = function(req, res) {
   Test.find({
     $and: [{
-      percentComplete: {
-        $lt: 100
+      status: {
+        $ne: 'Complete'
       }
     }, {
       status: {
         $ne: 'Cancelled'
       }
     }]
-  }).sort('-created').populate([{
-    path: 'user',
-    select: 'displayName'
-  }, {
-    path: '_assay',
-    select: '_id name standardCurve analysis'
-  }, {
-    path: '_device',
-    select: '_id name'
-  }, {
-    path: '_prescription',
-    select: '_id name patientNumber patientGender patientDateOfBirth'
-  }, {
-    path: '_cartridge',
-    select: '_id name result failed rawData startedOn finishedOn'
-  }]).limit(20).exec(function(err, tests) {
+  }).sort('-created').populate(testPopulate).limit(20).exec(function(err, tests) {
     if (err) {
       return res.status(400).send({
         message: err
@@ -522,22 +441,7 @@ exports.review = function(req, res) {
     _cartridge: {
       $exists: true
     }
-  }).sort('-created').populate([{
-    path: 'user',
-    select: 'displayName'
-  }, {
-    path: '_assay',
-    select: '_id name standardCurve analysis'
-  }, {
-    path: '_device',
-    select: '_id name'
-  }, {
-    path: '_prescription',
-    select: '_id name patientNumber patientGender patientDateOfBirth'
-  }, {
-    path: '_cartridge',
-    select: '_id name result failed rawData startedOn finishedOn'
-  }]).limit(20).exec(function(err, tests) {
+  }).sort('-created').populate(testPopulate).limit(20).exec(function(err, tests) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -585,22 +489,7 @@ exports.load = function(req, res) {
     _cartridge: {
       $exists: true
     }
-  }).paginate(req.body.page, req.body.pageSize).sort('-created').populate([{
-    path: 'user',
-    select: 'displayName'
-  }, {
-    path: '_assay',
-    select: '_id name standardCurve analysis'
-  }, {
-    path: '_device',
-    select: '_id name'
-  }, {
-    path: '_prescription',
-    select: '_id name patientNumber patientGender patientDateOfBirth'
-  }, {
-    path: '_cartridge',
-    select: '_id name result failed rawData startedOn finishedOn'
-  }]).exec(function(err, tests, total) {
+  }).paginate(req.body.page, req.body.pageSize).sort('-created').populate(testPopulate).exec(function(err, tests, total) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -620,19 +509,7 @@ exports.load = function(req, res) {
  * Test middleware
  */
 exports.testByID = function(req, res, next, id) {
-  Test.findById(id).populate([{
-    path: 'user',
-    select: 'displayName'
-  }, {
-    path: '_assay',
-    select: '_id name'
-  }, {
-    path: '_device',
-    select: '_id name'
-  }, {
-    path: '_cartridge',
-    select: '_id name result failed BCODE startedOn finishedOn'
-  }]).exec(function(err, test) {
+  Test.findById(id).populate(testPopulate).exec(function(err, test) {
     if (err) return next(err);
     if (!test) return next(new Error('Failed to load Test ' + id));
     req.test = test;

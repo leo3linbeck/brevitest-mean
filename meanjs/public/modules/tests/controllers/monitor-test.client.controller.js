@@ -12,8 +12,8 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			$scope.updateOn = !$scope.updateOn;
 			if ($scope.updateOn) {
 				Notification.info('Updates started');
-				var numberOfIntervals = 120;
-				var intervalTime = 10000;
+				var numberOfIntervals = 200;
+				var intervalTime = 6000;
 				$scope.chronjob();
 				return $interval(function() {
 						$scope.chronjob();
@@ -51,8 +51,8 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			}).
 				success(function(data, status, headers, config) {
 					console.log(data);
-					$scope.tests = data;
-					$scope.updateOn = (data.length !== 0);
+					// $scope.tests = data;
+					// $scope.updateOn = (data.length !== 0);
 				}).
 				error(function(err, status, headers, config) {
 					Notification.error(err.message);

@@ -16,7 +16,7 @@
     "angular-ui-router": "~0.2.11",
     "angular-ui-notification": "~0.0.5",
     "d3": "~3.5.5",
-    "angular-charts": "~0.2.7",
+    "underscore": "~1.8.0",
     "n3-line-chart": "~1.1.8"
   },
   "resolutions": {

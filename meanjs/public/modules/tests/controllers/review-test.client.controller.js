@@ -32,35 +32,30 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
     $scope.updateTest = function(index) {
       var test = $scope.tests[index];
       console.log(test);
-      if (test._cartridge.finishedOn) {
-        Notification.error('Test already updated');
-      }
-      else {
-        $http.post('/tests/update_one_test', {
-          testID: test._id,
-          cartridgeID: test._cartridge._id,
-          deviceID: test._device._id,
-          analysis: test._assay.analysis,
-          percentComplete: test.percentComplete
-        }).
-        success(function(data, status, headers, config) {
-          console.log(data);
-          test.result = data.result;
-          test.startedOn = data.startedOn;
-          test.finishedOn = data.finishedOn;
-          test.percentComplete = data.percentComplete;
+      $http.post('/tests/update_one_test', {
+        testID: test._id,
+        cartridgeID: test._cartridge._id,
+        deviceID: test._device._id,
+        analysis: test._assay.analysis,
+        percentComplete: test.percentComplete
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        test.result = data.result;
+        test.startedOn = data.startedOn;
+        test.finishedOn = data.finishedOn;
+        test.percentComplete = data.percentComplete;
 
-          test._cartridge.rawData = data.rawData;
-          test._cartridge.result = data.value;
-          test._cartridge.startedOn = data.startedOn;
-          test._cartridge.finishedOn = data.finishedOn;
-          test._cartridge.failed = data.failed;
-        }).
-        error(function(err, status, headers, config) {
-          Notification.error(err.message);
-        });
-        Notification.success('Test record updating');
-      }
+        test._cartridge.rawData = data.rawData;
+        test._cartridge.result = data.value;
+        test._cartridge.startedOn = data.startedOn;
+        test._cartridge.finishedOn = data.finishedOn;
+        test._cartridge.failed = data.failed;
+      }).
+      error(function(err, status, headers, config) {
+        Notification.error(err.message);
+      });
+      Notification.success('Test record updating');
     };
 
     $scope.loadGraph = function(testID) {

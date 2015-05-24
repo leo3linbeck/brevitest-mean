@@ -223,10 +223,10 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     }
 
     function get_bcode_object(bcode) {
-      var p, indx = bcode.params.indexOf(',');
+      var p, indx = bcode.params.toString().indexOf(',');
       return ({
         c: bcode.command,
-        p: indx !== -1 ? bcode.params.split(',') : bcode.params
+        p: indx !== -1 ? bcode.params.split(',') : bcode.params.toString()
       });
     }
 
@@ -299,16 +299,36 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     $scope.activeBCODE = 0;
     $scope.command = $scope.BCODE[0].command;
     $scope.params = $scope.BCODE[0].params;
+    $scope.commandDescription = $scope.BCODECommands[0].description;
     $scope.canMove = false;
     $scope.canDelete = false;
     $scope.canInsert = false;
     $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
 
     $scope.changeCommand = function() {
-      $scope.commandDescription = _.findWhere($scope.BCODECommands, {
-        name: $scope.command
-      }).description;
       $scope.params = '';
+      var b = _.findWhere($scope.BCODECommands, {
+          name: $scope.command
+        });
+      $scope.canMove = b.canMove;
+      $scope.canDelete = b.canDelete;
+      $scope.canInsert = b.canInsert;
+      $scope.commandDescription = b.description;
+      console.log($scope.activeBCODE, $scope.command, $scope.canMove, $scope.canDelete, $scope.canInsert);
+    };
+
+    $scope.clickBCODECode = function(indx) {
+      $scope.activeBCODE = indx;
+      $scope.command = $scope.BCODE[indx].command;
+      $scope.params = $scope.BCODE[indx].params;
+      var b = _.findWhere($scope.BCODECommands, {
+          name: $scope.command
+        });
+      $scope.canMove = b.canMove;
+      $scope.canDelete = b.canDelete;
+      $scope.canInsert = b.canInsert;
+      $scope.commandDescription = b.description;
+      console.log($scope.activeBCODE, $scope.command, $scope.canMove, $scope.canDelete, $scope.canInsert);
     };
 
     $scope.moveBCODETop = function() {
@@ -418,7 +438,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 
     $scope.insertBCODEBottom = function() {
       if (validateCommandParams() && $scope.canInsert) {
-        $scope.BCODE.splice($scope.BCODE.length - 2, 0, {
+        $scope.BCODE.splice($scope.BCODE.length - 1, 0, {
           command: $scope.command,
           params: $scope.params
         });
@@ -479,19 +499,6 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
     };
 
-    $scope.clickBCODECode = function(indx) {
-      $scope.activeBCODE = indx;
-      $scope.command = $scope.BCODE[indx].command;
-      $scope.params = $scope.BCODE[indx].params;
-      var b = _.findWhere($scope.BCODECommands, {
-          name: $scope.BCODE[$scope.activeBCODE].command
-        });
-      $scope.canMove = b.canMove;
-      $scope.canDelete = b.canDelete;
-      $scope.canInsert = b.canInsert;
-      $scope.commandDescription = b.description;
-    };
-
     $scope.saveBCODE = function() {
       var assay = $scope.assay;
 
@@ -525,8 +532,6 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       // Redirect after save
       assay.$save(function(response) {
         $location.path('assays/' + response._id);
-
-        $scope.make10Cartridges(response._id);
 
         // Clear form fields
         $scope.name = '';

@@ -13,19 +13,23 @@
             <div class="panel-body">
               <label class="control-label" for="name">Name</label>
               <div class="controls">
-                <input type="text" data-ng-model="name" id="name" class="form-control" placeholder="Enter the name of the assay here" required>
+                <input class="form-control" data-ng-model="name" id="name"
+                  placeholder="Enter the name of the assay here" required type="text"></input>
               </div>
               <label class="control-label" for="reference">Reference</label>
               <div class="controls">
-                <input type="text" data-ng-model="reference" id="reference" class="form-control" placeholder="Enter reference number from manufacturer here">
+                <input class="form-control" data-ng-model="reference" id="reference"
+                  placeholder="Enter reference number from manufacturer here" type="text"></input>
               </div>
               <label class="control-label" for="description">Description</label>
               <div class="controls">
-                <input type="text" data-ng-model="description" id="description" class="form-control" placeholder="Enter description of the assay here">
+                <input class="form-control" data-ng-model="description" id="description"
+                  placeholder="Enter description of the assay here" type="text"></input>
               </div>
               <label class="control-label" for="url">URL</label>
               <div class="controls">
-                <input type="url" data-ng-model="url" id="url" class="form-control" placeholder="Enter URL for more information here">
+                <input class="form-control" data-ng-model="url" id="url"
+                  placeholder="Enter URL for more information here" type="url"></input>
               </div>
             </div>
           </div>
@@ -38,19 +42,23 @@
             <div class="panel-body">
               <label class="control-label" for="redMax">Positive (high)</label>
               <div class="controls">
-                <input type="number" data-ng-model="analysis.redMax" id="redMax" class="form-control" placeholder="Enter value above which test is positive">
+                <input class="form-control" data-ng-model="analysis.redMax" id="redMax"
+                  placeholder="Enter value above which test is positive" type="number"></input>
               </div>
               <label class="control-label" for="greenMax">Negative (high)</label>
               <div class="controls">
-                <input type="number" data-ng-model="analysis.greenMax" id="greenMax" class="form-control" placeholder="Enter value above which test is borderline high">
+                <input class="form-control" data-ng-model="analysis.greenMax" id="greenMax"
+                  placeholder="Enter value above which test is borderline high" type="number"></input>
               </div>
               <label class="control-label" for="greenMin">Negative (low)</label>
               <div class="controls">
-                <input type="number" data-ng-model="analysis.greenMin" id="greenMin" class="form-control" placeholder="Enter value below which test is borderline low">
+                <input class="form-control" data-ng-model="analysis.greenMin" id="greenMin"
+                  placeholder="Enter value below which test is borderline low" type="number"></input>
               </div>
               <label class="control-label" for="redMin">Positive (low)</label>
               <div class="controls">
-                <input type="number" data-ng-model="analysis.redMin" id="redMin" class="form-control" placeholder="Enter value below which test is positive">
+                <input class="form-control" data-ng-model="analysis.redMin" id="redMin"
+                  placeholder="Enter value below which test is positive" type="number"></input>
               </div>
             </div>
           </div>
@@ -72,121 +80,132 @@
               </div>
               <div class="row" ng-repeat="point in standardCurve">
                 <div class="col-xs-4">
-                  <input type="number" data-ng-model="point.x" id="analysis" class="form-control">
+                  <input class="form-control" data-ng-model="point.x" id="analysis" type="number"></input>
                 </div>
                 <div class="col-xs-4">
-                  <input type="number" data-ng-model="point.y" id="analysis" class="form-control">
+                  <input class="form-control" data-ng-model="point.y" id="analysis" type="number"></input>
                 </div>
                 <div class="col-xs-4">
-                  <button type="button" ng-click="stdCurveDelete($index)" vertical-align="middle" class="btn btn-xs btn-danger">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                  <button class="btn btn-xs btn-danger" ng-click="stdCurveDelete($index)"
+                    type="button" vertical-align="middle">
+                    <span aria-hidden="true" class="glyphicon glyphicon-remove"></span>
                   </button>
                 </div>
               </div>
               <hr/>
               <div class="col-xs-12">
-                <div class="btn-group btn-group-justified" role="group" aria-label="...">
+                <div aria-label="..." class="btn-group btn-group-justified" role="group">
                   <div class="btn-group" role="group">
-                    <button type="button" ng-click="stdCurveSort()" class="btn btn-warning">Sort</button>
+                    <button class="btn btn-warning" ng-click="stdCurveSort()" type="button">Sort</button>
                   </div>
                   <div class="btn-group" role="group">
-                    <button type="button" ng-click="stdCurveAppend()" class="btn btn-success">Append</button>
+                    <button class="btn btn-success" ng-click="stdCurveAppend()" type="button">Append</button>
                   </div>
                   <div class="btn-group" role="group">
-                    <button type="button" ng-click="stdCurvePrepend()" class="btn btn-success">Prepend</button>
+                    <button class="btn btn-success" ng-click="stdCurvePrepend()" type="button">Prepend</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="col-md-12">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3 class="panel-title">BCODE</h3>
-          </div>
-          <div class="panel-body">
-            <div class="col-md-6">
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <span ng-show="estimatedTime > 0">
-                    <h3 class="panel-title">Current Sequence
-                      <h5>(estimated time: {{estimatedTime / 60 | number: 0}} min {{estimatedTime % 60 | number: 0}} sec.)</h5>
-                    </h3>
-                  </span>
-                  <span ng-hide="estimatedTime > 0">
-                    <h3 class="panel-title">Unbalanced repeats - estimated time cannot be calculated</h3>
-                  </span>
-                </div>
-                <div class="panel-body">
-                  <div class="list-group">
-                    <a href="" ng-repeat="code in BCODE" ng_click="clickBCODECode($index)" class="list-group-item {{activeBCODE === $index ? 'active' : ''}}">{{code.command}}&nbsp;[&nbsp;{{code.params}}&nbsp;]</a>
-                  </div>
-                </div>
-              </div>
-              <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                <div class="btn-group" role="group">
-                  <button type="button" ng-click="saveBCODE()" class="btn btn-default">Save</button>
-                </div>
-                <div class="btn-group" role="group">
-                  <button type="button" ng-click="revertBCODE()" class="btn btn-default">Revert</button>
-                </div>
-              </div>
+        <div class="col-xs-12">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">BCODE</h3>
             </div>
-            <div class="col-md-6">
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h3 class="panel-title">Add/Edit Command</h3>
+            <div class="panel-body">
+              <div class="col-md-6">
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <div ng-hide="{{estimatedTime <0}}">
+                      <h3 class="panel-title">Current Sequence
+                        <h5>(estimated time: {{estimatedTime / 60 | number: 0}} min {{estimatedTime % 60
+                          | number: 0}} sec.)</h5>
+                      </h3>
+                    </div>
+                    <div>= 0}}">
+                      <h3 class="panel-title">Unbalanced repeats - estimated time cannot be
+                        calculated</h3>
+                    </div>
+                  </div>
+                  <div class="panel-body">
+                    <div class="list-group">
+                      <a class="list-group-item {{activeBCODE === $index ? 'active' : ''}}" href=""
+                        ng-repeat="code in BCODE" ng_click="clickBCODECode($index)">{{code.command}}&nbsp;[&nbsp;{{code.params}}&nbsp;]</a>
+                    </div>
+                  </div>
                 </div>
-                <div class="panel-body">
-                  <div class="col-md-6">
-                    <label class="control-label" for="command">Command</label>
-                    <div class="controls">
-                      <select class="btn btn-default btn-lg" ng-model="command" ng-change="changeCommand()" ng-options="cmd.name as cmd.name for cmd in BCODECommands">
-                        <option value="">-- Select Command --</option>
-                      </select>
-                    </div>
-                    <label class="control-label" for="params">Parameters</label>
-                    <div class="controls">
-                      <input type="text" data-ng-model="params" id="params" class="form-control" placeholder="Enter parameters here (comma separated)">
-                    </div>
+                <div aria-label="..." class="btn-group btn-group-justified" role="group">
+                  <div class="btn-group" role="group">
+                    <button class="btn btn-default" ng-click="saveBCODE()" type="button">Save</button>
                   </div>
-                  <div class="col-md-6">
-                    <div align="center"><b>Description</b></div>
-                    <small>{{commandDescription}}</small>
-                    <hr/>
+                  <div class="btn-group" role="group">
+                    <button class="btn btn-default" ng-click="revertBCODE()" type="button">Revert</button>
                   </div>
-                  <div class="col-md-12">
-                    <div class="btn-group-vertical" role="group" aria-label="...">
-                      <h4 align="center">Move</h4>
-                      <button type="button" ng-click="moveBCODETop()" class="btn btn-info">Top</button>
-                      <button type="button" ng-click="moveBCODEUp()" class="btn btn-info">Up</button>
-                      <button type="button" ng-click="moveBCODEDown()" class="btn btn-info">Down</button>
-                      <button type="button" ng-click="moveBCODEBottom()" class="btn btn-info">Bottom</button>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">Add/Edit Command</h3>
+                  </div>
+                  <div class="panel-body">
+                    <div class="col-md-6">
+                      <label class="control-label" for="command">Command</label>
+                      <div class="controls">
+                        <select class="btn btn-default btn-lg" ng-change="changeCommand()"
+                          ng-model="command" ng-options="cmd.name as cmd.name for cmd in BCODECommands">
+                          <option value="">-- Select Command --</option>
+                        </select>
+                      </div>
+                      <label class="control-label" for="params">Parameters</label>
+                      <div class="controls">
+                        <input class="form-control" data-ng-model="params" id="params"
+                          placeholder="Enter parameters here (comma separated)" type="text"></input>
+                      </div>
                     </div>
-                    <div class="btn-group-vertical" role="group" aria-label="...">
-                      <h4 align="center">Add</h4>
-                      <button type="button" ng-click="insertBCODETop()" class="btn btn-success">Top</button>
-                      <button type="button" ng-click="insertBCODEAbove()" class="btn btn-success">Above</button>
-                      <button type="button" ng-click="insertBCODEBelow()" class="btn btn-success">Below</button>
-                      <button type="button" ng-click="insertBCODEBottom()" class="btn btn-success">Bottom</button>
+                    <div class="col-md-6">
+                      <div align="center"><b>Description</b></div>
+                      <small>{{commandDescription}}</small>
+                      <hr/>
                     </div>
-                    <div class="btn-group-vertical" role="group" aria-label="...">
-                      <h4 align="center">Clipboard</h4>
-                      <button type="button" ng-click="cutBCODE()" class="btn btn-default">Cut</button>
-                      <button type="button" ng-click="copyBCODE()" class="btn btn-default">Copy</button>
-                      <button type="button" ng-click="copyAllBCODE()" class="btn btn-default">Copy All</button>
-                      <button type="button" ng-click="pasteBCODE()" class="btn btn-default">Paste</button>
-                    </div>
-                    <div class="btn-group-vertical" style="vertical-align: top" role="group" aria-label="...">
-                      <h4 vertical-align="top" align="center">Update</h4>
-                      <button type="button" ng-click="updateBCODE()" class="btn btn-primary">Update</button>
-                    </div>
-                    <div class="btn-group-vertical" style="vertical-align: bottom" role="group" aria-label="...">
-                      <h4 align="center">Delete</h4>
-                      <button type="button" ng-click="deleteBCODE()" class="btn btn-danger">Delete One</button>
-                      <button type="button" ng-click="deleteAllBCODE()" class="btn btn-danger">Delete All</button>
+                    <div class="col-md-12">
+                      <div aria-label="..." class="btn-group-vertical" role="group">
+                        <h4 align="center">Move</h4>
+                        <button class="btn btn-info" ng-click="moveBCODETop()" type="button">Top</button>
+                        <button class="btn btn-info" ng-click="moveBCODEUp()" type="button">Up</button>
+                        <button class="btn btn-info" ng-click="moveBCODEDown()" type="button">Down</button>
+                        <button class="btn btn-info" ng-click="moveBCODEBottom()" type="button">Bottom</button>
+                      </div>
+                      <div aria-label="..." class="btn-group-vertical" role="group">
+                        <h4 align="center">Add</h4>
+                        <button class="btn btn-success" ng-click="insertBCODETop()" type="button">Top</button>
+                        <button class="btn btn-success" ng-click="insertBCODEAbove()" type="button">Above</button>
+                        <button class="btn btn-success" ng-click="insertBCODEBelow()" type="button">Below</button>
+                        <button class="btn btn-success" ng-click="insertBCODEBottom()" type="button">Bottom</button>
+                      </div>
+                      <div aria-label="..." class="btn-group-vertical" role="group">
+                        <h4 align="center">Clipboard</h4>
+                        <button class="btn btn-default" ng-click="cutBCODE()" type="button">Cut</button>
+                        <button class="btn btn-default" ng-click="copyBCODE()" type="button">Copy</button>
+                        <button class="btn btn-default" ng-click="copyAllBCODE()" type="button">Copy
+                          All</button>
+                        <button class="btn btn-default" ng-click="pasteBCODE()" type="button">Paste</button>
+                      </div>
+                      <div aria-label="..." class="btn-group-vertical" role="group"
+                        style="vertical-align: top">
+                        <h4 align="center" vertical-align="top">Update</h4>
+                        <button class="btn btn-primary" ng-click="updateBCODE()" type="button">Update</button>
+                      </div>
+                      <div aria-label="..." class="btn-group-vertical" role="group"
+                        style="vertical-align: bottom">
+                        <h4 align="center">Delete</h4>
+                        <button class="btn btn-danger" ng-click="deleteBCODE()" type="button">Delete
+                          One</button>
+                        <button class="btn btn-danger" ng-click="deleteAllBCODE()" type="button">Delete
+                          All</button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -194,14 +213,15 @@
             </div>
           </div>
         </div>
-      </div>
-      <div class="form-group">
-        <input type="submit" class="btn btn-default">
-      </div>
-      <div data-ng-show="error" class="text-danger">
-        <strong data-ng-bind="error"></strong>
+        <div class="col-xs-11 col-xs-offset-1">
+          <div class="form-group">
+            <input class="btn btn-default" type="submit"></input>
+            <div class="text-danger" data-ng-show="error">
+              <strong data-ng-bind="error"></strong>
+            </div>
+          </div>
+        </div>
       </div>
     </fieldset>
   </form>
-  </div>
 </section>

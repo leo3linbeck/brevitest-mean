@@ -8,11 +8,13 @@
         <div class="form-group">
           <label class="control-label" for="name">Name</label>
           <div class="controls">
-            <input type="text" data-ng-model="test.name" id="name" class="form-control" placeholder="Enter test name here" required>
+            <input class="form-control" data-ng-model="test.name" id="name"
+              placeholder="Enter test name here" required type="text"></input>
           </div>
           <label class="control-label" for="description">Description</label>
           <div class="controls">
-            <input type="text" data-ng-model="test.description" id="description" class="form-control" placeholder="Enter test description here">
+            <input class="form-control" data-ng-model="test.description" id="description"
+              placeholder="Enter test description here" type="text"></input>
           </div>
         </div>
         <accordion close-others="true">
@@ -30,25 +32,29 @@
           </accordion-group>
           <accordion-group heading="Results">
             <ul class="list-group">
-      				<li class="list-group-item">Test succeeded: {{!test._cartridge.failed | uppercase}}</li>
-              <li class="list-group-item">Result: {{test._cartridge.result}}</li>
+              <li class="list-group-item">Test succeeded: {{!test._cartridge.failed |
+                uppercase}}</li>
+              <li class="list-group-item">Value: {{test._cartridge.result}}</li>
+              <li class="list-group-item">Result: {{test.result}}</li>
             </ul>
           </accordion-group>
           <accordion-group heading="BCODE">
-            <p>{{test._cartridge.BCODE}}</p>
+            <p>{{test._cartridge.bcodeString}}</p>
           </accordion-group>
           <accordion-group heading="Dates">
             <ul class="list-group">
-              <li class="list-group-item">Test started on: {{test._cartridge.startedOn | date: medium}}</li>
-              <li class="list-group-item">Test finished on: {{test._cartridge.finishedOn | date: medium}}</li>
+              <li class="list-group-item">Test started on: {{test._cartridge.startedOn | date:
+                "medium"}}</li>
+              <li class="list-group-item">Test finished on: {{test._cartridge.finishedOn |
+                date: "medium"}}</li>
             </ul>
           </accordion-group>
         </accordion>
         <div class="form-group">
-          <input type="submit" value="Update" class="btn btn-default">
-        </div>
-        <div data-ng-show="error" class="text-danger">
-          <strong data-ng-bind="error"></strong>
+          <input class="btn btn-default" type="submit" value="Update"></input>
+          <div class="text-danger" data-ng-show="error">
+            <strong data-ng-bind="error"></strong>
+          </div>
         </div>
       </fieldset>
     </form>

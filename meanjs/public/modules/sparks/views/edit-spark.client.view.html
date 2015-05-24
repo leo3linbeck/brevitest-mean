@@ -8,33 +8,38 @@
         <div class="form-group">
           <label class="control-label" for="name">Name</label>
           <div class="controls">
-            <input type="text" data-ng-model="spark.name" id="name" class="form-control" placeholder="Name" required>
+            <input class="form-control" data-ng-model="spark.name" id="name" placeholder="Name"
+              required type="text"></input>
           </div>
           <label class="control-label" for="sparkID">Spark ID</label>
           <div class="controls">
             <p class="input-group">
-              <input type="text" data-ng-model="spark.sparkID" id="sparkID" class="form-control" placeholder="Spark ID (32 hex digits)" required>
+              <input class="form-control" data-ng-model="spark.sparkID" id="sparkID"
+                placeholder="Spark ID (32 hex digits)" required type="text"></input>
               <span class="input-group-btn">
-                <button type="button" class="btn btn-default" ng-click="reflash()">Reflash Firmware</button>
+                <button class="btn btn-default" ng-click="reflash()" type="button">Reflash
+                  Firmware</button>
               </span>
             </p>
           </div>
           <br/>
           <br/>
           <div class="btn-group" role="group">
-            <button type="button" class="btn btn-primary" ng-click="getNumberOfRecords()">Get Number of Records</button>
-            <button type="button" class="btn btn-primary" ng-click="getFirstRecord()">Get First Record</button>
-            <button type="button" class="btn btn-danger" ng-click="eraseArchivedData()">Erase Archived Data</button>
+            <button class="btn btn-primary" ng-click="getNumberOfRecords()" type="button">Get
+              Number of Records</button>
+            <button class="btn btn-primary" ng-click="getFirstRecord()" type="button">Get
+              First Record</button>
+            <button class="btn btn-danger" ng-click="eraseArchivedData()" type="button">Erase
+              Archived Data</button>
           </div>
         </div>
         <textarea cols="60" rows="10">{{rawData | rawtestdata}}</textarea>
-        <div>
-        </div>
+        <div></div>
         <div class="form-group">
-          <input type="submit" value="Update" class="btn btn-default">
-        </div>
-        <div data-ng-show="error" class="text-danger">
-          <strong data-ng-bind="error"></strong>
+          <input class="btn btn-default" type="submit" value="Update"></input>
+          <div class="text-danger" data-ng-show="error">
+            <strong data-ng-bind="error"></strong>
+          </div>
         </div>
       </fieldset>
     </form>

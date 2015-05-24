@@ -1,6 +1,6 @@
 <section data-ng-controller="HealthcareProvidersController">
   <div class="page-header">
-    <h1>New Healthcare provider</h1>
+    <h1>New Healthcare Provider</h1>
   </div>
   <div class="col-md-12">
     <form class="form-horizontal" data-ng-submit="create()" novalidate>
@@ -8,42 +8,48 @@
         <div class="form-group">
           <label class="control-label" for="name">Name</label>
           <div class="controls">
-            <input type="text" data-ng-model="name" id="name" class="form-control" placeholder="Enter name of healthcare provider here" required>
+            <input class="form-control" data-ng-model="name" id="name"
+              placeholder="Enter name of healthcare provider here" required type="text"></input>
           </div>
           <br/>
-          <h3>Addresses</h3>
+          <h4>Addresses</h4>
           <div class="panel panel-default">
             <accordion close-others="true">
-              <accordion-group ng-repeat="address in addresses" heading="{{address.location}}">
+              <accordion-group heading="{{address.location}}" ng-repeat="address in addresses">
                 <label class="control-label" for="street1">Street 1</label>
                 <div class="controls">
-                  <input type="text" data-ng-model="address.street1" id="street1" class="form-control" placeholder="Enter first line of street address here">
+                  <input class="form-control" data-ng-model="address.street1" id="street1"
+                    placeholder="Enter first line of street address here" type="text"></input>
                 </div>
                 <label class="control-label" for="street2">Street 2</label>
                 <div class="controls">
-                  <input type="text" data-ng-model="address.street2" id="street2" class="form-control" placeholder="Enter second line of street address here">
+                  <input class="form-control" data-ng-model="address.street2" id="street2"
+                    placeholder="Enter second line of street address here" type="text"></input>
                 </div>
                 <label class="control-label" for="city">City</label>
                 <div class="controls">
-                  <input type="text" data-ng-model="address.city" id="city" class="form-control" placeholder="Enter city here">
+                  <input class="form-control" data-ng-model="address.city" id="city"
+                    placeholder="Enter city here" type="text"></input>
                 </div>
                 <label class="control-label" for="state">State</label>
                 <div class="controls">
-                  <input type="text" data-ng-model="address.state" id="state" class="form-control" placeholder="Enter two letter state abbreviation here">
+                  <input class="form-control" data-ng-model="address.state" id="state"
+                    placeholder="Enter two letter state abbreviation here" type="text"></input>
                 </div>
                 <label class="control-label" for="zipcode">Zipcode</label>
                 <div class="controls">
-                  <input type="text" data-ng-model="address.zipcode" id="zipcode" class="form-control" placeholder="Enter zip or postal code here">
+                  <input class="form-control" data-ng-model="address.zipcode" id="zipcode"
+                    placeholder="Enter zip or postal code here" type="text"></input>
                 </div>
               </accordion-group>
             </accordion>
           </div>
         </div>
         <div class="form-group">
-          <input type="submit" class="btn btn-default">
-        </div>
-        <div data-ng-show="error" class="text-danger">
-          <strong data-ng-bind="error"></strong>
+          <input class="btn btn-default" type="submit"></input>
+          <div class="text-danger" data-ng-show="error">
+            <strong data-ng-bind="error"></strong>
+          </div>
         </div>
       </fieldset>
     </form>

@@ -1,108 +1,141 @@
 <section data-ng-controller="PrescriptionsController" data-ng-init="findOne()">
   <div class="page-header">
-    <h1>Edit Prescription</h1>
+    <div class="col-xs-12">
+      <h1>Edit Prescription</h1>
+    </div>
+    <div class="col-xs-12">
+      <div class="btn-group" role="group">
+        <a class="btn btn-default" disabled href="/#!/prescriptions/create">Prescribe</a>
+        <a class="btn btn-default" href="/#!/tests/run">Run</a>
+        <a class="btn btn-default" href="/#!/tests/monitor">Monitor</a>
+        <a class="btn btn-default" href="/#!/tests/review">Review</a>
+      </div>
+    </div>
   </div>
-  <form class="form-horizontal" data-ng-submit="update()" novalidate>
-    <fieldset>
-      <div class="form-group">
-        <div class="col-md-6">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title">Basic Information</h3>
-            </div>
-            <div class="panel-body">
-              <label class="control-label" for="name">Description</label>
-              <div class="controls">
-                <input type="text" data-ng-model="prescription.name" id="name" class="form-control" placeholder="Describe the prescription here" required>
+  <div class="col-xs-12">
+    <div><br/></div>
+    <form class="form-horizontal" data-ng-submit="update()" novalidate>
+      <fieldset>
+        <div class="form-group">
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Prescription Information</h3>
               </div>
-              <label class="control-label" for="prescribedOn">Prescribed On</label>
-              <div class="controls">
-                <p class="input-group">
-                  <input type="text" id="prescribedOn" class="form-control" datepicker-popup="MMM d, y" ng-model="prescription.prescribedOn" placeholder="Enter date of prescription here" is-open="openedPres" close-text="Close">
-                  <span class="input-group-btn">
-                    <button type="button" class="btn btn-default" ng-click="openDatepicker($event, 'pres')"><i class="glyphicon glyphicon-calendar"></i></button>
-                  </span>
-                </p>
-              </div>
-              <label class="control-label" for="comments">Comments</label>
-              <div class="controls">
-                <textarea rows="3" data-ng-model="prescription.comments" id="comments" class="form-control" placeholder="Enter comments here"></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title">Patient Information</h3>
-            </div>
-            <div class="panel-body">
-              <label class="control-label" for="patientNumber">Patient Number</label>
-              <div class="controls">
-                <input type="text" data-ng-model="prescription.patientNumber" id="patientNumber" class="form-control" placeholder="Enter patient number here" required>
-              </div>
-              <label class="control-label" for="patientGender">Patient Gender</label>
-              <div class="controls">
-                <p class="input-group">
-                  <input type="text" data-ng-model="prescription.patientGender" id="patientGender" class="form-control" placeholder="Enter patient gender here">
-                  <span class="input-group-btn">
-                    <button type="button" class="btn btn-default" ng-click="prescription.patientGender = 'Male'">&nbsp;&nbsp;Male&nbsp;&nbsp;</button>
-                    <button type="button" class="btn btn-default" ng-click="prescription.patientGender = 'Female'">Female</button>
-                  </span>
-                </p>
-              </div>
-              <label class="control-label" for="patientDateOfBirth">Patient Date of Birth</label>
-              <div class="controls">
-                <p class="input-group">
-                  <input type="text" id="patientDateOfBirth" class="form-control" datepicker-popup="MMM d, y" ng-model="prescription.patientDateOfBirth" placeholder="Enter patient date of birth here" is-open="openedDOB" close-text="Close">
-                  <span class="input-group-btn">
-                    <button type="button" class="btn btn-default" ng-click="openDatepicker($event, 'dob')"><i class="glyphicon glyphicon-calendar"></i></button>
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-12">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3 class="panel-title">Select and Prescribe Assays</h3>
-          </div>
-          <div class="panel-body">
-            <div class="col-md-6">
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h3 class="panel-title">Prescribed Assays</h3>
+              <div class="panel-body">
+                <label class="control-label" for="name">Description</label>
+                <div class="controls">
+                  <input class="form-control" data-ng-model="prescription.name" id="name"
+                    placeholder="Describe the prescription here" required type="text"></input>
                 </div>
-                <div class="panel-body">
-                  <div class="list-group">
-                    <button type="button" ng_click="removePrescribedAssay('{{presAssay._id}}')" class="list-group-item btn btn-success btn-block" ng-repeat="presAssay in prescriptionAssays">{{presAssay.name}}</a>
+                <label class="control-label" for="prescribedOn">Prescribed On</label>
+                <div class="controls">
+                  <p class="input-group">
+                    <input class="form-control" close-text="Close" datepicker-popup="MMM d, y"
+                      id="prescribedOn" is-open="openedPres" ng-model="prescription.prescribedOn"
+                      placeholder="Enter date of prescription here" type="text"></input>
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" ng-click="openDatepicker($event, 'pres')"
+                        type="button">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </button>
+                    </span>
+                  </p>
+                </div>
+                <label class="control-label" for="comments">Comments</label>
+                <div class="controls">
+                  <textarea class="form-control" data-ng-model="prescription.comments" id="comments"
+                    placeholder="Enter comments here" rows="3"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Patient Information</h3>
+              </div>
+              <div class="panel-body">
+                <label class="control-label" for="patientNumber">Patient Number</label>
+                <div class="controls">
+                  <input class="form-control" data-ng-model="prescription.patientNumber"
+                    id="patientNumber" placeholder="Enter patient number here" required type="text"></input>
+                </div>
+                <label class="control-label" for="patientGender">Patient Gender</label>
+                <div class="controls">
+                  <p class="input-group">
+                    <input class="form-control" data-ng-model="prescription.patientGender"
+                      id="patientGender" placeholder="Enter patient gender here" type="text"></input>
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" ng-click="prescription.patientGender = 'Male'"
+                        type="button">&nbsp;&nbsp;Male&nbsp;&nbsp;</button>
+                      <button class="btn btn-default" ng-click="prescription.patientGender = 'Female'"
+                        type="button">Female</button>
+                    </span>
+                  </p>
+                </div>
+                <label class="control-label" for="patientDateOfBirth">Patient Date of
+                  Birth</label>
+                <div class="controls">
+                  <p class="input-group">
+                    <input class="form-control" close-text="Close" datepicker-popup="MMM d, y"
+                      id="patientDateOfBirth" is-open="openedDOB" ng-model="prescription.patientDateOfBirth"
+                      placeholder="Enter patient date of birth here" type="text"></input>
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" ng-click="openDatepicker($event, 'dob')"
+                        type="button">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                      </button>
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Select and Prescribe Assays</h3>
+              </div>
+              <div class="panel-body">
+                <div class="col-md-6">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title">Prescribed Assays</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="list-group">
+                        <button class="list-group-item btn btn-success btn-block"
+                          ng-repeat="presAssay in prescriptionAssays" ng_click="removePrescribedAssay('{{presAssay._id}}')"
+                          type="button">{{presAssay.name}}</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title">Available Assays</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="list-group">
+                        <button class="list-group-item btn btn-warning btn-block"
+                          ng-repeat="assay in assays" ng_click="prescribeAssay('{{assay._id}}')" type="button">{{assay.name}}</a>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="col-md-6">
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h3 class="panel-title">Available Assays</h3>
-                </div>
-                <div class="panel-body">
-                  <div class="list-group">
-                    <button type="button" ng_click="prescribeAssay('{{assay._id}}')" class="list-group-item btn btn-default btn-block" ng-repeat="assay in assays">{{assay.name}}</a>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
-      </div>
-      <div class="form-group">
-        <input type="submit" class="btn btn-default">
-      </div>
-      <div data-ng-show="error" class="text-danger">
-        <strong data-ng-bind="error"></strong>
-      </div>
-    </fieldset>
-  </form>
+        <div class="form-group">
+          <input class="btn btn-default" type="submit"></input>
+          <div class="text-danger" data-ng-show="error">
+            <strong data-ng-bind="error"></strong>
+          </div>
+        </div>
+      </fieldset>
+    </form>
+  </div>
 </section>

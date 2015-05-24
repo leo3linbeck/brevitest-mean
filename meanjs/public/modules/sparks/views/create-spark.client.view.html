@@ -8,18 +8,20 @@
         <div class="form-group">
           <label class="control-label" for="name">Name</label>
           <div class="controls">
-            <input type="text" data-ng-model="name" id="name" class="form-control" placeholder="Name" required>
+            <input class="form-control" data-ng-model="name" id="name" placeholder="Name"
+              required type="text"></input>
           </div>
           <label class="control-label" for="sparkID">Spark ID</label>
           <div class="controls">
-            <input type="text" data-ng-model="sparkID" id="sparkID" class="form-control" placeholder="Spark ID (32 hex digits)" required>
+            <input class="form-control" data-ng-model="sparkID" id="sparkID"
+              placeholder="Spark ID (32 hex digits)" required type="text"></input>
           </div>
         </div>
         <div class="form-group">
-          <input type="submit" class="btn btn-default">
-        </div>
-        <div data-ng-show="error" class="text-danger">
-          <strong data-ng-bind="error"></strong>
+          <input class="btn btn-default" type="submit"></input>
+          <div class="text-danger" data-ng-show="error">
+            <strong data-ng-bind="error"></strong>
+          </div>
         </div>
       </fieldset>
     </form>

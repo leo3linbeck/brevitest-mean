@@ -37,7 +37,7 @@ var testPopulate = [{
   select: '_id name patientNumber patientGender patientDateOfBirth'
 }, {
   path: '_cartridge',
-  select: '_id name result failed rawData startedOn finishedOn'
+  select: '_id name result failed bcodeString rawData startedOn finishedOn'
 }];
 
 exports.run = function(req, res) {

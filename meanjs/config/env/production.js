@@ -22,7 +22,7 @@ module.exports = {
 				'public/lib/angular-ui-notification/dist/angular-ui-notification.min.js',
 				'public/lib/d3/d3.min.js',
 				'public/lib/n3-line-chart/build/line-chart.min.js',
-				'public/lib/underscore/underscore.min.js'
+				'public/lib/underscore/underscore-min.js'
 			]
 		},
 		css: 'public/dist/application.min.css',

@@ -8,7 +8,7 @@
         <div class="col-md-6">
           <div class="panel panel-default">
             <div class="panel-heading">
-              <h3 class="panel-title">Information and Inventory</h3>
+              <h3 class="panel-title">Assay Information</h3>
             </div>
             <div class="panel-body">
               <label class="control-label" for="name">Name</label>
@@ -118,13 +118,12 @@
               <div class="col-md-6">
                 <div class="panel panel-default">
                   <div class="panel-heading">
-                    <div ng-hide="{{estimatedTime <0}}">
+                    <div ng-hide="{{estimatedTime<0}}">
                       <h3 class="panel-title">Current Sequence
-                        <h5>(estimated time: {{estimatedTime / 60 | number: 0}} min {{estimatedTime % 60
-                          | number: 0}} sec.)</h5>
+                        <h5>(estimated time: {{estimatedTime / 60 | number: 0}} min {{estimatedTime % 60 | number: 0}} sec.)</h5>
                       </h3>
                     </div>
-                    <div>= 0}}">
+                    <div ng-hide="{{estimatedTime>=0}}">
                       <h3 class="panel-title">Unbalanced repeats - estimated time cannot be
                         calculated</h3>
                     </div>

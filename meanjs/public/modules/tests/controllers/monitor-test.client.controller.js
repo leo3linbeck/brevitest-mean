@@ -66,15 +66,7 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 				}).
 					success(function(data, status, headers, config) {
 						console.log(data);
-						$scope.tests.forEach(function(e) {
-							data.forEach(function(d) {
-								if (d.value && d.value.testID === e._id) {
-									e.status = d.value.status || '';
-									e.percentComplete = d.value.percentComplete || 0;
-								}
-							});
-						});
-						$scope.tests = _.filter($scope.tests, function(e) {return e.status !== 'Complete';});
+						$scope.tests = data;
 						if ($scope.tests.length === 0) {
 							$scope.toggleChronjob();
 						}

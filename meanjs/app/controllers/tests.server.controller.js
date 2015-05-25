@@ -66,6 +66,22 @@ function bObjectToCodeString(bco) {
   return str;
 }
 
+function createSparkSubscribeCallback(test) {
+  return function sparkSubscribeCallback(event) {
+    var data = event.data.split('\n');
+    console.log('Cartridge match', test._cartridge, data[1]);
+
+    test.percentComplete = data[2] ? parseInt(data[2]) : 0;
+    if (test.percentComplete === 100) {
+      test.status = 'Complete';
+    } else {
+      test.status = data[0];
+    }
+
+    test.save();
+  };
+}
+
 exports.begin = function(req, res) {
   console.log(req.body);
   var assayID = req.body.assayID;
@@ -76,10 +92,12 @@ exports.begin = function(req, res) {
   var deviceName = req.body.deviceName;
   var prescriptionID = req.body.prescriptionID;
   var test = new Test();
-  var bcodeString;
+  var bcodeString, sparkDevice;
 
   brevitestSpark.get_spark_device_from_deviceID(req.user, deviceID)
-    .then(function(sparkDevice) {
+    .then(function(s) {
+      sparkDevice = s;
+
       console.log('Send BCODE and start test');
 
       var duration, max_payload, packet_count;
@@ -148,7 +166,9 @@ exports.begin = function(req, res) {
       prescription._tests.push(test._id);
       return new Q(prescription.save());
     })
-    .then(function(success) {
+    .then(function() {
+      sparkDevice.subscribe(cartridgeID, createSparkSubscribeCallback(test));
+
       res.jsonp({
         message: 'Test started',
         test: test
@@ -278,6 +298,7 @@ exports.update_one_test = function(req, res) {
   var cartridgeID = req.body.cartridgeID;
   var deviceID = req.body.deviceID;
   var analysis = req.body.analysis;
+  var rawData = req.body.rawData;
   var sparkDevice, result = {};
   result.percentComplete = req.body.percentComplete > 100 ? 100 : req.body.percentComplete;
 
@@ -298,6 +319,9 @@ exports.update_one_test = function(req, res) {
     .then(function(register) {
       console.log('register', register);
 
+      if (register.result === rawData) {
+        throw new Error('304');
+      }
       var data = register.result.split('\n');
       var params = data[0].split('\t');
       result.rawData = register.result;
@@ -319,9 +343,9 @@ exports.update_one_test = function(req, res) {
       }).exec());
     })
     .then(function(cartridge) {
-      if (cartridge.result > analysis.redMax || cartridge.result < analysis.redMin) {
+      if (result.value > analysis.redMax || result.value < analysis.redMin) {
         result.result = 'Positive';
-      } else if (cartridge.result > analysis.greenMax || cartridge.result < analysis.greenMin) {
+      } else if (result.value > analysis.greenMax || result.value < analysis.greenMin) {
         result.result = 'Borderline';
       } else {
         result.result = 'Negative';
@@ -345,49 +369,6 @@ exports.update_one_test = function(req, res) {
     .done();
 };
 
-function createStatusPromise(user, test) {
-  var deviceID = test._device._id;
-  var cartridgeID = test._cartridge._id;
-  var status, percentComplete;
-
-  return brevitestSpark.get_spark_device_from_deviceID(user, deviceID)
-    .then(function(sparkDevice) {
-      return new Q(sparkDevice.getVariable('status'));
-    })
-    .then(function(response) {
-      var data = response.result.split('\n');
-
-      if (cartridgeID !== data[1]) { // test is not running on this device
-        status = 'Complete';
-        percentComplete = 100;
-      } else { // test t is underway on this device
-        percentComplete = data[2] ? parseInt(data[2]) : 0;
-        if (percentComplete === 100) {
-          status = 'Complete';
-        } else {
-          status = data[0];
-        }
-      }
-
-      return new Q(Test.findOneAndUpdate({
-        _id: test._id
-      }, {
-        status: status,
-        percentComplete: percentComplete
-      }).exec());
-    })
-    .then(function() {
-      return {
-        testID: test._id,
-        status: status,
-        percentComplete: percentComplete
-      };
-    })
-    .fail(function(err) {
-      console.log('Status update failed', err);
-    });
-}
-
 exports.status = function(req, res) {
   console.log('Test status');
 
@@ -397,17 +378,32 @@ exports.status = function(req, res) {
       var promises = [];
       t.forEach(function(test) {
         if (test.status !== 'Cancelled') {
-          promises.push(createStatusPromise(req.user, test));
+          promises.push(new Q(Test.findOne({_id: test._id}).select('_id status percentComplete').exec()));
         }
       });
       return Q.allSettled(promises);
     }, tests)
-    .then(function(resolution) {
-      console.log('find', resolution);
-      res.jsonp(resolution);
+    .then(function() {
+      return new Q(Test.find({
+        $and: [{
+          status: {
+            $ne: 'Complete'
+          }
+        }, {
+          status: {
+            $ne: 'Cancelled'
+          }
+        }]
+      }).sort('-created').populate(testPopulate).limit(20).exec());
+    })
+    .then(function(result) {
+        res.jsonp(result);
     })
     .fail(function(err) {
       console.log('Status update failed');
+      return res.status(400).send({
+        message: err
+      });
     })
     .done();
 };

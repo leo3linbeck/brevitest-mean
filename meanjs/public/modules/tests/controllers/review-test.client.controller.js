@@ -8,10 +8,15 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 
     $scope.currentPage = 0;
 
-		$scope.pageChanged = function() {
+		$scope.pageChanged = function(flag) {
+
 			console.log($scope.currentPage);
 			$scope.load();
 		};
+
+    $scope.setupReview = function() {
+
+    };
 
 		$scope.load = function() {
 	      $http.post('/tests/load', {
@@ -19,7 +24,7 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 					pageSize: $scope.itemsPerPage
 				}).
 					success(function(data, status, headers, config) {
-	          console.log(data);
+	          console.log(data, status);
 						$scope.tests = data.tests;
             $scope.totalItems = data.total_count;
 				  }).
@@ -40,16 +45,16 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
         percentComplete: test.percentComplete
       }).
       success(function(data, status, headers, config) {
-        console.log(data);
+        console.log(data, status);
         test.result = data.result;
-        test.startedOn = data.startedOn;
-        test.finishedOn = data.finishedOn;
+        test.startedOn = Date(data.startedOn);
+        test.finishedOn = Date(data.finishedOn);
         test.percentComplete = data.percentComplete;
 
         test._cartridge.rawData = data.rawData;
         test._cartridge.result = data.value;
-        test._cartridge.startedOn = data.startedOn;
-        test._cartridge.finishedOn = data.finishedOn;
+        test._cartridge.startedOn = Date(data.startedOn);
+        test._cartridge.finishedOn = Date(data.finishedOn);
         test._cartridge.failed = data.failed;
       }).
       error(function(err, status, headers, config) {

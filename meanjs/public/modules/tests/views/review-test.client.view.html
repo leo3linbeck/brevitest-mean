@@ -45,7 +45,7 @@
             – {{test.result}}</button>
         </p>
         <p>
-          <small>Test started on {{test._cartridge.startedOn | date: "medium"}}</small>&nbsp;&nbsp;&nbsp;
+          <small>Run on {{test._cartridge.startedOn | date: "medium"}}</small>&nbsp;&nbsp;&nbsp;
           <span class="btn btn-xs" disabled
             ng-class="{'btn btn-default': !test._cartridge.failed, 'btn btn-danger':
             test._cartridge.failed}">{{test._cartridge.failed ? 'Failure' : 'Success'}}</span>

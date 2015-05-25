@@ -10,7 +10,7 @@
         <a class="btn btn-default" disabled href="/#!/tests/monitor">Monitor</a>
         <a class="btn btn-default" href="/#!/tests/review">Review</a>
       </div>
-      <h3>Listed by Device</h3>
+      <h5><i>Tests in Last 24 Hours, Listed by Device</i></h5>
     </div>
   </div>
   <div class="panel panel-warning col-xs-12" ng-hide="tests.length">
@@ -26,7 +26,7 @@
   <div class="list-group col-xs-12">
     <a class="list-group-item" ng-repeat="test in tests">
       <h4 class="list-group-item-heading">{{test._device.name}}
-        <span class="badge" class="btn btn-success">{{test.status === 'Cancelled' ? 'Cancelled' : test.percentComplete === 0 ? 'Starting' : test.percentComplete === 100 ? 'Complete' : 'In progress'}}</span>
+        <span class="btn btn-xs btn-default" disabled>{{test.percentComplete===100 ? 'Finished' : test.status==='Cancelled' ? 'Cancelled' : 'In progress'}}</span>
       </h4>
       <p class="list-group-item-text">
         <small>Started on {{test._cartridge.startedOn | date: "medium"}}</small><br/>
@@ -39,7 +39,7 @@
           </progressbar>
         </p>
         <p class="col-xs-2">
-          <button class="btn btn-danger btn-xs pull-right" ng-click="cancelTest($index)"
+          <button ng-show="{{test.status!=='Cancelled' && test.percentComplete!==100}}" class="btn btn-danger btn-xs pull-right" ng-click="cancelTest($index)"
             type="button">Cancel</button>
         </p>
         <br/>

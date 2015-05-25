@@ -42,7 +42,6 @@ function getSparkDeviceList(user, forceReload) {
           .done();
       })
       .then(function() {
-        console.log('Spark listDevices');
         return new Q(sparkcore.listDevices());
       })
       .then(function(devices) {
@@ -60,8 +59,6 @@ function getSparkDevice(user, sparkID, forceReload) {
       var sparkDevice = _.findWhere(sparkDevices, {
         id: sparkID
       });
-
-      console.log('Check whether device is online');
 
       if (!sparkDevice.connected) {
         throw new Error(sparkDevice.name + ' is not online.');
@@ -88,16 +85,19 @@ module.exports = {
   },
   get_spark_device_from_deviceID: function(user, deviceID) {
     return Q.fcall(function(id) {
-        console.log('Device.findOne');
         return new Q(Device.findById(id).populate('_spark', 'sparkID token tokenExpires').exec());
       }, deviceID)
       .then(function(device) {
-        console.log(device);
         return getSparkDevice(user, device._spark.sparkID);
       });
   },
   get_spark_device_from_test: function(user, test) {
 
+  },
+  get_spark_device_from_spark: function(user, spark) {
+    return Q.fcall(function(s) {
+      return getSparkDevice(user, s.sparkID);
+    }, spark);
   },
   get_spark_device_from_cartridge: function(user, cartridge) {
 

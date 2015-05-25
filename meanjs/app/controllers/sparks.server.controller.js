@@ -17,41 +17,32 @@ var mongoose = require('mongoose'),
  * Refresh Spark data
  */
 
+var brevitestSpark = require('../../app/modules/brevitest-particle');
 var brevitestCommand = require('../../app/modules/brevitest-command');
 var brevitestRequest = require('../../app/modules/brevitest-request');
 
 exports.reflash = function(req, res) {
   console.log('Flash firmware', req.body.spark);
 
-  Q.fcall(function(auth) {
-      return new Q(sparkcore.login(auth));
-    }, {
-      username: 'leo3@linbeck.com',
-      password: '2january88'
-    })
-    .then(function(token) {
-      return new Q(sparkcore.listDevices());
-    })
-    .then(function(devices) {
-      console.log('Flashing firmware', devices);
-
-      var sparkDevice = _.findWhere(devices, {
-        id: req.body.spark.sparkID
-      });
-      console.log(sparkDevice);
-
+  brevitestSpark.get_spark_device_from_spark(req.user, req.body.spark)
+    .then(function(sparkDevice) {
       return [sparkDevice, fs.readdirSync('app/firmware')];
     })
     .spread(function(sparkDevice, files) {
       console.log(sparkDevice, files);
-      if (!files || !files.length || files.length > 1) {
-        throw new Error('Firmware folder must have exactly one file');
+      if (!files || !files.length) {
+        throw new Error('Firmware folder not found or empty');
       }
-      var f = files[0];
-      if (f.substring(0, 8) !== 'firmware' || f.substring(f.length - 4) !== '.bin') {
-        throw new Error('Firmware file not found');
+      var firmware = [];
+      files.forEach(function(f) {
+        if (f.substring(0, 8) === 'firmware' && f.substring(f.length - 4) === '.bin') {
+          firmware.push(f);
+        }
+      });
+      if (firmware.length !== 1) {
+        throw new Error('Firmware folder must have exactly one firmware file');
       }
-      return new Q(sparkDevice.flash('app/firmware/' + f));
+      return new Q(sparkDevice.flash('app/firmware/' + firmware[0]));
     })
     .then(function(result) {
       res.jsonp(result);
@@ -66,22 +57,8 @@ exports.reflash = function(req, res) {
 exports.erase_archived_data = function(req, res) {
   console.log('Erase archived data', req.body.spark);
 
-  Q.fcall(function(auth) {
-      return new Q(sparkcore.login(auth));
-    }, {
-      username: 'leo3@linbeck.com',
-      password: '2january88'
-    })
-    .then(function(token) {
-      return new Q(sparkcore.listDevices());
-    })
-    .then(function(devices) {
-      console.log('Erasing data', devices);
-
-      var sparkDevice = _.findWhere(devices, {
-        id: req.body.spark.sparkID
-      });
-      console.log(sparkDevice);
+  brevitestSpark.get_spark_device_from_spark(req.user, req.body.spark)
+    .then(function(sparkDevice) {
       return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.erase_archive));
     })
     .then(function(result) {
@@ -97,22 +74,8 @@ exports.erase_archived_data = function(req, res) {
 exports.get_archive_size = function(req, res) {
   console.log('Getting archive size', req.body.spark);
 
-  Q.fcall(function(auth) {
-      return new Q(sparkcore.login(auth));
-    }, {
-      username: 'leo3@linbeck.com',
-      password: '2january88'
-    })
-    .then(function(token) {
-      return new Q(sparkcore.listDevices());
-    })
-    .then(function(devices) {
-      console.log('Retrieving archive size', devices);
-
-      var sparkDevice = _.findWhere(devices, {
-        id: req.body.spark.sparkID
-      });
-      console.log(sparkDevice);
+  brevitestSpark.get_spark_device_from_spark(req.user, req.body.spark)
+    .then(function(sparkDevice) {
       return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.archive_size));
     })
     .then(function(result) {
@@ -138,34 +101,12 @@ function zeropad(num, numZeros) {
 exports.get_record_by_cartridge_id = function(req, res) {
   console.log('Retrieving record by cartridge number', req.body.spark, req.body.cartridgeID);
 
-  var sparkDevice, sparkID;
+  var sparkDevice;
   var cartridgeID = req.body.cartridgeID;
 
-  Q.fcall(function() {
-      return new Q(Cartridge.findById(cartridgeID).exec());
-    })
-    .then(function(cartridge) {
-      return new Q(Device.findById(cartridge._device).populate('_spark', 'sparkID').exec());
-    })
-    .then(function(device) {
-      sparkID = device._spark.sparkID;
-      return new Q(sparkcore.login({
-        username: 'leo3@linbeck.com',
-        password: '2january88'
-      }));
-    })
-    .then(function(token) {
-      return new Q(sparkcore.listDevices());
-    })
-    .then(function(devices) {
-      sparkDevice = _.findWhere(devices, {
-        id: sparkID
-      });
-      console.log(sparkDevice);
-
-      if (!sparkDevice.attributes.connected) {
-        throw new Error('Device is not online.');
-      }
+  brevitestSpark.get_spark_device_from_spark(req.user, req.body.spark)
+    .then(function(s) {
+      sparkDevice = s;
       return new Q(sparkDevice.callFunction('requestdata', cartridgeID + '000000' + brevitestRequest.test_record_by_uuid));
     })
     .then(function(result) {
@@ -190,28 +131,10 @@ exports.get_record_by_index = function(req, res) {
   console.log('Retrieving record by number', req.body.spark, req.body.index);
   var sparkDevice;
 
-  Q.fcall(function(auth) {
-      return new Q(sparkcore.login(auth));
-    },
-    {
-      username: 'leo3@linbeck.com',
-      password: '2january88'
-    })
-    .then(function(token) {
-      return new Q(sparkcore.listDevices());
-    })
-    .then(function(devices) {
-      console.log('Spark devices', devices);
-
-      sparkDevice = _.findWhere(devices, {
-        id: req.body.spark.sparkID
-      });
-      console.log(sparkDevice);
-
-      if (!sparkDevice.attributes.connected) {
-        throw new Error('Device is not online.');
-      }
-      return new Q(sparkDevice.callFunction('requestdata', sparkDevice.id.substring(0,24) + '000000' + brevitestRequest.test_record + req.body.index));
+  brevitestSpark.get_spark_device_from_spark(req.user, req.body.spark)
+    .then(function(s) {
+      sparkDevice = s;
+      return new Q(sparkDevice.callFunction('requestdata', sparkDevice.id.substring(0, 24) + '000000' + brevitestRequest.test_record + req.body.index));
     })
     .then(function(result) {
       console.log('requestdata', result);
@@ -242,15 +165,7 @@ function getUpdatePromise(e) {
 exports.refresh = function(req, res) {
   console.log('Spark start refresh');
 
-  Q.fcall(function(auth) {
-      return new Q(sparkcore.login(auth));
-    }, {
-      username: 'leo3@linbeck.com',
-      password: '2january88'
-    })
-    .then(function(token) {
-      return new Q(sparkcore.listDevices());
-    })
+  brevitestSpark.get_spark_device_list(req.user, true)
     .then(function(devices) {
       console.log('Update devices', devices);
       var promises = [];

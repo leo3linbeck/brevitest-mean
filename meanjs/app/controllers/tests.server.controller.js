@@ -67,7 +67,7 @@ function bObjectToCodeString(bco) {
 }
 
 function createSparkSubscribeCallback(test, socket) {
-  console.log('Setting up spark callback', test, socket);
+  console.log('Setting up spark callback');
   return function sparkSubscribeCallback(event) {
     var data = event.data.split('\n');
 
@@ -333,7 +333,7 @@ exports.update_one_test = function(req, res) {
         result.result = 'Positive';
       } else if (result.value > analysis.greenMax || result.value < analysis.greenMin) {
         result.result = 'Borderline';
-      } else if (result.status !== 'Cancelled'){
+      } else if (result.status !== 'Cancelled') {
         result.result = 'Negative';
       }
       return new Q(Test.findOneAndUpdate({
@@ -344,10 +344,10 @@ exports.update_one_test = function(req, res) {
         startedOn: result.startedOn,
         finishedOn: result.finishedOn,
         result: result.result
-      }).exec());
+      }, {new: true}).exec());
     })
-    .then(function() {
-      res.jsonp(result);
+    .then(function(test) {
+      res.jsonp(test);
     })
     .fail(
       function(err) {
@@ -359,32 +359,21 @@ exports.update_one_test = function(req, res) {
 exports.status = function(req, res) {
   console.log('Test status');
 
-  var tests = req.body.tests;
-
-  Q.fcall(function(t) {
-      var promises = [];
-      t.forEach(function(test) {
-        if (test.status !== 'Cancelled') {
-          promises.push(new Q(Test.findOne({_id: test._id}).select('_id status percentComplete').exec()));
-        }
-      });
-      return Q.allSettled(promises);
-    }, tests)
-    .then(function() {
+  new Q(Cartridge.find({
+      startedOn: {
+        $gt: new Date(new Date().valueOf() - 86400000) // last 24 hours
+      }
+    }).exec())
+    .then(function(cartridges) {
+      var ids = _.pluck(cartridges, '_id');
       return new Q(Test.find({
-        $and: [{
-          status: {
-            $ne: 'Complete'
-          }
-        }, {
-          status: {
-            $ne: 'Cancelled'
-          }
-        }]
+        _cartridge: {
+          $in: ids
+        }
       }).sort('-created').populate(testPopulate).limit(20).exec());
     })
-    .then(function(result) {
-        res.jsonp(result);
+    .then(function(tests) {
+      res.jsonp(tests);
     })
     .fail(function(err) {
       console.log('Status update failed');
@@ -395,29 +384,8 @@ exports.status = function(req, res) {
     .done();
 };
 
-exports.underway = function(req, res) {
-  Test.find({
-    $and: [{
-      status: {
-        $ne: 'Complete'
-      }
-    }, {
-      status: {
-        $ne: 'Cancelled'
-      }
-    }]
-  }).sort('-created').populate(testPopulate).limit(20).exec(function(err, tests) {
-    if (err) {
-      return res.status(400).send({
-        message: err
-      });
-    } else {
-      res.jsonp(tests);
-    }
-  });
-};
-
-exports.monitor = exports.underway;
+exports.recently_started = exports.status;
+exports.monitor = exports.status;
 
 exports.review = function(req, res) {
   Test.find({

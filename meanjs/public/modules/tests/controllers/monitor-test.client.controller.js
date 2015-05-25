@@ -6,7 +6,7 @@ var _ = window._;
 angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$timeout', 'Tests', 'Notification', 'Socket',
 	function($scope, $http, $timeout, Tests, Notification, Socket) {
 
-		function updateTest(test) {
+		function updateTest(test, index) {
 			console.log('Updating test', test);
       $http.post('/tests/update_one_test', {
         testID: test._id,
@@ -18,6 +18,8 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
       }).
       success(function(data, status, headers, config) {
 				Notification.success('Test complete');
+				$scope.tests[index].status = data.status;
+				$scope.tests[index].percentComplete = data.percentComplete;
       }).
       error(function(err, status, headers, config) {
         Notification.error(err.message);
@@ -25,7 +27,7 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
     }
 
 		$scope.setup = function() {
-			$http.get('/tests/underway').
+			$http.get('/tests/recently_started').
 				success(function(data, status, headers, config) {
 					$scope.tests = data;
 			  }).
@@ -35,22 +37,15 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 
 			Socket.on('test.update', function(message) {
 				var data = message.split('\n');
-				var indx = -1;
 				$scope.tests.forEach(function(e, i) {
 					if (e._cartridge._id === data[1]) {
 						e.status = data[0].length ? data[0] : e.status;
 						e.percentComplete = parseInt(data[2]);
 						if (e.percentComplete === 100) {
-							indx = i;
+							updateTest(e, i);
 						}
 					}
 				});
-				if (indx !== -1) {
-					updateTest($scope.tests[indx]);
-					$timeout(function() {
-						$scope.tests.splice(indx, 1);
-					}, 2000);
-				}
 			});
 		};
 
@@ -64,11 +59,8 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			}).
 				success(function(data, status, headers, config) {
 					console.log(data, index);
-					updateTest(test);
+					updateTest(test, index);
 					Notification.success('Test cancelled');
-					$timeout(function() {
-						$scope.tests.splice(index, 1);
-					}, 2000);
 				}).
 				error(function(err, status, headers, config) {
 					Notification.error(err.message);

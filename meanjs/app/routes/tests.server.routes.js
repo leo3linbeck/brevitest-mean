@@ -15,8 +15,8 @@ module.exports = function(app) {
 	app.route('/tests/cancel')
 	  .all(tests.cancel);
 
-	app.route('/tests/underway')
-	  .all(tests.underway);
+	app.route('/tests/recently_started')
+	  .all(tests.recently_started);
 
 	app.route('/tests/review')
 	  .all(tests.review);

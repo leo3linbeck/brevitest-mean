@@ -67,11 +67,9 @@
               </accordion-group>
               <accordion-group>
                 <accordion-heading>
-                  <div ng-click="loadGraph('{{test._id}}')">Graph</div>
+                  <div ng-click="loadGraph($index)">Graph</div>
                 </accordion-heading>
-                <div>
-                  <linechart data="data" height="300" options="options" width="400"></linechart>
-                </div>
+                <div id="testgraph{{$index}}"></div>
               </accordion-group>
             </accordion>
           </accordion-group>

@@ -1,0 +1,10 @@
+
+.c3-region.positive {
+  fill: tomato;
+}
+.c3-region.borderline {
+  fill: yellow;
+}
+.c3-region.negative {
+  fill: lightgreen;
+}

@@ -11,8 +11,8 @@ angular.module('tests').config(['$stateProvider',
 		}).
 		state('loadTests', {
 			url: '/tests/load',
-			templateUrl: 'modules/tests/views/review-test.client.view.html',
-			css: 'modules/tests/css/review-test.client.css'
+			css: 'modules/tests/css/review-test.client.css',
+			templateUrl: 'modules/tests/views/review-test.client.view.html'
 		}).
 		state('createTest', {
 			url: '/tests/create',
@@ -28,8 +28,8 @@ angular.module('tests').config(['$stateProvider',
 		}).
 		state('reviewTests', {
 			url: '/tests/review',
-			templateUrl: 'modules/tests/views/review-test.client.view.html',
-			css: 'modules/tests/css/review-test.client.css'
+			css: 'modules/tests/css/review-test.client.css',
+			templateUrl: 'modules/tests/views/review-test.client.view.html'
 		}).
 		state('viewTest', {
 			url: '/tests/:testId',

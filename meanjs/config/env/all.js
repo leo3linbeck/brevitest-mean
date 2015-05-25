@@ -15,7 +15,7 @@ module.exports = {
 			css: [
 				'public/lib/bootstrap/dist/css/bootstrap.css',
 				'public/lib/bootstrap/dist/css/bootstrap-theme.css',
-				'public/lib/angular-ui-notification/dist/angular-ui-notification.min.css',
+				'public/lib/c3/c3.min.css'
 			],
 			js: [
 				'public/lib/angular/angular.js',
@@ -30,12 +30,13 @@ module.exports = {
 				'public/lib/angular-ui-notification/dist/angular-ui-notification.min.js',
 				'public/lib/angular-socket-io/socket.min.js',
 				'public/lib/d3/d3.min.js',
-				'public/lib/n3-line-chart/build/line-chart.min.js',
+				'public/lib/c3/c3.min.js',
+				'public/lib/angular-nvd3/dist/angular-nvd3.min.js',
 				'public/lib/underscore/underscore.js'
 			]
 		},
 		css: [
-			'public/modules/**/css/*.css'
+			'public/modules/*/css/*.css'
 		],
 		js: [
 			'public/config.js',

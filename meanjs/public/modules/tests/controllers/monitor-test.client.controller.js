@@ -3,78 +3,76 @@
 var _ = window._;
 
 // Tests controller
-angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$interval', 'Tests', 'Notification',
-	function($scope, $http, $interval, Tests, Notification) {
+angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$timeout', 'Tests', 'Notification', 'Socket',
+	function($scope, $http, $timeout, Tests, Notification, Socket) {
 
-		$scope.updateOn = false;
-		$scope.toggleChronjob = function() {
-			console.log('runChronjob');
-			$scope.updateOn = !$scope.updateOn;
-			if ($scope.updateOn) {
-				Notification.info('Updates started');
-				var numberOfIntervals = 200;
-				var intervalTime = 6000;
-				$scope.chronjob();
-				return $interval(function() {
-						$scope.chronjob();
-				}, intervalTime, numberOfIntervals)
-				.then(function(intervalPromise) {
-					if (!$scope.updateOn) {
-						$interval.cancel(intervalPromise);
-					}
-				});
-			}
-			else {
-				Notification.info('Updates stopped');
-			}
-		};
+		function updateTest(test) {
+			console.log('Updating test', test);
+      $http.post('/tests/update_one_test', {
+        testID: test._id,
+        cartridgeID: test._cartridge._id,
+        deviceID: test._device._id,
+				analysis: test._assay.analysis,
+				status: test.status,
+        percentComplete: test.percentComplete
+      }).
+      success(function(data, status, headers, config) {
+				Notification.success('Test complete');
+      }).
+      error(function(err, status, headers, config) {
+        Notification.error(err.message);
+      });
+    }
 
 		$scope.setup = function() {
 			$http.get('/tests/underway').
 				success(function(data, status, headers, config) {
-					console.log(data);
 					$scope.tests = data;
-					$scope.updateOn = false;
-					if (data.length !== 0) {
-						$scope.toggleChronjob();
-					}
-
 			  }).
 			  error(function(err, status, headers, config) {
 					Notification.error(err.message);
 			  });
+
+			Socket.on('test.update', function(message) {
+				var data = message.split('\n');
+				var indx = -1;
+				$scope.tests.forEach(function(e, i) {
+					if (e._cartridge._id === data[1]) {
+						e.status = data[0].length ? data[0] : e.status;
+						e.percentComplete = parseInt(data[2]);
+						if (e.percentComplete === 100) {
+							indx = i;
+						}
+					}
+				});
+				if (indx !== -1) {
+					updateTest($scope.tests[indx]);
+					$timeout(function() {
+						$scope.tests.splice(indx, 1);
+					}, 2000);
+				}
+			});
 		};
 
 		$scope.cancelTest = function(index) {
+			var test = $scope.tests[index];
+
 			$http.post('/tests/cancel', {
-				testID: $scope.tests[index]._id
+				testID: test._id,
+				cartridgeID: test._cartridge._id,
+				deviceID: test._device._id
 			}).
 				success(function(data, status, headers, config) {
-					console.log(data);
-					// $scope.tests = data;
-					// $scope.updateOn = (data.length !== 0);
+					console.log(data, index);
+					updateTest(test);
+					Notification.success('Test cancelled');
+					$timeout(function() {
+						$scope.tests.splice(index, 1);
+					}, 2000);
 				}).
 				error(function(err, status, headers, config) {
 					Notification.error(err.message);
 				});
-		};
-
-		$scope.chronjob = function() {
-			if ($scope.updateOn) {
-				$http.post('/tests/status', {
-					tests: $scope.tests
-				}).
-					success(function(data, status, headers, config) {
-						console.log(data);
-						$scope.tests = data;
-						if ($scope.tests.length === 0) {
-							$scope.toggleChronjob();
-						}
-				  }).
-				  error(function(err, status, headers, config) {
-						Notification.error(err.message);
-				  });
-			}
 		};
 	}
 ]);

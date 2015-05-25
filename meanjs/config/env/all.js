@@ -28,6 +28,7 @@ module.exports = {
 				'public/lib/angular-ui-utils/ui-utils.js',
 				'public/lib/angular-bootstrap/ui-bootstrap-tpls.js',
 				'public/lib/angular-ui-notification/dist/angular-ui-notification.min.js',
+				'public/lib/angular-socket-io/socket.min.js',
 				'public/lib/d3/d3.min.js',
 				'public/lib/n3-line-chart/build/line-chart.min.js',
 				'public/lib/underscore/underscore.js'

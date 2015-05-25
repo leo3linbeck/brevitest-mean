@@ -104,7 +104,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 			var cartridge = $scope.cartridges[$scope.activeCartridge];
 			var device = $scope.devices[$scope.activeDevice];
 			var prescription = $scope.prescriptions[$scope.activePrescription];
-			console.log(assay, $scope.devices[$scope.activeDevice], $scope.cartridges[$scope.activeCartridge], $scope.prescriptions[$scope.activePrescription]);
 			$http.post('/tests/begin', {
 					assayID: assay._id,
 				  assayName: assay.name,

@@ -66,19 +66,21 @@ function bObjectToCodeString(bco) {
   return str;
 }
 
-function createSparkSubscribeCallback(test) {
+function createSparkSubscribeCallback(test, socket) {
+  console.log('Setting up spark callback', test, socket);
   return function sparkSubscribeCallback(event) {
     var data = event.data.split('\n');
-    console.log('Cartridge match', test._cartridge, data[1]);
 
     test.percentComplete = data[2] ? parseInt(data[2]) : 0;
     if (test.percentComplete === 100) {
       test.status = 'Complete';
     } else {
-      test.status = data[0];
+      test.status = data[0].length ? data[0] : test.status;
     }
 
     test.save();
+
+    socket.sockets.emit('test.update', event.data);
   };
 }
 
@@ -167,7 +169,7 @@ exports.begin = function(req, res) {
       return new Q(prescription.save());
     })
     .then(function() {
-      sparkDevice.subscribe(cartridgeID, createSparkSubscribeCallback(test));
+      sparkDevice.subscribe(cartridgeID, createSparkSubscribeCallback(test, req.app.get('socketio')));
 
       res.jsonp({
         message: 'Test started',
@@ -188,10 +190,11 @@ exports.cancel = function(req, res) {
   var testID = req.body.testID;
   var cartridgeID = req.body.cartridgeID;
   var deviceID = req.body.deviceID;
+  var now = new Date();
 
   brevitestSpark.get_spark_device_from_deviceID(req.user, deviceID)
     .then(function(sparkDevice) {
-      return new Q(sparkDevice.callFunction('runcommand', 'cancel_process'));
+      return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.cancel_process));
     })
     .then(function(register) {
       console.log('register', register);
@@ -199,7 +202,7 @@ exports.cancel = function(req, res) {
       return new Q(Cartridge.findOneAndUpdate({
         _id: cartridgeID
       }, {
-        finishedOn: new Date(),
+        finishedOn: now,
         failed: true
       }, {
         new: true
@@ -209,26 +212,12 @@ exports.cancel = function(req, res) {
       return new Q(Test.findOneAndUpdate({
         _id: testID
       }, {
-        finishedOn: cartridge.finishedOn,
+        finishedOn: now,
         status: 'Cancelled'
       }).exec());
     })
     .then(function() {
-      console.log('find');
-      return new Q(Test.find({
-        $and: [{
-          percentComplete: {
-            $lt: 100
-          }
-        }, {
-          status: {
-            $ne: 'Cancelled'
-          }
-        }]
-      }).sort('-created').populate(testPopulate).exec());
-    })
-    .then(function() {
-      res.jsonp(testID);
+      res.jsonp('Cancelled');
     })
     .fail(
       function(err) {
@@ -298,9 +287,9 @@ exports.update_one_test = function(req, res) {
   var cartridgeID = req.body.cartridgeID;
   var deviceID = req.body.deviceID;
   var analysis = req.body.analysis;
-  var rawData = req.body.rawData;
   var sparkDevice, result = {};
   result.percentComplete = req.body.percentComplete > 100 ? 100 : req.body.percentComplete;
+  result.status = req.body.status;
 
   brevitestSpark.get_spark_device_from_deviceID(req.user, deviceID)
     .then(function(s) {
@@ -319,9 +308,6 @@ exports.update_one_test = function(req, res) {
     .then(function(register) {
       console.log('register', register);
 
-      if (register.result === rawData) {
-        throw new Error('304');
-      }
       var data = register.result.split('\n');
       var params = data[0].split('\t');
       result.rawData = register.result;
@@ -347,12 +333,13 @@ exports.update_one_test = function(req, res) {
         result.result = 'Positive';
       } else if (result.value > analysis.greenMax || result.value < analysis.greenMin) {
         result.result = 'Borderline';
-      } else {
+      } else if (result.status !== 'Cancelled'){
         result.result = 'Negative';
       }
       return new Q(Test.findOneAndUpdate({
         _id: testID
       }, {
+        status: result.status,
         percentComplete: result.percentComplete,
         startedOn: result.startedOn,
         finishedOn: result.finishedOn,

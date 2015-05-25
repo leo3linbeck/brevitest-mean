@@ -56,8 +56,11 @@
 		var user = {{ user | json | safe }};
 	</script>
 
+	<!-- Socket.io -->
+	<script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
+
 	<!--Application JavaScript Files-->
-	{% for jsFile in jsFiles %}<script type="text/javascript" src="{{jsFile}}"></script>{% endfor %} 
+	{% for jsFile in jsFiles %}<script type="text/javascript" src="{{jsFile}}"></script>{% endfor %}
 
 	{% if process.env.NODE_ENV === 'development' %}
 	<!--Livereload script rendered -->

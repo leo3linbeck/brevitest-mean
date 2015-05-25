@@ -226,6 +226,132 @@ exports.cancel = function(req, res) {
     .done();
 };
 
+exports.update_one_test = function(req, res) {
+  console.log('Updating one test', req.body);
+
+  var testID = req.body.testID;
+  var cartridgeID = req.body.cartridgeID;
+  var deviceID = req.body.deviceID;
+  var analysis = req.body.analysis;
+  var sparkDevice, result = {};
+  result.percentComplete = req.body.percentComplete > 100 ? 100 : req.body.percentComplete;
+  result.status = req.body.status;
+
+  brevitestSpark.get_spark_device_from_deviceID(req.user, deviceID)
+    .then(function(s) {
+      sparkDevice = s;
+      console.log('Update test');
+
+      return new Q(sparkDevice.callFunction('requestdata', cartridgeID + '000000' + brevitestRequest.test_record_by_uuid));
+    })
+    .then(function(result) {
+      console.log('requestdata', result);
+      if (result.return_value < 0) {
+        throw new Error('Request to read register failed');
+      }
+      return new Q(sparkDevice.getVariable('register'));
+    })
+    .then(function(register) {
+      console.log('register', register);
+
+      var data = register.result.split('\n');
+      var params = data[0].split('\t');
+      result.rawData = register.result;
+      result.startedOn = Date(parseInt(params[1]));
+      result.finishedOn = Date(parseInt(params[2]));
+      result.value = parseInt(data[4].split('\t')[3]) - parseInt(data[2].split('\t')[3]);
+      result.failed = result.percentComplete < 100;
+
+      return new Q(Cartridge.findOneAndUpdate({
+        _id: cartridgeID
+      }, {
+        rawData: register.result,
+        startedOn: result.startedOn,
+        finishedOn: result.finishedOn,
+        result: result.value,
+        failed: result.failed
+      }, {
+        new: true
+      }).exec());
+    })
+    .then(function(cartridge) {
+      if (result.status !== 'Cancelled') {
+        if (result.value > analysis.redMax || result.value < analysis.redMin) {
+          result.result = 'Positive';
+        } else if (result.value > analysis.greenMax || result.value < analysis.greenMin) {
+          result.result = 'Borderline';
+        } else {
+          result.result = 'Negative';
+        }
+      }
+
+      return new Q(Test.findOneAndUpdate({
+        _id: testID
+      }, {
+        status: result.status,
+        percentComplete: result.percentComplete,
+        startedOn: result.startedOn,
+        finishedOn: result.finishedOn,
+        result: result.result
+      }).exec());
+    })
+    .then(function() {
+      res.jsonp(result);
+    })
+    .fail(
+      function(err) {
+        console.log('Record retrieval failed', err);
+      })
+    .done();
+};
+
+exports.status = function(req, res) {
+  console.log('Test status');
+
+  new Q(Cartridge.find({
+      startedOn: {
+        $gt: new Date(new Date().valueOf() - 14400000) // last 4 hours
+      }
+    }).exec())
+    .then(function(cartridges) {
+      var ids = _.pluck(cartridges, '_id');
+      return new Q(Test.find({
+        _cartridge: {
+          $in: ids
+        }
+      }).sort('-created').populate(testPopulate).limit(20).exec());
+    })
+    .then(function(tests) {
+      res.jsonp(tests);
+    })
+    .fail(function(err) {
+      console.log('Status update failed');
+      return res.status(400).send({
+        message: err
+      });
+    })
+    .done();
+};
+
+exports.recently_started = exports.status;
+exports.monitor = exports.status;
+
+exports.review = function(req, res) {
+  Test.find({
+    _cartridge: {
+      $exists: true
+    }
+  }).sort('-created').populate(testPopulate).limit(20).exec(function(err, tests) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      res.jsonp(tests);
+    }
+  });
+};
+
 /**
  * Create a Test
  */
@@ -276,129 +402,6 @@ exports.update = function(req, res) {
       });
     } else {
       res.jsonp(test);
-    }
-  });
-};
-
-exports.update_one_test = function(req, res) {
-  console.log('Updating one test', req.body);
-
-  var testID = req.body.testID;
-  var cartridgeID = req.body.cartridgeID;
-  var deviceID = req.body.deviceID;
-  var analysis = req.body.analysis;
-  var sparkDevice, result = {};
-  result.percentComplete = req.body.percentComplete > 100 ? 100 : req.body.percentComplete;
-  result.status = req.body.status;
-
-  brevitestSpark.get_spark_device_from_deviceID(req.user, deviceID)
-    .then(function(s) {
-      sparkDevice = s;
-      console.log('Update test');
-
-      return new Q(sparkDevice.callFunction('requestdata', cartridgeID + '000000' + brevitestRequest.test_record_by_uuid));
-    })
-    .then(function(result) {
-      console.log('requestdata', result);
-      if (result.return_value < 0) {
-        throw new Error('Request to read register failed');
-      }
-      return new Q(sparkDevice.getVariable('register'));
-    })
-    .then(function(register) {
-      console.log('register', register);
-
-      var data = register.result.split('\n');
-      var params = data[0].split('\t');
-      result.rawData = register.result;
-      result.startedOn = Date(parseInt(params[1]));
-      result.finishedOn = Date(parseInt(params[2]));
-      result.value = parseInt(data[4].split('\t')[3]) - parseInt(data[2].split('\t')[3]);
-      result.failed = result.percentComplete < 100;
-
-      return new Q(Cartridge.findOneAndUpdate({
-        _id: cartridgeID
-      }, {
-        rawData: register.result,
-        startedOn: result.startedOn,
-        finishedOn: result.finishedOn,
-        result: result.value,
-        failed: result.failed
-      }, {
-        new: true
-      }).exec());
-    })
-    .then(function(cartridge) {
-      if (result.value > analysis.redMax || result.value < analysis.redMin) {
-        result.result = 'Positive';
-      } else if (result.value > analysis.greenMax || result.value < analysis.greenMin) {
-        result.result = 'Borderline';
-      } else if (result.status !== 'Cancelled') {
-        result.result = 'Negative';
-      }
-      return new Q(Test.findOneAndUpdate({
-        _id: testID
-      }, {
-        status: result.status,
-        percentComplete: result.percentComplete,
-        startedOn: result.startedOn,
-        finishedOn: result.finishedOn,
-        result: result.result
-      }, {new: true}).exec());
-    })
-    .then(function(test) {
-      res.jsonp(test);
-    })
-    .fail(
-      function(err) {
-        console.log('Record retrieval failed', err);
-      })
-    .done();
-};
-
-exports.status = function(req, res) {
-  console.log('Test status');
-
-  new Q(Cartridge.find({
-      startedOn: {
-        $gt: new Date(new Date().valueOf() - 86400000) // last 24 hours
-      }
-    }).exec())
-    .then(function(cartridges) {
-      var ids = _.pluck(cartridges, '_id');
-      return new Q(Test.find({
-        _cartridge: {
-          $in: ids
-        }
-      }).sort('-created').populate(testPopulate).limit(20).exec());
-    })
-    .then(function(tests) {
-      res.jsonp(tests);
-    })
-    .fail(function(err) {
-      console.log('Status update failed');
-      return res.status(400).send({
-        message: err
-      });
-    })
-    .done();
-};
-
-exports.recently_started = exports.status;
-exports.monitor = exports.status;
-
-exports.review = function(req, res) {
-  Test.find({
-    _cartridge: {
-      $exists: true
-    }
-  }).sort('-created').populate(testPopulate).limit(20).exec(function(err, tests) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.jsonp(tests);
     }
   });
 };

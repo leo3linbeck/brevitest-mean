@@ -18,8 +18,6 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
       }).
       success(function(data, status, headers, config) {
 				Notification.success('Test complete');
-				$scope.tests[index].status = data.status;
-				$scope.tests[index].percentComplete = data.percentComplete;
       }).
       error(function(err, status, headers, config) {
         Notification.error(err.message);

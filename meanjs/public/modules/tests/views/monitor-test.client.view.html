@@ -38,8 +38,9 @@
             <span style="color:black; white-space:nowrap;">{{test.percentComplete}}</span>
           </progressbar>
         </p>
-        <p class="col-xs-2">
-          <button ng-show="{{test.status!=='Cancelled' && test.percentComplete!==100}}" class="btn btn-danger btn-xs pull-right" ng-click="cancelTest($index)"
+        <p class="col-xs-2"
+          ng-hide="test.status==='Cancelled' || test.percentComplete===100">
+          <button class="btn btn-danger btn-xs pull-right" ng-click="cancelTest($index)"
             type="button">Cancel</button>
         </p>
         <br/>

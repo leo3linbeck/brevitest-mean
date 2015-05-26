@@ -24,7 +24,7 @@ module.exports = {
 				'public/lib/angular-socket-io/socket.min.js',
 				'public/lib/d3/d3.min.js',
 				'public/lib/c3/c3.min.js',
-				'public/lib/underscore/underscore.js'
+				'public/lib/underscore/underscore-min.js'
 			]
 		},
 		css: 'public/dist/application.min.css',

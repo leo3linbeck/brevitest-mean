@@ -32,7 +32,6 @@ module.exports = {
 				'public/lib/angular-socket-io/socket.min.js',
 				'public/lib/d3/d3.min.js',
 				'public/lib/c3/c3.min.js',
-				'public/lib/angular-nvd3/dist/angular-nvd3.min.js',
 				'public/lib/underscore/underscore.js'
 			]
 		},

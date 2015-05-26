@@ -108,6 +108,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 					assayID: assay._id,
 				  assayName: assay.name,
 				  assayBCODE: assay.BCODE,
+					analysis: assay.analysis,
 				  cartridgeID: cartridge._id,
 				  deviceID: device._id,
 				  deviceName: device.name,

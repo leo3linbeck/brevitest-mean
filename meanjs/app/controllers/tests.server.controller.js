@@ -66,7 +66,78 @@ function bObjectToCodeString(bco) {
   return str;
 }
 
-function createSparkSubscribeCallback(test, socket) {
+function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, percentComplete, status) {
+  var sparkDevice, result = {};
+  result.percentComplete = percentComplete > 100 ? 100 : percentComplete;
+  result.status = status;
+
+  return brevitestSpark.get_spark_device_from_deviceID(user, deviceID)
+    .then(function(s) {
+      sparkDevice = s;
+
+      return new Q(sparkDevice.callFunction('requestdata', cartridgeID + '000000' + brevitestRequest.test_record_by_uuid));
+    })
+    .then(function(result) {
+      if (result.return_value < 0) {
+        throw new Error('Request to read register failed');
+      }
+      return new Q(sparkDevice.getVariable('register'));
+    })
+    .then(function(register) {
+
+      var data = register.result.split('\n');
+      var params = data[0].split('\t');
+      result.rawData = register.result;
+      result.startedOn = Date(parseInt(params[1]));
+      result.finishedOn = Date(parseInt(params[2]));
+      result.value = parseInt(data[4].split('\t')[3]) - parseInt(data[2].split('\t')[3]);
+      result.failed = result.percentComplete < 100;
+
+      return new Q(Cartridge.findOneAndUpdate({
+        _id: cartridgeID
+      }, {
+        rawData: register.result,
+        startedOn: result.startedOn,
+        finishedOn: result.finishedOn,
+        result: result.value,
+        failed: result.failed
+      }, {
+        new: true
+      }).exec());
+    })
+    .then(function(cartridge) {
+      if (result.status === 'Cancelled') {
+        result.result = 'Cancelled';
+      }
+      else if (analysis) {
+        if (result.value > analysis.redMax || result.value < analysis.redMin) {
+          result.result = 'Positive';
+        } else if (result.value > analysis.greenMax || result.value < analysis.greenMin) {
+          result.result = 'Borderline';
+        } else {
+          result.result = 'Negative';
+        }
+      }
+      else {
+        result.result = 'Unknown';
+      }
+
+      return new Q(Test.findOneAndUpdate({
+        _id: testID
+      }, {
+        status: result.status,
+        percentComplete: result.percentComplete,
+        startedOn: result.startedOn,
+        finishedOn: result.finishedOn,
+        result: result.result
+      }).exec());
+    })
+    .then(function() {
+      return result;
+    });
+}
+
+function createSparkSubscribeCallback(test, socket, user, analysis) {
   console.log('Setting up spark callback');
   return function sparkSubscribeCallback(event) {
     var data = event.data.split('\n');
@@ -74,6 +145,8 @@ function createSparkSubscribeCallback(test, socket) {
     test.percentComplete = data[2] ? parseInt(data[2]) : 0;
     if (test.percentComplete === 100) {
       test.status = 'Complete';
+      doUpdateTest(user, test._id, test._cartridge, test._device, analysis, test.percentComplete, test.status)
+      .done();
     } else {
       test.status = data[0].length ? data[0] : test.status;
     }
@@ -81,15 +154,14 @@ function createSparkSubscribeCallback(test, socket) {
     test.save();
 
     socket.sockets.emit('test.update', event.data);
-    console.log('test.update', event.data);
   };
 }
 
 exports.begin = function(req, res) {
-  console.log(req.body, req.app);
   var assayID = req.body.assayID;
   var assayName = req.body.assayName;
   var assayBCODE = req.body.assayBCODE;
+  var analysis = req.body.analysis;
   var cartridgeID = req.body.cartridgeID;
   var deviceID = req.body.deviceID;
   var deviceName = req.body.deviceName;
@@ -101,15 +173,12 @@ exports.begin = function(req, res) {
     .then(function(s) {
       sparkDevice = s;
 
-      console.log('Send BCODE and start test');
-
       var duration, max_payload, packet_count;
       var end, i, len, num, payload, start;
       var args = [];
 
       bcodeString = bObjectToCodeString(assayBCODE);
       duration = get_BCODE_duration(assayBCODE);
-      console.log('BCODE duration', duration);
       max_payload = (56 - cartridgeID.length); // max string = 63 - length(command code) - length(num) - length(len) - length(cartridgeId)
       packet_count = Math.ceil(bcodeString.length / max_payload);
 
@@ -124,7 +193,6 @@ exports.begin = function(req, res) {
       }
 
       args.push(brevitestCommand.run_test + cartridgeID + zeropad(Math.round(duration), 4));
-      console.log(args);
       return args.reduce(function(soFar, arg) {
         return soFar.then(function() {
           return sparkDevice.callFunction('runcommand', arg);
@@ -132,8 +200,6 @@ exports.begin = function(req, res) {
       }, new Q());
     })
     .then(function(result) {
-      console.log('Return response', result);
-
       if (result.return_value !== 1) {
         throw new Error('Test not started');
       }
@@ -147,7 +213,6 @@ exports.begin = function(req, res) {
       test.status = 'Starting';
       test.percentComplete = 0;
       test.startedOn = new Date();
-      console.log('Saving test');
       return new Q(test.save());
     })
     .then(function() {
@@ -170,7 +235,7 @@ exports.begin = function(req, res) {
       return new Q(prescription.save());
     })
     .then(function() {
-      sparkDevice.subscribe(cartridgeID, createSparkSubscribeCallback(test, req.app.get('socketio')));
+      sparkDevice.subscribe(cartridgeID, createSparkSubscribeCallback(test, req.app.get('socketio'), req.user, analysis));
 
       res.jsonp({
         message: 'Test started',
@@ -186,7 +251,7 @@ exports.begin = function(req, res) {
 };
 
 exports.cancel = function(req, res) {
-  console.log('Cancelling test', req.body);
+  console.log('Cancelling test');
 
   var testID = req.body.testID;
   var cartridgeID = req.body.cartridgeID;
@@ -198,8 +263,6 @@ exports.cancel = function(req, res) {
       return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.cancel_process));
     })
     .then(function(register) {
-      console.log('register', register);
-
       return new Q(Cartridge.findOneAndUpdate({
         _id: cartridgeID
       }, {
@@ -223,92 +286,29 @@ exports.cancel = function(req, res) {
     .fail(
       function(err) {
         console.log('Cancel process failed', err);
+        return res.status(400).send({
+          message: err
+        });
       })
     .done();
 };
 
 exports.update_one_test = function(req, res) {
-  console.log('Updating one test', req.body);
-
-  var testID = req.body.testID;
-  var cartridgeID = req.body.cartridgeID;
-  var deviceID = req.body.deviceID;
-  var analysis = req.body.analysis;
-  var sparkDevice, result = {};
-  result.percentComplete = req.body.percentComplete > 100 ? 100 : req.body.percentComplete;
-  result.status = req.body.status;
-
-  brevitestSpark.get_spark_device_from_deviceID(req.user, deviceID)
-    .then(function(s) {
-      sparkDevice = s;
-      console.log('Update test');
-
-      return new Q(sparkDevice.callFunction('requestdata', cartridgeID + '000000' + brevitestRequest.test_record_by_uuid));
-    })
+  doUpdateTest(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.percentComplete, req.body.status)
     .then(function(result) {
-      console.log('requestdata', result);
-      if (result.return_value < 0) {
-        throw new Error('Request to read register failed');
-      }
-      return new Q(sparkDevice.getVariable('register'));
-    })
-    .then(function(register) {
-      console.log('register', register);
-
-      var data = register.result.split('\n');
-      var params = data[0].split('\t');
-      result.rawData = register.result;
-      result.startedOn = Date(parseInt(params[1]));
-      result.finishedOn = Date(parseInt(params[2]));
-      result.value = parseInt(data[4].split('\t')[3]) - parseInt(data[2].split('\t')[3]);
-      result.failed = result.percentComplete < 100;
-
-      return new Q(Cartridge.findOneAndUpdate({
-        _id: cartridgeID
-      }, {
-        rawData: register.result,
-        startedOn: result.startedOn,
-        finishedOn: result.finishedOn,
-        result: result.value,
-        failed: result.failed
-      }, {
-        new: true
-      }).exec());
-    })
-    .then(function(cartridge) {
-      if (result.status !== 'Cancelled') {
-        if (result.value > analysis.redMax || result.value < analysis.redMin) {
-          result.result = 'Positive';
-        } else if (result.value > analysis.greenMax || result.value < analysis.greenMin) {
-          result.result = 'Borderline';
-        } else {
-          result.result = 'Negative';
-        }
-      }
-
-      return new Q(Test.findOneAndUpdate({
-        _id: testID
-      }, {
-        status: result.status,
-        percentComplete: result.percentComplete,
-        startedOn: result.startedOn,
-        finishedOn: result.finishedOn,
-        result: result.result
-      }).exec());
-    })
-    .then(function() {
       res.jsonp(result);
     })
     .fail(
       function(err) {
         console.log('Record retrieval failed', err);
+        return res.status(400).send({
+          message: err
+        });
       })
     .done();
 };
 
 exports.status = function(req, res) {
-  console.log('Test status');
-
   new Q(Cartridge.find({
       startedOn: {
         $gt: new Date(new Date().valueOf() - 14400000) // last 4 hours

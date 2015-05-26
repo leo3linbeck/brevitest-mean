@@ -118,7 +118,8 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
         cartridgeID: test._cartridge._id,
         deviceID: test._device._id,
         analysis: test._assay.analysis,
-        percentComplete: test.percentComplete
+        percentComplete: test.percentComplete,
+        status: test.status
       }).
       success(function(data, status, headers, config) {
         console.log(data, status);

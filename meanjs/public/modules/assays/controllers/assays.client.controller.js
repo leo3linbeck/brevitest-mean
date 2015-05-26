@@ -329,7 +329,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       $scope.canDelete = b.canDelete;
       $scope.canInsert = b.canInsert;
       $scope.commandDescription = b.description;
-      
+
       console.log($scope.activeBCODE, $scope.command, $scope.canMove, $scope.canDelete, $scope.canInsert);
     };
 

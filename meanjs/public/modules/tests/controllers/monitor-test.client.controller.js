@@ -6,7 +6,7 @@ var _ = window._;
 angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$timeout', 'Tests', 'Notification', 'Socket',
 	function($scope, $http, $timeout, Tests, Notification, Socket) {
 
-		function updateTest(test, index) {
+		function updateTest(test) {
 			console.log('Updating test', test);
       $http.post('/tests/update_one_test', {
         testID: test._id,
@@ -38,13 +38,7 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 				$scope.tests.forEach(function(e, i) {
 					if (e._cartridge._id === data[1]) {
 						e.percentComplete = parseInt(data[2]);
-						if (e.percentComplete === 100) {
-							e.status = 'Complete';
-							updateTest(e, i);
-						}
-						else {
-							e.status = data[0].length ? data[0] : e.status;
-						}
+						e.status = data[0].length ? data[0] : e.status;
 					}
 				});
 			});
@@ -59,8 +53,8 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 				deviceID: test._device._id
 			}).
 				success(function(data, status, headers, config) {
-					console.log(data, index);
-					updateTest(test, index);
+					console.log(data);
+					test.status = 'Cancelled';
 					Notification.success('Test cancelled');
 				}).
 				error(function(err, status, headers, config) {

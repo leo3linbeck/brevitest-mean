@@ -37,10 +37,13 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 				var data = message.split('\n');
 				$scope.tests.forEach(function(e, i) {
 					if (e._cartridge._id === data[1]) {
-						e.status = data[0].length ? data[0] : e.status;
 						e.percentComplete = parseInt(data[2]);
 						if (e.percentComplete === 100) {
+							e.status = 'Complete';
 							updateTest(e, i);
+						}
+						else {
+							e.status = data[0].length ? data[0] : e.status;
 						}
 					}
 				});

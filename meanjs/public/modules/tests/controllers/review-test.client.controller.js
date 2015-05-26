@@ -47,9 +47,9 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
               'Standard Curve': 'y'
             }
           },
-          // zoom: {
-          //   enabled: true
-          // },
+          zoom: {
+            enabled: true
+          },
           point: {
             r: function(d) {
                 if (d.id === 'This Test') {

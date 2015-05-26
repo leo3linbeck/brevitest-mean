@@ -86,7 +86,7 @@ function createSparkSubscribeCallback(test, socket) {
 }
 
 exports.begin = function(req, res) {
-  console.log(req.body);
+  console.log(req.body, req.app);
   var assayID = req.body.assayID;
   var assayName = req.body.assayName;
   var assayBCODE = req.body.assayBCODE;

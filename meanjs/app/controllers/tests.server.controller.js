@@ -81,6 +81,7 @@ function createSparkSubscribeCallback(test, socket) {
     test.save();
 
     socket.sockets.emit('test.update', event.data);
+    console.log('test.update', event.data);
   };
 }
 

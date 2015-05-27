@@ -110,8 +110,7 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 
     $scope.updateTest = function(index) {
       var test = $scope.tests[index];
-      console.log(test);
-      $http.post('/tests/update_one_test', {
+      var body = {
         testID: test._id,
         cartridgeID: test._cartridge._id,
         deviceID: test._device._id,
@@ -119,7 +118,9 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
         standardCurve: test._assay.standardCurve,
         percentComplete: test.percentComplete,
         status: test.status
-      }).
+      };
+      console.log(body, test);
+      $http.post('/tests/update_one_test', body).
       success(function(data, status, headers, config) {
         console.log(data, status);
         test.result = data.result;

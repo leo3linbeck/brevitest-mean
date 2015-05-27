@@ -13,6 +13,7 @@ var mongoose = require('mongoose'),
   Spark = mongoose.model('Spark'),
   sparkcore = require('spark'),
   sparks = require('../../app/controllers/sparks.server.controller'),
+  d3 = require('d3'),
   Q = require('q'),
   _ = require('lodash');
 
@@ -66,7 +67,7 @@ function bObjectToCodeString(bco) {
   return str;
 }
 
-function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, percentComplete, status) {
+function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, standardCurve, percentComplete, status) {
   var sparkDevice, result = {};
   result.percentComplete = percentComplete > 100 ? 100 : percentComplete;
   result.status = percentComplete === 100 ? 'Complete' : (status ? status : 'Unknown');
@@ -106,20 +107,35 @@ function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, percentComp
       }).exec());
     })
     .then(function(cartridge) {
-      if (result.status === 'Cancelled') {
-        result.result = 'Cancelled';
-      }
-      else if (analysis) {
-        if (result.value > analysis.redMax || result.value < analysis.redMin) {
-          result.result = 'Positive';
-        } else if (result.value > analysis.greenMax || result.value < analysis.greenMin) {
-          result.result = 'Borderline';
-        } else {
-          result.result = 'Negative';
+      try {
+        console.log(result.value, analysis, standardCurve);
+        if (typeof result.value === 'undefined') {
+          result.reading = null;
+        }
+        else {
+          result.reading = d3.scale.linear().domain(_.pluck(standardCurve, 'x')).range(_.pluck(standardCurve, 'y'))(result.value);
+        }
+
+        if (result.status === 'Cancelled') {
+          result.result = 'Cancelled';
+        }
+        else if (result.reading !== null && analysis) {
+          if (result.reading > analysis.redMax || result.reading < analysis.redMin) {
+            result.result = 'Positive';
+          } else if (result.reading > analysis.greenMax || result.reading < analysis.greenMin) {
+            result.result = 'Borderline';
+          } else {
+            result.result = 'Negative';
+          }
+        }
+        else {
+          result.result = 'Unknown';
         }
       }
-      else {
-        result.result = 'Unknown';
+      catch(e) {
+        console.log('Unable to calculate test results');
+        result.result = null;
+        result.reading = null;
       }
 
       return new Q(Test.findOneAndUpdate({
@@ -129,6 +145,7 @@ function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, percentComp
         percentComplete: result.percentComplete,
         startedOn: result.startedOn,
         finishedOn: result.finishedOn,
+        reading: result.reading,
         result: result.result
       }).exec());
     })
@@ -137,7 +154,7 @@ function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, percentComp
     });
 }
 
-function createSparkSubscribeCallback(test, socket, user, analysis) {
+function createSparkSubscribeCallback(test, socket, user, analysis, standardCurve) {
   console.log('Setting up spark callback');
   return function sparkSubscribeCallback(event) {
     var data = event.data.split('\n');
@@ -145,7 +162,7 @@ function createSparkSubscribeCallback(test, socket, user, analysis) {
     test.percentComplete = data[2] ? parseInt(data[2]) : 0;
     if (test.percentComplete === 100) {
       test.status = 'Complete';
-      doUpdateTest(user, test._id, test._cartridge, test._device, analysis, test.percentComplete, test.status)
+      doUpdateTest(user, test._id, test._cartridge, test._device, analysis, standardCurve, test.percentComplete, test.status)
       .done();
     } else {
       test.status = data[0].length ? data[0] : test.status;
@@ -162,6 +179,7 @@ exports.begin = function(req, res) {
   var assayName = req.body.assayName;
   var assayBCODE = req.body.assayBCODE;
   var analysis = req.body.analysis;
+  var standardCurve = req.body.standardCurve;
   var cartridgeID = req.body.cartridgeID;
   var deviceID = req.body.deviceID;
   var deviceName = req.body.deviceName;
@@ -235,7 +253,7 @@ exports.begin = function(req, res) {
       return new Q(prescription.save());
     })
     .then(function() {
-      sparkDevice.subscribe(cartridgeID, createSparkSubscribeCallback(test, req.app.get('socketio'), req.user, analysis));
+      sparkDevice.subscribe(cartridgeID, createSparkSubscribeCallback(test, req.app.get('socketio'), req.user, analysis, standardCurve));
 
       res.jsonp({
         message: 'Test started',
@@ -294,7 +312,7 @@ exports.cancel = function(req, res) {
 };
 
 exports.update_one_test = function(req, res) {
-  doUpdateTest(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.percentComplete, req.body.status)
+  doUpdateTest(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.standardCurve, req.body.percentComplete, req.body.status)
     .then(function(result) {
       res.jsonp(result);
     })

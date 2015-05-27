@@ -89,7 +89,7 @@ exports.delete = function(req, res) {
 exports.list = function(req, res) {
 	Prescription.find().sort('-created').populate([{
 		path: '_assays',
-		select: '_id name BCODE analysis'
+		select: '_id name BCODE analysis standardCurve'
 	}, {
 		path: 'user',
 		select: 'displayName'

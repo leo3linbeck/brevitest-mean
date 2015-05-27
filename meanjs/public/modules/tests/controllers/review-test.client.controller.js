@@ -8,8 +8,6 @@ var d3 = window.d3;
 angular.module('tests').controller('ReviewTestController', ['$scope', '$http', 'Tests', 'Sparks', 'Notification',
   function($scope, $http, Tests, Sparks, Notification) {
 
-    var colors = ['tomato', 'yellow', 'lightgreen', 'yellow', 'tomato', 'slategray', 'blue'];
-
     $scope.loadGraph = function(index) {
       var test = $scope.tests[index];
       var a = test._assay.analysis;
@@ -118,6 +116,7 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
         cartridgeID: test._cartridge._id,
         deviceID: test._device._id,
         analysis: test._assay.analysis,
+        standardCurve: test._assay.standardCurve,
         percentComplete: test.percentComplete,
         status: test.status
       }).

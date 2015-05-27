@@ -26,6 +26,9 @@ var TestSchema = new Schema({
 	percentComplete: {
 		type: Number
 	},
+	reading: {
+		type: Number
+	},
 	result: {
 		type: String
 	},

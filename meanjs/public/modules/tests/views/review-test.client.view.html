@@ -41,7 +41,7 @@
             ng-class="{'btn-danger': test.result === 'Positive', 'btn-warning': test.result
             === 'Borderline', 'btn-success': test.result ===
             'Negative'}" ng-show="test._cartridge.finishedOn && !test._cartridge.failed"
-            type="button">{{test._cartridge.result}}
+            type="button">{{test.reading}}
             – {{test.result}}</button>
         </p>
         <p>

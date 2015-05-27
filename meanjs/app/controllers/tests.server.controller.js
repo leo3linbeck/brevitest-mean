@@ -294,6 +294,7 @@ exports.cancel = function(req, res) {
 };
 
 exports.update_one_test = function(req, res) {
+  console.log(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.percentComplete, req.body.status);
   doUpdateTest(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.percentComplete, req.body.status)
     .then(function(result) {
       res.jsonp(result);

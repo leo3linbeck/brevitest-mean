@@ -1,6 +1,6 @@
 {
-  "name": "test",
-  "version": "0.0.1",
+  "name": "brevitest",
+  "version": "0.1.0",
   "description": "Full-Stack JavaScript with MongoDB, Express, AngularJS, and Node.js",
   "dependencies": {
     "bootstrap": "~3",
@@ -17,9 +17,8 @@
     "angular-ui-notification": "~0.0.5",
     "d3": "~3.5.5",
     "underscore": "~1.8.0",
-    "n3-line-chart": "~1.1.8",
-    "socket.io": "~1.3.5",
     "angular-socket-io": "~0.7.0",
+    "socket.io": "~1.3.5",
     "c3": "~0.4.10"
   },
   "resolutions": {

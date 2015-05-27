@@ -108,7 +108,6 @@ function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, standardCur
     })
     .then(function(cartridge) {
       try {
-        console.log(result.value, analysis, standardCurve);
         if (typeof result.value === 'undefined') {
           result.reading = null;
         }
@@ -157,12 +156,17 @@ function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, standardCur
 function createSparkSubscribeCallback(test, socket, user, analysis, standardCurve) {
   console.log('Setting up spark callback');
   return function sparkSubscribeCallback(event) {
+    console.log('spark', event);
     var data = event.data.split('\n');
 
     test.percentComplete = data[2] ? parseInt(data[2]) : 0;
     if (test.percentComplete === 100) {
+      console.log('test complete');
       test.status = 'Complete';
       doUpdateTest(user, test._id, test._cartridge, test._device, analysis, standardCurve, test.percentComplete, test.status)
+      .fail(function(err) {
+        console.log('doUpdateTest error', err);
+      })
       .done();
     } else {
       test.status = data[0].length ? data[0] : test.status;
@@ -312,8 +316,6 @@ exports.cancel = function(req, res) {
 };
 
 exports.update_one_test = function(req, res) {
-  console.log(req.body);
-  console.log(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.standardCurve, req.body.percentComplete, req.body.state);
   doUpdateTest(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.standardCurve, req.body.percentComplete, req.body.state)
     .then(function(result) {
       res.jsonp(result);

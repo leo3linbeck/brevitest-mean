@@ -123,6 +123,7 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
       $http.post('/tests/update_one_test', body).
       success(function(data, status, headers, config) {
         console.log(data, status);
+        test.reading = data.reading;
         test.result = data.result;
         test.startedOn = Date(data.startedOn);
         test.finishedOn = Date(data.finishedOn);

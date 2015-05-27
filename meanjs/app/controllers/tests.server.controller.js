@@ -69,7 +69,7 @@ function bObjectToCodeString(bco) {
 function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, percentComplete, status) {
   var sparkDevice, result = {};
   result.percentComplete = percentComplete > 100 ? 100 : percentComplete;
-  result.status = percentComplete === 100 ? 'Complete' : (status ? status : '');
+  result.status = percentComplete === 100 ? 'Complete' : (status ? status : 'Unknown');
 
   return brevitestSpark.get_spark_device_from_deviceID(user, deviceID)
     .then(function(s) {
@@ -294,7 +294,6 @@ exports.cancel = function(req, res) {
 };
 
 exports.update_one_test = function(req, res) {
-  console.log(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.percentComplete, req.body.status);
   doUpdateTest(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.percentComplete, req.body.status)
     .then(function(result) {
       res.jsonp(result);

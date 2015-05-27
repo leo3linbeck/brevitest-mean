@@ -24,7 +24,7 @@ function getSparkDeviceList(user, forceReload) {
     return new Q(sparkcore.login({
         username: 'leo3@linbeck.com',
         password: '2january88',
-        expires_in: 3600 // 10 hours
+        expires_in: 3600 // 1 hour
       }))
       .then(function(response) {
         if (!response.access_token) {

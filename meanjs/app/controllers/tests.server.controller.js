@@ -75,13 +75,14 @@ function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, standardCur
   return brevitestSpark.get_spark_device_from_deviceID(user, deviceID)
     .then(function(s) {
       sparkDevice = s;
-
+      console.log('send data request to spark', sparkDevice, cartridgeID);
       return new Q(sparkDevice.callFunction('requestdata', cartridgeID + '000000' + brevitestRequest.test_record_by_uuid));
     })
     .then(function(result) {
       if (result.return_value < 0) {
         throw new Error('Request to read register failed');
       }
+      console.log('receiving data from spark', result);
       return new Q(sparkDevice.getVariable('register'));
     })
     .then(function(register) {

@@ -69,7 +69,7 @@ function bObjectToCodeString(bco) {
 function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, percentComplete, status) {
   var sparkDevice, result = {};
   result.percentComplete = percentComplete > 100 ? 100 : percentComplete;
-  result.status = status;
+  result.status = percentComplete === 100 ? 'Complete' : (status ? status : '');
 
   return brevitestSpark.get_spark_device_from_deviceID(user, deviceID)
     .then(function(s) {

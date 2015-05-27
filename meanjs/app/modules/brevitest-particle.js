@@ -23,28 +23,23 @@ function getSparkDeviceList(user, forceReload) {
   if (sparkDevices.length === 0 || !user.sparkAccessToken || now > user.sparkTokenExpires || forceReload) {
     return new Q(sparkcore.login({
         username: 'leo3@linbeck.com',
-        password: '2january88',
-        expires_in: 3600 // 1 hour
+        password: '2january88'
       }))
       .then(function(response) {
         if (!response.access_token) {
           throw new Error('Access token not obtained');
         }
+        console.log('Access token obtained');
         user.sparkAccessToken = response.access_token;
-        user.sparkTokenExpires = new Date() + response.expires_in * 1000;
-        new Q(user.save())
-          .then(function() {
-            console.log('User sparkAccessToken updated');
-          })
-          .fail(function(err) {
-            console.log('Error saving user sparkAccessToken', err);
-          })
-          .done();
+        user.sparkTokenExpires = new Date() + 3600 * 1000;  // 1 hour
+        return new Q(user.save());
       })
       .then(function() {
+        console.log('Access token saved');
         return new Q(sparkcore.listDevices());
       })
       .then(function(devices) {
+        console.log('Device list obtained');
         sparkDevices = devices;
       });
   } else {

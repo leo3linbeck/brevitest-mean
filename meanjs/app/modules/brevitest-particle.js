@@ -46,16 +46,15 @@ function getSparkDeviceList(user, forceReload) {
       })
       .then(function(devices) {
         sparkDevices = devices;
-        return devices;
       });
   } else {
-    return new Q.fcall(function(sd) {return sd;}, sparkDevices);
+    return new Q();
   }
 }
 
 function getSparkDevice(user, sparkID, forceReload) {
   return getSparkDeviceList(user, forceReload)
-    .then(function(sparkDevices) {
+    .then(function() {
       var sparkDevice = _.findWhere(sparkDevices, {
         id: sparkID
       });
@@ -85,7 +84,7 @@ module.exports = {
   },
   get_spark_device_from_deviceID: function(user, deviceID) {
     return Q.fcall(function(id) {
-        return new Q(Device.findById(id).populate('_spark', 'sparkID token tokenExpires').exec());
+        return new Q(Device.findById(id).populate('_spark', 'sparkID').exec());
       }, deviceID)
       .then(function(device) {
         return getSparkDevice(user, device._spark.sparkID);

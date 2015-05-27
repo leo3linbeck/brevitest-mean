@@ -117,7 +117,7 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
         analysis: test._assay.analysis,
         standardCurve: test._assay.standardCurve,
         percentComplete: test.percentComplete,
-        status: test.status
+        state: test.status
       };
       console.log(body, test);
       $http.post('/tests/update_one_test', body).

@@ -313,8 +313,8 @@ exports.cancel = function(req, res) {
 
 exports.update_one_test = function(req, res) {
   console.log(req.body);
-  console.log(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.standardCurve, req.body.percentComplete, req.body.status);
-  doUpdateTest(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.standardCurve, req.body.percentComplete, req.body.status)
+  console.log(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.standardCurve, req.body.percentComplete, req.body.state);
+  doUpdateTest(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.standardCurve, req.body.percentComplete, req.body.state)
     .then(function(result) {
       res.jsonp(result);
     })

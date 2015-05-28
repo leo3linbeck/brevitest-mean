@@ -75,14 +75,12 @@ function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, standardCur
   return brevitestSpark.get_spark_device_from_deviceID(user, deviceID)
     .then(function(s) {
       sparkDevice = s;
-      console.log('send data request to spark', sparkDevice, cartridgeID);
       return new Q(sparkDevice.callFunction('requestdata', cartridgeID + '000000' + brevitestRequest.test_record_by_uuid));
     })
     .then(function(result) {
       if (result.return_value < 0) {
         throw new Error('Request to read register failed');
       }
-      console.log('receiving data from spark', result);
       return new Q(sparkDevice.getVariable('register'));
     })
     .then(function(register) {
@@ -155,14 +153,12 @@ function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, standardCur
 }
 
 function createSparkSubscribeCallback(test, socket, user, analysis, standardCurve) {
-  console.log('Setting up spark callback');
+
   return function sparkSubscribeCallback(event) {
-    console.log('spark', event);
     var data = event.data.split('\n');
 
     test.percentComplete = data[2] ? parseInt(data[2]) : 0;
     if (test.percentComplete === 100) {
-      console.log('test complete');
       test.status = 'Complete';
       doUpdateTest(user, test._id, test._cartridge, test._device, analysis, standardCurve, test.percentComplete, test.status)
       .fail(function(err) {
@@ -173,9 +169,9 @@ function createSparkSubscribeCallback(test, socket, user, analysis, standardCurv
       test.status = data[0].length ? data[0] : test.status;
     }
 
-    test.save();
+    socket.emit('test.update', event.data);
 
-    socket.sockets.emit('test.update', event.data);
+    test.save();
   };
 }
 

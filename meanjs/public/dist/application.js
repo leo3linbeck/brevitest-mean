@@ -2301,15 +2301,13 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			  });
 
 
-			Socket.on('test.update', function(message) {
+				Socket.on('test.update', function(message) {
 				console.log('websocket message', message);
 				var data = message.split('\n');
 				$scope.tests.forEach(function(e, i) {
 					if (e._cartridge._id === data[1]) {
 						e.percentComplete = parseInt(data[2]);
 						e.status = data[0].length ? data[0] : e.status;
-						console.log(e);
-						$scope.$apply();
 					}
 				});
 			});

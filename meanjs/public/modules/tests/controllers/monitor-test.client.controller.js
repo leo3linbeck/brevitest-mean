@@ -34,7 +34,7 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			  });
 
 
-				Socket.on('test.update', function(message) {
+			Socket.on('test.update', function(message) {
 				console.log('websocket message', message);
 				var data = message.split('\n');
 				$scope.tests.forEach(function(e, i) {

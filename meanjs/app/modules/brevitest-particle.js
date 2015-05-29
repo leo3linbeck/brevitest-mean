@@ -19,7 +19,8 @@ var sparkDevices = [];
 
 
 function getSparkDeviceList(user, forceReload) {
-  var now = new Date() - 60000; // if less than 1 minute left in the token, get new one
+  var now = new Date(); // if less than 1 minute left in the token, get new one
+  console.log(sparkDevices.length, user.sparkAccessToken, user.sparkTokenExpires, forceReload);
   if (sparkDevices.length === 0 || !user.sparkAccessToken || now > user.sparkTokenExpires || forceReload) {
     return new Q(sparkcore.login({
         username: 'leo3@linbeck.com',
@@ -31,7 +32,8 @@ function getSparkDeviceList(user, forceReload) {
         }
         console.log('Access token obtained');
         user.sparkAccessToken = response.access_token;
-        user.sparkTokenExpires = new Date() + 3600 * 1000;  // 1 hour
+        user.sparkTokenExpires = new Date();
+        user.sparkTokenExpires.setMinutes(user.sparkTokenExpires.getMinutes() + 60);  // 1 hour
         return new Q(user.save());
       })
       .then(function() {
@@ -39,11 +41,12 @@ function getSparkDeviceList(user, forceReload) {
         return new Q(sparkcore.listDevices());
       })
       .then(function(devices) {
-        console.log('Device list obtained');
+        console.log('Device list obtained', _.pluck(devices, 'name'), user.sparkTokenExpires);
         sparkDevices = devices;
+        return sparkDevices;
       });
   } else {
-    return new Q();
+    return new Q(sparkDevices);
   }
 }
 

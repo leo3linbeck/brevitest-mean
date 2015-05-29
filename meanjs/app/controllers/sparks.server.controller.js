@@ -167,7 +167,6 @@ exports.refresh = function(req, res) {
 
   brevitestSpark.get_spark_device_list(req.user, true)
     .then(function(devices) {
-      console.log('Update devices', devices);
       var promises = [];
       devices.forEach(function(e) {
         var s = {

@@ -18,7 +18,6 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
       var ys = _.pluck(std, 'y');
       var standardScale = d3.scale.linear().domain(xs).range(ys);
       var resultY = standardScale(test._cartridge.result);
-      console.log(test._cartridge.result, resultY);
 
       xs.splice(0, 0, 'Standard Curve X');
       ys.splice(0, 0, 'Standard Curve');
@@ -88,7 +87,6 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 
     $scope.currentPage = 0;
 		$scope.pageChanged = function() {
-			console.log($scope.currentPage);
 			$scope.load();
 		};
 
@@ -98,7 +96,6 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 					pageSize: $scope.itemsPerPage
 				}).
 					success(function(data, status, headers, config) {
-	          console.log(data, status);
 						$scope.tests = data.tests;
             $scope.totalItems = data.total_count;
 				  }).
@@ -119,10 +116,8 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
         percentComplete: test.percentComplete,
         state: test.status
       };
-      console.log(body, test);
       $http.post('/tests/update_one_test', body).
       success(function(data, status, headers, config) {
-        console.log(data, status);
         test.reading = data.reading;
         test.result = data.result;
         test.startedOn = Date(data.startedOn);
@@ -146,7 +141,6 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
         cartridgeID: cartridgeID
       }).
       success(function(data, status, headers, config) {
-        console.log(data);
         $scope.tests.forEach(function(e) {
           if (e._cartridge._id === cartridgeID) {
             e._cartridge.rawData = JSON.parse(data);

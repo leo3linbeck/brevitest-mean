@@ -2,49 +2,53 @@
   <div class="page-header">
     <h1>Edit Cartridge</h1>
   </div>
-  <div class="col-xs-12">
-    <form class="form-horizontal" data-ng-submit="update()" novalidate>
-      <fieldset>
-        <div class="form-group">
+  <form class="form-horizontal" data-ng-submit="update()" novalidate>
+    <fieldset>
+      <div class="form-group">
+        <div class="col-xs-12">
           <label class="control-label" for="name">Name</label>
           <div class="controls">
             <input class="form-control" data-ng-model="cartridge.name" id="name"
               placeholder="Name" required type="text"></input>
           </div>
         </div>
-        <accordion close-others="true">
-          <accordion-group heading="Result" is-open="showResultsOnOpen">
-            <ul class="list-group">
-              <li class="list-group-item">Test succeeded: {{!cartridge.failed |
-                uppercase}}</li>
-              <li class="list-group-item">Value: {{cartridge.result | number: 3}}</li>
-            </ul>
-          </accordion-group>
-          <accordion-group heading="Raw Data">
-            <p>{{cartridge.rawData}}</p>
-          </accordion-group>
-          <accordion-group heading="Dates">
-            <ul class="list-group">
-              <li class="list-group-item">Manufactured on: {{cartridge.manufacturedOn | date:
-                medium}}</li>
-              <li class="list-group-item">Ordered on: {{cartridge.orderedOn | date:
-                medium}}</li>
-              <li class="list-group-item">Registered on: {{cartridge.registeredOn | date:
-                medium}}</li>
-              <li class="list-group-item">Test started on: {{cartridge.startedOn | date:
-                medium}}</li>
-              <li class="list-group-item">Test finished on: {{cartridge.finishedOn | date:
-                medium}}</li>
-            </ul>
-          </accordion-group>
-        </accordion>
-        <div class="form-group">
+      </div>
+      <accordion close-others="true">
+        <accordion-group heading="Result" is-open="showResultsOnOpen">
+          <ul class="list-group">
+            <li class="list-group-item">Test succeeded: {{!cartridge.failed |
+              uppercase}}</li>
+            <li class="list-group-item">Value: {{cartridge.result | number: 3}}</li>
+          </ul>
+        </accordion-group>
+        <accordion-group heading="Raw Data">
+          <small>
+            <textarea cols=48 rows=10>{{cartridge.rawData | rawtestdata}}</textarea>
+          </small>
+        </accordion-group>
+        <accordion-group heading="Dates">
+          <ul class="list-group">
+            <li class="list-group-item">Manufactured on: {{cartridge.manufacturedOn | date:
+              medium}}</li>
+            <li class="list-group-item">Ordered on: {{cartridge.orderedOn | date:
+              medium}}</li>
+            <li class="list-group-item">Registered on: {{cartridge.registeredOn | date:
+              medium}}</li>
+            <li class="list-group-item">Test started on: {{cartridge.startedOn | date:
+              medium}}</li>
+            <li class="list-group-item">Test finished on: {{cartridge.finishedOn | date:
+              medium}}</li>
+          </ul>
+        </accordion-group>
+      </accordion>
+      <div class="form-group">
+        <div class="col-xs-12">
           <input class="btn btn-default" type="submit" value="Update"></input>
           <div class="text-danger" data-ng-show="error">
             <strong data-ng-bind="error"></strong>
           </div>
         </div>
-      </fieldset>
-    </form>
-  </div>
+      </div>
+    </fieldset>
+  </form>
 </section>

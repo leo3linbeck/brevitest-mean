@@ -6,7 +6,7 @@ angular.module('core').factory('Socket', ['socketFactory', '$location',
       console.log('socket.io $location', $location);
         return socketFactory({
             prefix: '',
-            ioSocket: io.connect('http://' + $location.host() + ':' + $location.port())
+            ioSocket: io.connect($location.protocol() + '://' + $location.host() + ':' + $location.port())
         });
     }
 ]);

@@ -128,13 +128,12 @@
                 <div class="col-md-6">
                   <div class="panel panel-default">
                     <div class="panel-heading">
-                      <div ng-hide="{{estimatedTime<0}}">
-                        <h3 class="panel-title">Current Sequence
-                          <h5>(estimated time: {{estimatedTime / 60 | number: 0}} min {{estimatedTime % 60
-                            | number: 0}} sec.)</h5>
-                        </h3>
+                      <div ng-hide="estimatedTime<0">
+                        <h3 class="panel-title">Current Sequence</h3>
+                        <h5>(estimated time: {{estimatedTime / 60 | number: 0}} min {{estimatedTime % 60
+                          | number: 0}} sec.)</h5>
                       </div>
-                      <div ng-hide="{{estimatedTime>0}}">
+                      <div ng-hide="estimatedTime>=0">
                         <h3 class="panel-title">Unbalanced repeats - estimated time cannot be
                           calculated</h3>
                       </div>
@@ -223,12 +222,12 @@
               </div>
             </div>
           </div>
+        </div>
+        <div class="form-group">
           <div class="col-xs-11 col-xs-offset-1">
-            <div class="form-group">
-              <input class="btn btn-default" type="submit" value="Update"></input>
-              <div class="text-danger" data-ng-show="error">
-                <strong data-ng-bind="error"></strong>
-              </div>
+            <input class="btn btn-default" type="submit" value="Update"></input>
+            <div class="text-danger" data-ng-show="error">
+              <strong data-ng-bind="error"></strong>
             </div>
           </div>
         </div>

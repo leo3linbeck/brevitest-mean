@@ -1,8 +1,8 @@
 'use strict';
 
 // Cartridges controller
-angular.module('cartridges').controller('CartridgesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Notification', 'Cartridges',
-	function($scope, $http, $stateParams, $location, Authentication, Notification, Cartridges) {
+angular.module('cartridges').controller('CartridgesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Notification', 'Cartridges', 'Assays',
+	function($scope, $http, $stateParams, $location, Authentication, Notification, Cartridges, Assays) {
 		$scope.authentication = Authentication;
 
 		$scope.showResultsOnOpen = true;

@@ -21,10 +21,11 @@
             <li class="list-group-item">Value: {{cartridge.result | number: 3}}</li>
           </ul>
         </accordion-group>
+        <accordion-group heading="BCODE">
+          <small ng-bind-html="cartridge.bcodeString | bcode"></small>
+        </accordion-group>
         <accordion-group heading="Raw Data">
-          <small>
-            <textarea cols=48 rows=10>{{cartridge.rawData | rawtestdata}}</textarea>
-          </small>
+          <small ng-bind-html="cartridge.rawData | rawtestdata"></small>
         </accordion-group>
         <accordion-group heading="Dates">
           <ul class="list-group">

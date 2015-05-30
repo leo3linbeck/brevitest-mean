@@ -19,7 +19,8 @@ exports.make10cartridges = function(req, res) {
 			name: assay.name + Math.random(),
 			_assay: assay._id,
 			registeredOn: new Date(),
-			_registeredBy: req.user._id
+			_registeredBy: req.user._id,
+			user: req.user
 		});
 		promises.push(new Q(cartridge.save()));
 	}

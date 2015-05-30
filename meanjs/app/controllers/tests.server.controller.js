@@ -241,6 +241,7 @@ exports.begin = function(req, res) {
         _test: test._id,
         _device: deviceID,
         startedOn: test.startedOn,
+        bcodeString: bcodeString,
         _runBy: test.user
       }).exec());
     })

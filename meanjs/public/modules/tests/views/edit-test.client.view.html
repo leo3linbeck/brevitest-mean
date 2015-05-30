@@ -39,7 +39,10 @@
             </ul>
           </accordion-group>
           <accordion-group heading="BCODE">
-            <p>{{test._cartridge.bcodeString}}</p>
+            <small ng-bind-html="test._cartridge.bcodeString | bcode"></small>
+          </accordion-group>
+          <accordion-group heading="Raw Data">
+            <small ng-bind-html="test._cartridge.rawData | rawtestdata"></small>
           </accordion-group>
           <accordion-group heading="Dates">
             <ul class="list-group">

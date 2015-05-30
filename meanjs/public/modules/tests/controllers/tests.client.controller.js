@@ -1,8 +1,8 @@
 'use strict';
 
 // Tests controller
-angular.module('tests').controller('TestsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'Tests',
-	function($scope, $stateParams, $location, $http, Authentication, Tests) {
+angular.module('tests').controller('TestsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'Tests', 'Assays',
+	function($scope, $stateParams, $location, $http, Authentication, Tests, Assays) {
 		$scope.authentication = Authentication;
 
 		$scope.showResultsOnOpen = true;

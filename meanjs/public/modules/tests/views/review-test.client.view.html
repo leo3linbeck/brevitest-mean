@@ -60,10 +60,11 @@
               <li class="list-group-item">Cartridge: {{test._cartridge.name}}</li>
             </ul>
             <accordion close-others="true">
+              <accordion-group heading="BCODE">
+                <small ng-bind-html="test._cartridge.bcodeString | bcode"></small>
+              </accordion-group>
               <accordion-group heading="Raw Data">
-                <!-- <button class="btn btn-xs btn-default pull-right"
-                                ng-click="loadRawData('{{test._cartridge._id}}')" type="button">Reload</button> -->
-                <textarea class="small" rows="10" style="width: 100%; margin:0 10;">{{test._cartridge.rawData | rawtestdata}}</textarea>
+                <small ng-bind-html="test._cartridge.rawData | rawtestdata"></small>
               </accordion-group>
             </accordion>
           </accordion-group>

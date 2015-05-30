@@ -126,6 +126,7 @@ angular.module('sparks').controller('SparksController', ['$scope', '$http', '$st
   				success(function(data, status, headers, config) {
   					$scope.sparks = data;
             Notification.success('Spark list refreshed');
+  					// addAlert($scope.alerts, 'success', 'Spark list refreshed');
   			  }).
   			  error(function(err, status, headers, config) {
   					console.log(err, status, headers(), config);

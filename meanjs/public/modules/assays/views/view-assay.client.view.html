@@ -1,50 +1,70 @@
 <section data-ng-controller="AssaysController" data-ng-init="findOne()">
   <div class="page-header">
+    <div class="pull-right" data-ng-show="(authentication.user)">
+      <a class="btn btn-primary" href="/#!/assays/{{assay._id}}/edit">
+        <i class="glyphicon glyphicon-edit"></i>
+      </a>
+      <a class="btn btn-danger" data-ng-click="remove();">
+        <i class="glyphicon glyphicon-trash"></i>
+      </a>
+    </div>
     <h1 data-ng-bind="assay.name"></h1>
   </div>
   <div>
     <div class="col-md-4 col-sm-6 col-xs-12">
       <ul class="list-group">
-        <li class="list-group-item"><b>Reference: </b>{{assay.reference}}</li>
-        <li class="list-group-item"><b>Description: </b>{{assay.description}}</li>
-        <li class="list-group-item"><b>URL: </b>{{assay.url}}</li>
-        <li class="list-group-item"><b>Cut Values:</b>
-          <br/>
-          <ul class="list-group">
-            <li class="list-group-item"><b>Positive high: </b>{{assay.analysis.redMax}}</li>
-            <li class="list-group-item"><b>Negative high: </b>{{assay.analysis.greenMax}}</li>
-            <li class="list-group-item"><b>Negative low: </b>{{assay.analysis.greenMin}}</li>
-            <li class="list-group-item"><b>Positive low: </b>{{assay.analysis.redMin}}</li>
-          </ul>
+        <li class="list-group-item"><b>Reference:
+          </b>{{assay.reference}}</li>
+        <li class="list-group-item"><b>Description:
+          </b>{{assay.description}}</li>
+        <li class="list-group-item"><b>URL:
+          </b>{{assay.url}}</li>
       </ul>
     </div>
     <div class="col-md-4 col-sm-6 col-xs-12">
       <b>Standard Curve:</b>
       <br/>
       <ul class="list-group">
-        <li class="list-group-item" ng-repeat="point in assay.standardCurve"><b>n = </b>{{$index}}<b><span style="margin-left: 2em"><b>X = </b>{{point.x}}<b><span style="margin-left: 2em"></span>Y = </b>{{point.y}}</li>
+        <li class="list-group-item" ng-repeat="point in assay.standardCurve">
+          n = {{$index}}
+          <span style="margin-left: 2em">
+            X = {{point.x}}
+          </span>
+          <span style="margin-left: 2em">
+            Y = {{point.y}}
+          </span>
+        </li>
+        <li class="list-group-item"><b>Cut Values:</b>
+          <br/>
+          <ul class="list-group">
+            <li class="list-group-item"><b>Positive high:
+              </b>{{assay.analysis.redMax}}</li>
+            <li class="list-group-item"><b>Negative high:
+              </b>{{assay.analysis.greenMax}}</li>
+            <li class="list-group-item"><b>Negative low:
+              </b>{{assay.analysis.greenMin}}</li>
+            <li class="list-group-item"><b>Positive low:
+              </b>{{assay.analysis.redMin}}</li>
+          </ul>
+        </li>
       </ul>
     </div>
     <div class="col-md-4 col-sm-6 col-xs-12">
       <b>BCODE:</b>
       <br/>
       <ul class="list-group">
-        <li class="list-group-item" ng-repeat="step in assay.BCODE"><b>{{$index}}: </b>
-          <span style="margin-left: 2em">{{step.command}} [{{step.params}}]</li>
+        <li class="list-group-item" ng-repeat="step in assay.BCODE">
+          {{$index}}:
+          <span style="margin-left: 2em">
+            {{step.command}}&nbsp;&nbsp;{{step.params ? '[ ' + step.params + ' ]' : ''}}
+          </span>
+        </li>
       </ul>
     </div>
   </div>
-  <div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == assay.user._id))">
-    <a class="btn btn-primary" href="/#!/assays/{{assay._id}}/edit">
-      <i class="glyphicon glyphicon-edit"></i>
-    </a>
-    <a class="btn btn-primary" data-ng-click="remove();">
-      <i class="glyphicon glyphicon-trash"></i>
-    </a>
-  </div>
   <small>
     <em class="text-muted">
-      Posted on
+      Created on
       <span data-ng-bind="assay.created | date:'mediumDate'"></span>
       by
       <span data-ng-bind="assay.user.displayName"></span>

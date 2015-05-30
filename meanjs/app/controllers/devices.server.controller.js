@@ -40,6 +40,25 @@ exports.move_to_and_set_calibration_point = function(req, res) {
     .done();
 };
 
+exports.load_by_model = function(req, res) {
+  console.log('Load devices by model');
+  Device.find({_deviceModel: req.body.deviceModelID}).sort('-created').populate([{
+    path: 'user',
+    select: 'displayName'
+  }, {
+    path: '_spark',
+    select: '_id name sparkID connected'
+  }]).exec(function(err, devices) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      res.jsonp(devices);
+    }
+  });
+};
+
 exports.available = function(req, res) {
   console.log('Available devices');
   Q.fcall(function() {

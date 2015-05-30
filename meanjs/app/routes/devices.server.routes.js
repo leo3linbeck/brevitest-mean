@@ -12,6 +12,9 @@ module.exports = function(app) {
 	app.route('/devices/available')
 		.get(devices.available);
 
+	app.route('/devices/load_by_model')
+		.post(devices.load_by_model);
+
 	app.route('/devices/initialize')
 		.post(devices.initialize);
 

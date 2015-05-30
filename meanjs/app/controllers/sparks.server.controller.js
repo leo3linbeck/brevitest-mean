@@ -157,10 +157,6 @@ exports.get_record_by_index = function(req, res) {
 function getUpdatePromise(e) {
   return new Q(Spark.findOneAndUpdate({
     sparkID: e.sparkID,
-    lastHeard: e.lastHeard,
-    lastIpAddress: e.lastIpAddress,
-    connected: e.connected,
-    user: e.user
   }, e, {
     upsert: true
   }).exec());

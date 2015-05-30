@@ -71,17 +71,7 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 
 			// Redirect after save
 			prescription.$save(function(response) {
-				$location.path('prescriptions/' + response._id);
-
-				// Clear form fields
-				$scope.name = '';
-				$scope.prescribedOn = '';
-				$scope.comments = '';
-				$scope.patientNumber = '';
-				$scope.patientGender = '';
-				$scope.patientDateOfBirth = '';
-				$scope.prescriptionAssays = [];
-				$scope.assays = Assays.query();
+				$location.path('#!');
 			}, function(errorResponse) {
 				$scope.error = errorResponse.data.message;
 			});
@@ -110,7 +100,7 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 			prescription._assays = _.pluck($scope.prescriptionAssays, '_id');
 			console.log(prescription);
 			prescription.$update(function() {
-				$location.path('prescriptions/' + prescription._id);
+				$location.path('/prescriptions/' + prescription._id);
 				console.log(prescription);
 			}, function(errorResponse) {
 				$scope.error = errorResponse.data.message;

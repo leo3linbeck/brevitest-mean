@@ -22,19 +22,15 @@
               </span>
             </p>
           </div>
-          <br/>
-          <br/>
-          <div class="btn-group" role="group">
-            <button class="btn btn-primary" ng-click="getNumberOfRecords()" type="button">Get
-              Number of Records</button>
-            <button class="btn btn-primary" ng-click="getFirstRecord()" type="button">Get
-              First Record</button>
-            <button class="btn btn-danger" ng-click="eraseArchivedData()" type="button">Erase
-              Archived Data</button>
-          </div>
+          <button class="btn btn-primary" ng-click="getNumberOfRecords()" type="button">Get
+            Number of Records</button>
+            <br/>
+            <br/>
+            <br/>
+          <button class="btn btn-danger" ng-click="eraseArchivedData()" type="button">Erase
+            Archived Data</button>
         </div>
-        <textarea cols="60" rows="10">{{rawData | rawtestdata}}</textarea>
-        <div></div>
+        <br/>
         <div class="form-group">
           <input class="btn btn-default" type="submit" value="Update"></input>
           <div class="text-danger" data-ng-show="error">

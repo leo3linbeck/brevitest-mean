@@ -72,7 +72,7 @@ exports.erase_archived_data = function(req, res) {
 };
 
 exports.get_archive_size = function(req, res) {
-  console.log('Getting archive size', req.body.spark);
+  console.log('Getting archive size', req.body.spark, true);
 
   brevitestSpark.get_spark_device_from_spark(req.user, req.body.spark)
     .then(function(sparkDevice) {

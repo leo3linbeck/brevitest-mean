@@ -1,5 +1,13 @@
 <section data-ng-controller="SparksController" data-ng-init="findOne()">
 	<div class="page-header">
+		<div class="pull-right" data-ng-show="(authentication.user)">
+			<a class="btn btn-primary" href="/#!/sparks/{{spark._id}}/edit">
+				<i class="glyphicon glyphicon-edit"></i>
+			</a>
+			<a class="btn btn-danger" data-ng-click="remove();">
+				<i class="glyphicon glyphicon-trash"></i>
+			</a>
+		</div>
 		<h1 data-ng-bind="spark.name"></h1>
 	</div>
 	<div>
@@ -9,14 +17,6 @@
 			<li class="list-group-item"><b>Last Heard: </b>{{device.lastHeard}}</li>
 			<li class="list-group-item"><b>Last IP Address: </b>{{device.lastIpAddress}}</li>
 		</ul>
-	</div>
-	<div class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == spark.user._id))">
-		<a class="btn btn-primary" href="/#!/sparks/{{spark._id}}/edit">
-			<i class="glyphicon glyphicon-edit"></i>
-		</a>
-		<a class="btn btn-primary" data-ng-click="remove();">
-			<i class="glyphicon glyphicon-trash"></i>
-		</a>
 	</div>
 	<small>
 		<em class="text-muted">

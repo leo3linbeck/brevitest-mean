@@ -1,6 +1,6 @@
 'use strict';
 
-var sparkSensorHeader = '<tr><th>Sensor</th><th>Type</th><th>Reading Date<br/>Reading Time</th><th>Value</th></tr>';
+var sparkSensorHeader = '<thead><tr><th>Sensor</th><th>Type</th><th>Reading Date<br/>Reading Time</th><th>Value</th></tr></thead><tbody>';
 
 var int_time = {
 	0: '700ms',
@@ -75,11 +75,11 @@ function parse_test_data(test_str) {
 	result += parse_test_params(data[1]);
 
 	result += '<br/><strong>SENSOR READINGS</strong><br/>';
-	result += '<table class="table table-striped">' + sparkSensorHeader;
+	result += '<div class="table-responsive"><table class="table table-striped">' + sparkSensorHeader;
 	for (i = 2; i < 6; i += 1) {
 		result += parse_sensor_reading(data[i]);
 	}
-	result += '</table>';
+	result += '</tbody></table></div>';
 
 	return result;
 }

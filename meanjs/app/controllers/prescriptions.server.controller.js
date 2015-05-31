@@ -8,6 +8,27 @@ var mongoose = require('mongoose'),
 	Prescription = mongoose.model('Prescription'),
 	_ = require('lodash');
 
+exports.unfilled = function(req, res) {
+	Prescription.find({filled: {$ne: true}}).sort('-created').populate([{
+		path: '_assays',
+		select: '_id name BCODE analysis standardCurve'
+	}, {
+		path: '_tests',
+		select: '_id _assay'
+	}, {
+		path: 'user',
+		select: 'displayName'
+	}]).exec(function(err, prescriptions) {
+		if (err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		} else {
+			res.jsonp(prescriptions);
+		}
+	});
+};
+
 /**
  * Create a Prescription
  */

@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = window._;
+
 // Tests controller
 angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Notification',
 	function($scope, $http, $location, Authentication, Tests, Prescriptions, Devices, Cartridges, Notification) {
@@ -9,6 +11,21 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 			$location.path('/signin');
 		}
 
+		function loadAssays(prescription) {
+			var tests = _.pluck(prescription._tests, '_assay');
+			$scope.pendingAssays = [];
+			$scope.completedAssays = [];
+			prescription._assays.forEach(function(a) {
+					var indx = tests.indexOf(a._id);
+					if (indx === -1) {
+						$scope.pendingAssays.push(a);
+					}
+					else {
+						$scope.completedAssays.push(a);
+					}
+			});
+		}
+
 		$scope.setupRun = function() {
 			$scope.testUnderway = false;
 			$scope.activePrescription = -1;
@@ -16,7 +33,14 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 			$scope.deviceInitialized = false;
 			$scope.activeDevice = -1;
 			$scope.activeCartridge = -1;
-			$scope.prescriptions = Prescriptions.query();
+			$http.get('/prescriptions/unfilled').
+				success(function(data, status, headers, config) {
+					$scope.prescriptions = data;
+			  }).
+			  error(function(err, status, headers, config) {
+					console.log(err);
+					Notification.error(err.message);
+			  });
 			$http.get('/devices/available').
 				success(function(data, status, headers, config) {
 					$scope.devices = data;
@@ -29,11 +53,12 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 
 		$scope.clickPrescription = function(indx) {
 			$scope.activePrescription = indx;
+			loadAssays($scope.prescriptions[indx]);
 		};
 		$scope.clickAssay = function(indx) {
 			$scope.activeAssay = indx;
 			$http.post('/cartridges/unused', {
-					assayID: $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]._id
+					assayID: $scope.pendingAssays[$scope.activeAssay]._id
 				}).
 				success(function(data, status, headers, config) {
 					$scope.cartridges = data;
@@ -93,7 +118,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 				Notification.error('Please select a cartridge for testing');
 				return;
 			}
-			if (!$scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]) {
+			if (!$scope.pendingAssays[$scope.activeAssay]) {
 				Notification.error('Unknown assay');
 				return;
 			}
@@ -105,7 +130,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 				Notification.error('Unknown cartridge');
 				return;
 			}
-			var assay = $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay];
+			var assay = $scope.pendingAssays[$scope.activeAssay];
 			var cartridge = $scope.cartridges[$scope.activeCartridge];
 			var device = $scope.devices[$scope.activeDevice];
 			var prescription = $scope.prescriptions[$scope.activePrescription];

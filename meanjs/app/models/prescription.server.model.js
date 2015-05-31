@@ -31,6 +31,10 @@ var PrescriptionSchema = new Schema({
 	patientDateOfBirth: {
 		type: Date
 	},
+	filled: {
+		type: Boolean,
+		default: false
+	},
 	_assays: [
 		{
 			type: Schema.Types.ObjectId,

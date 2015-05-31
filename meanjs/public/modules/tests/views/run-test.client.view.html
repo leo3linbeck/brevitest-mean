@@ -1,7 +1,7 @@
 <section data-ng-controller="RunTestController" data-ng-init="setupRun()">
   <div class="page-header">
     <div class="col-xs-12">
-      <h1>Manage Brevitests™</h1>
+      <h1>Run a Brevitest™</h1>
     </div>
     <div class="col-xs-12">
       <div class="btn-group" role="group">
@@ -11,12 +11,13 @@
         <a class="btn btn-default" href="/#!/tests/review">Review</a>
       </div>
     </div>
-    <div class="col-xs-12 panel panel-warning" ng-hide="devices.length">
+    <div>&nbsp;</div>
+    <div class="col-xs-12 panel panel-warning" ng-show="!devices.length">
       <div class="panel-heading">
         No available devices found
       </div>
       <div class="panel-body">
-        Your device you wish to use may not be online, or may be in use on another test.
+        The device you wish to use may not be online, or may be in use on another test.
         Check to make sure it is plugged in, connected to the network, and not being
         used.
       </div>
@@ -25,7 +26,7 @@
   <div class="col-xs-12">
     <div><br/></div>
     <div class="col-md-4">
-      <div class="panel panel-default">
+      <div class="panel panel-default" ng-show="devices.length">
         <div class="panel-heading">
           <h3 class="panel-title">Available Devices</h3>
         </div>
@@ -57,11 +58,16 @@
               </accordion-heading>
               <p>Prescribed on {{prescription.prescribedOn | date: "medium"}}</p>
               <p>{{prescription.comments}}</p>
-              <p><b>Assays:</b></p>
+              <p><b>Pending Assays:</b></p>
               <div class="list-group">
                 <a class="list-group-item {{activeAssay === $index ? 'active' : ''}}" href=""
-                  ng-repeat="assay in prescription._assays" ng_click="clickAssay($index)">{{assay.name}}</a>
+                  ng-repeat="pendingAssay in pendingAssays" ng_click="clickAssay($index)">{{pendingAssay.name}}</a>
               </div>
+              <p><b>Completed Assays:</b></p>
+              <ul>
+                <li ng-hide="completedAssays.length">None</li>
+                <li ng-repeat="completedAssay in completedAssays">{{completedAssay.name}}</li>
+              </ul>
             </accordion-group>
           </accordion>
         </div>

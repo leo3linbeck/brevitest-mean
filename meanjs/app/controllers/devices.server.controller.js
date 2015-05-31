@@ -41,7 +41,6 @@ exports.move_to_and_set_calibration_point = function(req, res) {
 };
 
 exports.load_by_model = function(req, res) {
-  console.log('Load devices by model');
   Device.find({_deviceModel: req.body.deviceModelID}).sort('-created').populate([{
     path: 'user',
     select: 'displayName'
@@ -60,7 +59,6 @@ exports.load_by_model = function(req, res) {
 };
 
 exports.available = function(req, res) {
-  console.log('Available devices');
   Q.fcall(function() {
       return Cartridge.find({
         $and: [{
@@ -71,7 +69,6 @@ exports.available = function(req, res) {
       }).exec();
     })
     .then(function(activeCartridges) {
-      console.log('Active cartridges', activeCartridges);
       var activeDevices = _.pluck(activeCartridges, '_device');
       return new Q(Device.find({
         _id: {$nin: activeDevices}
@@ -84,7 +81,6 @@ exports.available = function(req, res) {
       }]).exec());
     })
     .then(function(availableDevices) {
-      console.log('Available devices', availableDevices);
       res.jsonp(_.filter(availableDevices, function(e) {return e._spark.connected;}));
     })
     .fail(function(err) {
@@ -94,7 +90,6 @@ exports.available = function(req, res) {
 };
 
 exports.initialize = function(req, res) {
-  console.log(req.body);
   brevitestSpark.get_spark_device_from_device(req.user, req.body.device)
     .then(function(sparkDevice) {
       return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.initialize_device));

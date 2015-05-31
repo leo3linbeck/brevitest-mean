@@ -252,6 +252,7 @@ exports.begin = function(req, res) {
     })
     .then(function(prescription) {
       prescription._tests.push(test._id);
+      prescription.filled = prescription._tests.length >= prescription._assays.length;
       return new Q(prescription.save());
     })
     .then(function() {
@@ -299,6 +300,30 @@ exports.cancel = function(req, res) {
         finishedOn: now,
         status: 'Cancelled'
       }).exec());
+    })
+    .then(function(test) {
+      return new Q(Prescription.findOne({
+        _tests: {
+            $elemMatch: {
+              $eq: testID
+            }
+          }
+      }).exec());
+    })
+    .then(function(prescription) {
+      var indx = -1;
+
+      prescription._tests.forEach(function(e, i) {
+        if (e.equals(testID)) {
+          indx = i;
+        }
+      });
+      if (indx !== -1) {
+        prescription._tests.splice(indx, 1);
+      }
+      prescription.filled = false;
+
+      return new Q(prescription.save());
     })
     .then(function() {
       res.jsonp('Cancelled');

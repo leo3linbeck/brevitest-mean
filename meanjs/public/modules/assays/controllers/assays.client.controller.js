@@ -83,7 +83,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       canMove: false,
       canDelete: false,
       canInsert: false,
-      description: 'Starts the test. Required to be the first command. Test executes until Finish Test command. Parameters are (sensor integration time, sensor gain).'
+      description: 'Starts the test. Required to be the first command. Test executes until Finish Test command. Parameters are (sensor gain code<<8+sensor integration time code, sensor LED power).'
     }, {
       num: '1',
       name: 'Delay',

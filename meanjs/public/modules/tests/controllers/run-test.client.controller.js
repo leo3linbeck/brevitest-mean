@@ -121,7 +121,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 				  prescriptionID: prescription._id
 				}).
 				success(function(data, status, headers, config) {
-					console.log('Test begun', data);
 					Notification.success('Test underway');
 					$scope.testUnderway = true;
 					$http.post('/cartridges/unused', {
@@ -139,8 +138,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 					console.log(err);
 					Notification.error(err.message);
 			  });
-
-			Notification.info('Test started');
 		};
 	}
 ]);

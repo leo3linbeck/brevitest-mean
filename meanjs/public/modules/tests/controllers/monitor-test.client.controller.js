@@ -12,7 +12,6 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 		}
 
 		function updateTest(test) {
-			console.log('Updating test', test);
       $http.post('/tests/update_one_test', {
         testID: test._id,
         cartridgeID: test._cartridge._id,
@@ -40,7 +39,6 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 
 
 			Socket.on('test.update', function(message) {
-				console.log('websocket message', message);
 				var data = message.split('\n');
 				$scope.tests.forEach(function(e, i) {
 					if (e._cartridge._id === data[1]) {
@@ -60,7 +58,6 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 				deviceID: test._device._id
 			}).
 				success(function(data, status, headers, config) {
-					console.log(data);
 					test.status = 'Cancelled';
 					Notification.success('Test cancelled');
 				}).

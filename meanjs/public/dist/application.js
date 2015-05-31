@@ -998,7 +998,6 @@ angular.module('core').controller('HomeController', ['$scope', '$location', 'Aut
 	function($scope, $location, Authentication, Notification) {
 		// This provides Authentication context.
 		$scope.authentication = Authentication;
-		console.log($scope.authentication);
 		if (!$scope.authentication.user) {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
@@ -2292,7 +2291,6 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 		}
 
 		function updateTest(test) {
-			console.log('Updating test', test);
       $http.post('/tests/update_one_test', {
         testID: test._id,
         cartridgeID: test._cartridge._id,
@@ -2320,7 +2318,6 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 
 
 			Socket.on('test.update', function(message) {
-				console.log('websocket message', message);
 				var data = message.split('\n');
 				$scope.tests.forEach(function(e, i) {
 					if (e._cartridge._id === data[1]) {
@@ -2340,7 +2337,6 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 				deviceID: test._device._id
 			}).
 				success(function(data, status, headers, config) {
-					console.log(data);
 					test.status = 'Cancelled';
 					Notification.success('Test cancelled');
 				}).
@@ -2636,7 +2632,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 				  prescriptionID: prescription._id
 				}).
 				success(function(data, status, headers, config) {
-					console.log('Test begun', data);
 					Notification.success('Test underway');
 					$scope.testUnderway = true;
 					$http.post('/cartridges/unused', {
@@ -2654,8 +2649,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 					console.log(err);
 					Notification.error(err.message);
 			  });
-
-			Notification.info('Test started');
 		};
 	}
 ]);

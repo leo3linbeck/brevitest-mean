@@ -6,7 +6,7 @@ var _ = window._;
 angular.module('prescriptions').controller('PrescriptionsController', ['$scope', '$stateParams', '$location', 'Authentication', 'Prescriptions', 'Assays',
 	function($scope, $stateParams, $location, Authentication, Prescriptions, Assays) {
 		$scope.authentication = Authentication;
-		if ($scope.authentication.user === '') {
+		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}

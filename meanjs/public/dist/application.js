@@ -121,7 +121,7 @@ var _ = window._;
 angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Assays', 'Notification',
   function($scope, $http, $stateParams, $location, Authentication, Assays, Notification) {
     $scope.authentication = Authentication;
-    if ($scope.authentication.user === '') {
+    if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
@@ -832,7 +832,7 @@ angular.module('cartridges').config(['$stateProvider',
 angular.module('cartridges').controller('CartridgesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Notification', 'Cartridges', 'Assays',
 	function($scope, $http, $stateParams, $location, Authentication, Notification, Cartridges, Assays) {
 		$scope.authentication = Authentication;
-		if ($scope.authentication.user === '') {
+		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
@@ -1218,7 +1218,7 @@ angular.module('device-models').config(['$stateProvider',
 angular.module('device-models').controller('DeviceModelsController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'DeviceModels', 'Devices',
   function($scope, $http, $stateParams, $location, Authentication, DeviceModels, Devices) {
     $scope.authentication = Authentication;
-    if ($scope.authentication.user === '') {
+    if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
@@ -1348,7 +1348,7 @@ angular.module('devices').config(['$stateProvider',
 angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Devices', 'DeviceModels', 'Sparks', 'Notification',
 	function($scope, $http, $stateParams, $location, Authentication, Devices, DeviceModels, Sparks, Notification) {
 		$scope.authentication = Authentication;
-		if ($scope.authentication.user === '') {
+		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
@@ -1543,7 +1543,7 @@ angular.module('healthcare-providers').config(['$stateProvider',
 angular.module('healthcare-providers').controller('HealthcareProvidersController', ['$scope', '$stateParams', '$location', 'Authentication', 'HealthcareProviders',
 	function($scope, $stateParams, $location, Authentication, HealthcareProviders) {
 		$scope.authentication = Authentication;
-		if ($scope.authentication.user === '') {
+		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
@@ -1670,7 +1670,7 @@ angular.module('manufacturers').config(['$stateProvider',
 angular.module('manufacturers').controller('ManufacturersController', ['$scope', '$stateParams', '$location', 'Authentication', 'Manufacturers',
 	function($scope, $stateParams, $location, Authentication, Manufacturers) {
 		$scope.authentication = Authentication;
-		if ($scope.authentication.user === '') {
+		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
@@ -1800,7 +1800,7 @@ var _ = window._;
 angular.module('prescriptions').controller('PrescriptionsController', ['$scope', '$stateParams', '$location', 'Authentication', 'Prescriptions', 'Assays',
 	function($scope, $stateParams, $location, Authentication, Prescriptions, Assays) {
 		$scope.authentication = Authentication;
-		if ($scope.authentication.user === '') {
+		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
@@ -1969,153 +1969,152 @@ angular.module('sparks').config(['$stateProvider',
 // Sparks controller
 angular.module('sparks').controller('SparksController', ['$scope', '$http', '$stateParams', '$location', '$timeout', 'Authentication', 'Sparks', 'Notification',
   function($scope, $http, $stateParams, $location, $timeout, Authentication, Sparks, Notification) {
-      $scope.authentication = Authentication;
-      if ($scope.authentication.user === '') {
-  			Notification.error('You must sign in to use Brevitest™');
-  			$location.path('/signin');
-  		}
+    $scope.authentication = Authentication;
+    if (!$scope.authentication || $scope.authentication.user === '') {
+      Notification.error('You must sign in to use Brevitest™');
+      $location.path('/signin');
+    }
 
-      $scope.eraseArchivedData = function() {
-        $http.post('/sparks/erase_archived_data', {
-  					spark: $scope.spark
-  				}).
-  				success(function(data, status, headers, config) {
-            console.log(data);
-            if(data.return_value === 1) {
-		          Notification.success('Archive erased');
-            }
-  			  }).
-  			  error(function(err, status, headers, config) {
-  					console.log(err);
-  					$scope.deviceInitialized = false;
-  					Notification.error(err.message);
-  			  });
-      };
+    $scope.eraseArchivedData = function() {
+      $http.post('/sparks/erase_archived_data', {
+        spark: $scope.spark
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        if (data.return_value === 1) {
+          Notification.success('Archive erased');
+        }
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        $scope.deviceInitialized = false;
+        Notification.error(err.message);
+      });
+    };
 
-      $scope.getNumberOfRecords = function() {
-        $http.post('/sparks/archive_size', {
-  					spark: $scope.spark
-  				}).
-  				success(function(data, status, headers, config) {
-            console.log(data);
-            if(data.return_value !== -1) {
-		          Notification.success('Archive contains ' + data.return_value + ' records');
-            }
-  			  }).
-  			  error(function(err, status, headers, config) {
-  					console.log(err);
-  					$scope.deviceInitialized = false;
-  					Notification.error(err.message);
-  			  });
-      };
+    $scope.getNumberOfRecords = function() {
+      $http.post('/sparks/archive_size', {
+        spark: $scope.spark
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        if (data.return_value !== -1) {
+          Notification.success('Archive contains ' + data.return_value + ' records');
+        }
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        $scope.deviceInitialized = false;
+        Notification.error(err.message);
+      });
+    };
 
-      $scope.getFirstRecord = function() {
-        $http.post('/sparks/record_by_index', {
-  					spark: $scope.spark,
-            index: 0
-  				}).
-  				success(function(data, status, headers, config) {
-            console.log(data);
-            $scope.rawData = JSON.parse(data);
-  			  }).
-  			  error(function(err, status, headers, config) {
-  					console.log(err);
-  					$scope.deviceInitialized = false;
-  					Notification.error(err.message);
-  			  });
-      };
+    $scope.getFirstRecord = function() {
+      $http.post('/sparks/record_by_index', {
+        spark: $scope.spark,
+        index: 0
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        $scope.rawData = JSON.parse(data);
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        $scope.deviceInitialized = false;
+        Notification.error(err.message);
+      });
+    };
 
-      $scope.reflash = function() {
-        $http.post('/sparks/reflash', {
-  					spark: $scope.spark
-  				}).
-  				success(function(data, status, headers, config) {
-            Notification.success('Firmware flashed successfully');
-  			  }).
-  			  error(function(err, status, headers, config) {
-  					console.log(err);
-  					Notification.error(err.message);
-  			  });
-      };
+    $scope.reflash = function() {
+      $http.post('/sparks/reflash', {
+        spark: $scope.spark
+      }).
+      success(function(data, status, headers, config) {
+        Notification.success('Firmware flashed successfully');
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
 
-      // Create new Spark
-      $scope.create = function() { // Create new Spark object
-        var spark = new Sparks({
-          name: this.name,
-          sparkID: this.sparkID
+    // Create new Spark
+    $scope.create = function() { // Create new Spark object
+      var spark = new Sparks({
+        name: this.name,
+        sparkID: this.sparkID
+      });
+
+      // Redirect after save
+      spark.$save(
+        function(response) {
+          $location.path('sparks/' + response._id);
+
+          // Clear form fields
+          $scope.name = '';
+          $scope.sparkID = '';
+        },
+        function(errorResponse) {
+          $scope.error = errorResponse.data.message;
         });
+    };
 
-        // Redirect after save
-        spark.$save(
-          function(response) {
-            $location.path('sparks/' + response._id);
+    // Remove existing Spark
+    $scope.remove = function(spark) {
+      if (spark) {
+        spark.$remove();
 
-            // Clear form fields
-            $scope.name = '';
-            $scope.sparkID = '';
-          },
-          function(errorResponse) {
-            $scope.error = errorResponse.data.message;
-          });
-      };
-
-      // Remove existing Spark
-      $scope.remove = function(spark) {
-        if (spark) {
-          spark.$remove();
-
-          for (var i in $scope.sparks) {
-            if ($scope.sparks[i] === spark) {
-              $scope.sparks.splice(i, 1);
-            }
+        for (var i in $scope.sparks) {
+          if ($scope.sparks[i] === spark) {
+            $scope.sparks.splice(i, 1);
           }
         }
-        else {
-          $scope.spark.$remove(function() {
-            $location.path('sparks');
-          });
-        }
-      };
-
-      // Update existing Spark
-      $scope.update = function() {
-        var spark = $scope.spark;
-
-        spark.$update(
-          function() {
-            $location.path('sparks/' + spark._id);
-          },
-          function(errorResponse) {
-            $scope.error = errorResponse.data.message;
-          });
-      };
-
-      // Refresh a list of Sparks
-      $scope.refresh = function() {
-        $http.get('/sparks/refresh').
-  				success(function(data, status, headers, config) {
-  					$scope.sparks = data;
-            Notification.success('Spark list refreshed');
-  					// addAlert($scope.alerts, 'success', 'Spark list refreshed');
-  			  }).
-  			  error(function(err, status, headers, config) {
-  					console.log(err, status, headers(), config);
-            Notification.error(err.message);
-  			  });
-      };
-
-      // Find a list of Sparks
-      $scope.find = function() {
-        $scope.sparks = Sparks.query();
-      };
-
-      // Find existing Spark
-      $scope.findOne = function() {
-        $scope.spark = Sparks.get({
-          sparkId: $stateParams.sparkId
+      } else {
+        $scope.spark.$remove(function() {
+          $location.path('sparks');
         });
-      };
-    }
+      }
+    };
+
+    // Update existing Spark
+    $scope.update = function() {
+      var spark = $scope.spark;
+
+      spark.$update(
+        function() {
+          $location.path('sparks/' + spark._id);
+        },
+        function(errorResponse) {
+          $scope.error = errorResponse.data.message;
+        });
+    };
+
+    // Refresh a list of Sparks
+    $scope.refresh = function() {
+      $http.get('/sparks/refresh').
+      success(function(data, status, headers, config) {
+        $scope.sparks = data;
+        Notification.success('Spark list refreshed');
+        // addAlert($scope.alerts, 'success', 'Spark list refreshed');
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err, status, headers(), config);
+        Notification.error(err.message);
+      });
+    };
+
+    // Find a list of Sparks
+    $scope.find = function() {
+      $scope.sparks = Sparks.query();
+    };
+
+    // Find existing Spark
+    $scope.findOne = function() {
+      $scope.spark = Sparks.get({
+        sparkId: $stateParams.sparkId
+      });
+    };
+  }
 ]);
 
 'use strict';
@@ -2285,7 +2284,7 @@ var _ = window._;
 // Tests controller
 angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$timeout', '$location', 'Authentication', 'Tests', 'Notification', 'Socket',
 	function($scope, $http, $timeout, $location, Authentication, Tests, Notification, Socket) {
-		if ($scope.authentication.user === '') {
+		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
@@ -2359,7 +2358,7 @@ var d3 = window.d3;
 // Tests controller
 angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Sparks', 'Notification',
   function($scope, $http, $location, Authentication, Tests, Sparks, Notification) {
-    if ($scope.authentication.user === '') {
+    if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
@@ -2516,7 +2515,7 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 // Tests controller
 angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Notification',
 	function($scope, $http, $location, Authentication, Tests, Prescriptions, Devices, Cartridges, Notification) {
-		if ($scope.authentication.user === '') {
+		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
@@ -2663,7 +2662,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 angular.module('tests').controller('TestsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'Tests', 'Assays',
 	function($scope, $stateParams, $location, $http, Authentication, Tests, Assays) {
 		$scope.authentication = Authentication;
-		if ($scope.authentication.user === '') {
+		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}

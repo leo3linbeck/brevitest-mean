@@ -3,7 +3,7 @@
 // Tests controller
 angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Notification',
 	function($scope, $http, $location, Authentication, Tests, Prescriptions, Devices, Cartridges, Notification) {
-		if ($scope.authentication.user === '') {
+		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}

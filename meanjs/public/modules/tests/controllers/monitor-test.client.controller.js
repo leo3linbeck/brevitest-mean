@@ -5,6 +5,7 @@ var _ = window._;
 // Tests controller
 angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$timeout', '$location', 'Authentication', 'Tests', 'Notification', 'Socket',
 	function($scope, $http, $timeout, $location, Authentication, Tests, Notification, Socket) {
+		$scope.authentication = Authentication;
 		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');

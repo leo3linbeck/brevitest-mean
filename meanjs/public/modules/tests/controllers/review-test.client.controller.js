@@ -7,6 +7,7 @@ var d3 = window.d3;
 // Tests controller
 angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Sparks', 'Notification',
   function($scope, $http, $location, Authentication, Tests, Sparks, Notification) {
+    $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');

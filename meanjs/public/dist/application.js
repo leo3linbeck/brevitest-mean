@@ -941,19 +941,19 @@ angular.module('cartridges').factory('Cartridges', ['$resource',
 angular.module('core').run(['Menus',
 	function(Menus) {
 		// Set top bar menu items
-		Menus.addMenuItem('topbar', 'Create New', 'new', 'dropdown', '');
-		Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create');
-		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create');
-		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create');
-		Menus.addSubMenuItem('topbar', 'new', 'Prescription', 'prescriptions/create');
-		
 		Menus.addMenuItem('topbar', 'View', 'view', 'dropdown', '');
 		Menus.addSubMenuItem('topbar', 'view', 'Assays', 'assays');
 		Menus.addSubMenuItem('topbar', 'view', 'Devices', 'devices');
 		Menus.addSubMenuItem('topbar', 'view', 'Device Models', 'device-models');
 		Menus.addSubMenuItem('topbar', 'view', 'Prescriptions', 'prescriptions');
 		Menus.addSubMenuItem('topbar', 'view', 'Sparks', 'sparks');
-	}
+
+		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '');
+		Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Prescription', 'prescriptions/create');
+			}
 ]);
 
 'use strict';
@@ -998,7 +998,8 @@ angular.module('core').controller('HomeController', ['$scope', '$location', 'Aut
 	function($scope, $location, Authentication, Notification) {
 		// This provides Authentication context.
 		$scope.authentication = Authentication;
-		if ($scope.authentication.user === '') {
+		console.log($scope.authentication);
+		if (!$scope.authentication.user) {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
@@ -2284,6 +2285,7 @@ var _ = window._;
 // Tests controller
 angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$timeout', '$location', 'Authentication', 'Tests', 'Notification', 'Socket',
 	function($scope, $http, $timeout, $location, Authentication, Tests, Notification, Socket) {
+		$scope.authentication = Authentication;
 		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
@@ -2358,6 +2360,7 @@ var d3 = window.d3;
 // Tests controller
 angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Sparks', 'Notification',
   function($scope, $http, $location, Authentication, Tests, Sparks, Notification) {
+    $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
@@ -2515,6 +2518,7 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 // Tests controller
 angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Notification',
 	function($scope, $http, $location, Authentication, Tests, Prescriptions, Devices, Cartridges, Notification) {
+		$scope.authentication = Authentication;
 		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');

@@ -3,13 +3,13 @@
 var _ = window._;
 
 // Assays controller
-angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Assays', 'Notification',
-  function($scope, $http, $stateParams, $location, Authentication, Assays, Notification) {
+angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Assays', 'Notification',
+  function($scope, $http, $stateParams, $location, $window, Authentication, Assays, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
-			$location.path('/signin');
-		}
+      Notification.error('You must sign in to use Brevitest™');
+      $location.path('/signin');
+    }
 
     $scope.analysis = {};
     $scope.standardCurve = [];
@@ -218,9 +218,9 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
         case 'Start Test': // starting sensor reading plus LED warmup
           d = 6000;
           break;
-        // case 'Finish Test': // write to flash and reset stage
-        //   d = 16800;
-        //   break;
+          // case 'Finish Test': // write to flash and reset stage
+          //   d = 16800;
+          //   break;
       }
 
       return d;
@@ -312,8 +312,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     $scope.changeCommand = function() {
       $scope.params = '';
       var b = _.findWhere($scope.BCODECommands, {
-          name: $scope.command
-        });
+        name: $scope.command
+      });
       $scope.canMove = b.canMove;
       $scope.canDelete = b.canDelete;
       $scope.canInsert = b.canInsert;
@@ -327,8 +327,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       $scope.command = $scope.BCODE[indx].command;
       $scope.params = $scope.BCODE[indx].params;
       var b = _.findWhere($scope.BCODECommands, {
-          name: $scope.command
-        });
+        name: $scope.command
+      });
       $scope.canMove = b.canMove;
       $scope.canDelete = b.canDelete;
       $scope.canInsert = b.canInsert;
@@ -466,7 +466,9 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     };
 
     $scope.copyAllBCODE = function() {
-      $scope.clipboard = _.filter($scope.BCODE.slice(1, $scope.BCODE.length - 2), function(e) {return e.command !== 'Read Sensors';});
+      $scope.clipboard = _.filter($scope.BCODE.slice(1, $scope.BCODE.length - 2), function(e) {
+        return e.command !== 'Read Sensors';
+      });
     };
 
     $scope.pasteBCODE = function() {
@@ -554,18 +556,20 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 
     // Remove existing Assay
     $scope.remove = function(assay) {
-      if (assay) {
-        assay.$remove();
+      if ($window.confirm('Are you sure you want to delete this record?')) {
+        if (assay) {
+          assay.$remove();
 
-        for (var i in $scope.assays) {
-          if ($scope.assays[i] === assay) {
-            $scope.assays.splice(i, 1);
+          for (var i in $scope.assays) {
+            if ($scope.assays[i] === assay) {
+              $scope.assays.splice(i, 1);
+            }
           }
+        } else {
+          $scope.assay.$remove(function() {
+            $location.path('assays');
+          });
         }
-      } else {
-        $scope.assay.$remove(function() {
-          $location.path('assays');
-        });
       }
     };
 

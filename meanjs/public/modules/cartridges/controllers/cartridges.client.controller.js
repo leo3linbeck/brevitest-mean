@@ -1,8 +1,8 @@
 'use strict';
 
 // Cartridges controller
-angular.module('cartridges').controller('CartridgesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Notification', 'Cartridges', 'Assays',
-	function($scope, $http, $stateParams, $location, Authentication, Notification, Cartridges, Assays) {
+angular.module('cartridges').controller('CartridgesController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Notification', 'Cartridges', 'Assays',
+	function($scope, $http, $stateParams, $location, $window, Authentication, Notification, Cartridges, Assays) {
 		$scope.authentication = Authentication;
 		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
@@ -31,18 +31,20 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 
 		// Remove existing Cartridge
 		$scope.remove = function(cartridge) {
-			if ( cartridge ) {
-				cartridge.$remove();
+			if ($window.confirm('Are you sure you want to delete this record?')) {
+				if ( cartridge ) {
+					cartridge.$remove();
 
-				for (var i in $scope.cartridges) {
-					if ($scope.cartridges [i] === cartridge) {
-						$scope.cartridges.splice(i, 1);
+					for (var i in $scope.cartridges) {
+						if ($scope.cartridges [i] === cartridge) {
+							$scope.cartridges.splice(i, 1);
+						}
 					}
+				} else {
+					$scope.cartridge.$remove(function() {
+						$location.path('cartridges');
+					});
 				}
-			} else {
-				$scope.cartridge.$remove(function() {
-					$location.path('cartridges');
-				});
 			}
 		};
 

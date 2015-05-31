@@ -1,8 +1,8 @@
 'use strict';
 
 // Sparks controller
-angular.module('sparks').controller('SparksController', ['$scope', '$http', '$stateParams', '$location', '$timeout', 'Authentication', 'Sparks', 'Notification',
-  function($scope, $http, $stateParams, $location, $timeout, Authentication, Sparks, Notification) {
+angular.module('sparks').controller('SparksController', ['$scope', '$http', '$stateParams', '$location', '$timeout', '$window', 'Authentication', 'Sparks', 'Notification',
+  function($scope, $http, $stateParams, $location, $timeout, $window, Authentication, Sparks, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       Notification.error('You must sign in to use Brevitest™');
@@ -95,18 +95,20 @@ angular.module('sparks').controller('SparksController', ['$scope', '$http', '$st
 
     // Remove existing Spark
     $scope.remove = function(spark) {
-      if (spark) {
-        spark.$remove();
+      if ($window.confirm('Are you sure you want to delete this record?')) {
+        if (spark) {
+          spark.$remove();
 
-        for (var i in $scope.sparks) {
-          if ($scope.sparks[i] === spark) {
-            $scope.sparks.splice(i, 1);
+          for (var i in $scope.sparks) {
+            if ($scope.sparks[i] === spark) {
+              $scope.sparks.splice(i, 1);
+            }
           }
+        } else {
+          $scope.spark.$remove(function() {
+            $location.path('sparks');
+          });
         }
-      } else {
-        $scope.spark.$remove(function() {
-          $location.path('sparks');
-        });
       }
     };
 

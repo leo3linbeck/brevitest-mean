@@ -1,21 +1,19 @@
 'use strict';
 
 // Device models controller
-angular.module('device-models').controller('DeviceModelsController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'DeviceModels', 'Devices',
-  function($scope, $http, $stateParams, $location, Authentication, DeviceModels, Devices) {
+angular.module('device-models').controller('DeviceModelsController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'DeviceModels', 'Devices',
+  function($scope, $http, $stateParams, $location, $window, Authentication, DeviceModels, Devices) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
-			$location.path('/signin');
-		}
+      Notification.error('You must sign in to use Brevitest™');
+      $location.path('/signin');
+    }
 
     $scope.loadDevices = function() {
       if (!$scope.devices) {
-        $http.post('/devices/load_by_model',
-					{
-						deviceModelID: $scope.deviceModel._id
-					}
-				).
+        $http.post('/devices/load_by_model', {
+          deviceModelID: $scope.deviceModel._id
+        }).
         success(function(data, status, headers, config) {
           $scope.devices = data;
         }).
@@ -50,18 +48,20 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
 
     // Remove existing Device model
     $scope.remove = function(deviceModel) {
-      if (deviceModel) {
-        deviceModel.$remove();
+      if ($window.confirm('Are you sure you want to delete this record?')) {
+        if (deviceModel) {
+          deviceModel.$remove();
 
-        for (var i in $scope.deviceModels) {
-          if ($scope.deviceModels[i] === deviceModel) {
-            $scope.deviceModels.splice(i, 1);
+          for (var i in $scope.deviceModels) {
+            if ($scope.deviceModels[i] === deviceModel) {
+              $scope.deviceModels.splice(i, 1);
+            }
           }
+        } else {
+          $scope.deviceModel.$remove(function() {
+            $location.path('device-models');
+          });
         }
-      } else {
-        $scope.deviceModel.$remove(function() {
-          $location.path('device-models');
-        });
       }
     };
 

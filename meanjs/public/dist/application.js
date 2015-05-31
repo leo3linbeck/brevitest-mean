@@ -121,6 +121,10 @@ var _ = window._;
 angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Assays', 'Notification',
   function($scope, $http, $stateParams, $location, Authentication, Assays, Notification) {
     $scope.authentication = Authentication;
+    if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
     $scope.analysis = {};
     $scope.standardCurve = [];
@@ -828,6 +832,10 @@ angular.module('cartridges').config(['$stateProvider',
 angular.module('cartridges').controller('CartridgesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Notification', 'Cartridges', 'Assays',
 	function($scope, $http, $stateParams, $location, Authentication, Notification, Cartridges, Assays) {
 		$scope.authentication = Authentication;
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		$scope.showResultsOnOpen = true;
 
@@ -955,7 +963,6 @@ angular.module('core').config(['$stateProvider', '$urlRouterProvider',
 	function($stateProvider, $urlRouterProvider) {
 		// Redirect to home view when route not found
 		$urlRouterProvider.otherwise('/');
-
 		// Home state routing
 		$stateProvider.
 		state('home', {
@@ -964,10 +971,11 @@ angular.module('core').config(['$stateProvider', '$urlRouterProvider',
 		});
 	}
 ]);
+
 'use strict';
 
-angular.module('core').controller('HeaderController', ['$scope', 'Authentication', 'Menus',
-	function($scope, Authentication, Menus) {
+angular.module('core').controller('HeaderController', ['$scope', '$location', 'Authentication', 'Menus',
+	function($scope, $location, Authentication, Menus) {
 		$scope.authentication = Authentication;
 		$scope.isCollapsed = false;
 		$scope.menu = Menus.getMenu('topbar');
@@ -982,15 +990,23 @@ angular.module('core').controller('HeaderController', ['$scope', 'Authentication
 		});
 	}
 ]);
+
 'use strict';
 
 
-angular.module('core').controller('HomeController', ['$scope', 'Authentication',
-	function($scope, Authentication) {
+angular.module('core').controller('HomeController', ['$scope', '$location', 'Authentication', 'Notification',
+	function($scope, $location, Authentication, Notification) {
 		// This provides Authentication context.
 		$scope.authentication = Authentication;
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
+
+		$scope.showDetail = false;
 	}
 ]);
+
 'use strict';
 
 //Menu service used for managing  menus
@@ -1202,6 +1218,10 @@ angular.module('device-models').config(['$stateProvider',
 angular.module('device-models').controller('DeviceModelsController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'DeviceModels', 'Devices',
   function($scope, $http, $stateParams, $location, Authentication, DeviceModels, Devices) {
     $scope.authentication = Authentication;
+    if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
     $scope.loadDevices = function() {
       if (!$scope.devices) {
@@ -1328,6 +1348,10 @@ angular.module('devices').config(['$stateProvider',
 angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Devices', 'DeviceModels', 'Sparks', 'Notification',
 	function($scope, $http, $stateParams, $location, Authentication, Devices, DeviceModels, Sparks, Notification) {
 		$scope.authentication = Authentication;
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		$scope.loadData = function() {
 			$scope.deviceModels = DeviceModels.query();
@@ -1519,6 +1543,10 @@ angular.module('healthcare-providers').config(['$stateProvider',
 angular.module('healthcare-providers').controller('HealthcareProvidersController', ['$scope', '$stateParams', '$location', 'Authentication', 'HealthcareProviders',
 	function($scope, $stateParams, $location, Authentication, HealthcareProviders) {
 		$scope.authentication = Authentication;
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		$scope.addresses = [];
 		$scope.addressTypes = ['Main', 'Business', 'Clinic', 'Other'];
@@ -1642,6 +1670,10 @@ angular.module('manufacturers').config(['$stateProvider',
 angular.module('manufacturers').controller('ManufacturersController', ['$scope', '$stateParams', '$location', 'Authentication', 'Manufacturers',
 	function($scope, $stateParams, $location, Authentication, Manufacturers) {
 		$scope.authentication = Authentication;
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		$scope.addresses = [];
 		$scope.addressTypes = ['Main', 'Business', 'Operations', 'Other'];
@@ -1768,6 +1800,10 @@ var _ = window._;
 angular.module('prescriptions').controller('PrescriptionsController', ['$scope', '$stateParams', '$location', 'Authentication', 'Prescriptions', 'Assays',
 	function($scope, $stateParams, $location, Authentication, Prescriptions, Assays) {
 		$scope.authentication = Authentication;
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		$scope.openedPres = false;
 		$scope.openedDOB = false;
@@ -1934,6 +1970,10 @@ angular.module('sparks').config(['$stateProvider',
 angular.module('sparks').controller('SparksController', ['$scope', '$http', '$stateParams', '$location', '$timeout', 'Authentication', 'Sparks', 'Notification',
   function($scope, $http, $stateParams, $location, $timeout, Authentication, Sparks, Notification) {
       $scope.authentication = Authentication;
+      if ($scope.authentication.user === '') {
+  			Notification.error('You must sign in to use Brevitest™');
+  			$location.path('/signin');
+  		}
 
       $scope.eraseArchivedData = function() {
         $http.post('/sparks/erase_archived_data', {
@@ -2243,8 +2283,12 @@ angular.module('tests').config(['$stateProvider',
 var _ = window._;
 
 // Tests controller
-angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$timeout', 'Tests', 'Notification', 'Socket',
-	function($scope, $http, $timeout, Tests, Notification, Socket) {
+angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$timeout', '$location', 'Authentication', 'Tests', 'Notification', 'Socket',
+	function($scope, $http, $timeout, $location, Authentication, Tests, Notification, Socket) {
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		function updateTest(test) {
 			console.log('Updating test', test);
@@ -2313,8 +2357,12 @@ var c3 = window.c3;
 var d3 = window.d3;
 
 // Tests controller
-angular.module('tests').controller('ReviewTestController', ['$scope', '$http', 'Tests', 'Sparks', 'Notification',
-  function($scope, $http, Tests, Sparks, Notification) {
+angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Sparks', 'Notification',
+  function($scope, $http, $location, Authentication, Tests, Sparks, Notification) {
+    if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
     $scope.loadGraph = function(index) {
       var test = $scope.tests[index];
@@ -2466,8 +2514,12 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 'use strict';
 
 // Tests controller
-angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Notification',
-	function($scope, $http, Tests, Prescriptions, Devices, Cartridges, Notification) {
+angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Notification',
+	function($scope, $http, $location, Authentication, Tests, Prescriptions, Devices, Cartridges, Notification) {
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		$scope.setupRun = function() {
 			$scope.testUnderway = false;
@@ -2611,6 +2663,10 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', 'Tes
 angular.module('tests').controller('TestsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'Tests', 'Assays',
 	function($scope, $stateParams, $location, $http, Authentication, Tests, Assays) {
 		$scope.authentication = Authentication;
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		$scope.showResultsOnOpen = true;
 

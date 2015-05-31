@@ -2060,7 +2060,7 @@ angular.module('sparks').controller('SparksController', ['$scope', '$http', '$st
   			  }).
   			  error(function(err, status, headers, config) {
   					console.log(err, status, headers(), config);
-            Notification.danger(err.message);
+            Notification.error(err.message);
   			  });
       };
 

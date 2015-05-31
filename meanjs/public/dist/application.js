@@ -2583,10 +2583,14 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 			  });
 		};
 
-		var currentPrescription;
+		var currentPrescription = -1;
 		$scope.clickPrescription = function(indx) {
+			if(currentPrescription !== indx) {
+				$scope.activeAssay = -1;
+				$scope.activePrescription = -1;
+				loadAssays($scope.prescriptions[indx]);
+			}
 			currentPrescription = indx;
-			loadAssays($scope.prescriptions[indx]);
 		};
 		$scope.clickAssay = function(indx) {
 			$scope.activePrescription = currentPrescription;

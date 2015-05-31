@@ -118,13 +118,13 @@ angular.module('assays').config(['$stateProvider',
 var _ = window._;
 
 // Assays controller
-angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Assays', 'Notification',
-  function($scope, $http, $stateParams, $location, Authentication, Assays, Notification) {
+angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Assays', 'Notification',
+  function($scope, $http, $stateParams, $location, $window, Authentication, Assays, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
-			$location.path('/signin');
-		}
+      Notification.error('You must sign in to use Brevitest™');
+      $location.path('/signin');
+    }
 
     $scope.analysis = {};
     $scope.standardCurve = [];
@@ -198,7 +198,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       canMove: false,
       canDelete: false,
       canInsert: false,
-      description: 'Starts the test. Required to be the first command. Test executes until Finish Test command. Parameters are (sensor integration time, sensor gain).'
+      description: 'Starts the test. Required to be the first command. Test executes until Finish Test command. Parameters are (sensor gain code<<8+sensor integration time code, sensor LED power).'
     }, {
       num: '1',
       name: 'Delay',
@@ -333,9 +333,9 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
         case 'Start Test': // starting sensor reading plus LED warmup
           d = 6000;
           break;
-        // case 'Finish Test': // write to flash and reset stage
-        //   d = 16800;
-        //   break;
+          // case 'Finish Test': // write to flash and reset stage
+          //   d = 16800;
+          //   break;
       }
 
       return d;
@@ -427,8 +427,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     $scope.changeCommand = function() {
       $scope.params = '';
       var b = _.findWhere($scope.BCODECommands, {
-          name: $scope.command
-        });
+        name: $scope.command
+      });
       $scope.canMove = b.canMove;
       $scope.canDelete = b.canDelete;
       $scope.canInsert = b.canInsert;
@@ -442,8 +442,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       $scope.command = $scope.BCODE[indx].command;
       $scope.params = $scope.BCODE[indx].params;
       var b = _.findWhere($scope.BCODECommands, {
-          name: $scope.command
-        });
+        name: $scope.command
+      });
       $scope.canMove = b.canMove;
       $scope.canDelete = b.canDelete;
       $scope.canInsert = b.canInsert;
@@ -581,7 +581,9 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     };
 
     $scope.copyAllBCODE = function() {
-      $scope.clipboard = _.filter($scope.BCODE.slice(1, $scope.BCODE.length - 2), function(e) {return e.command !== 'Read Sensors';});
+      $scope.clipboard = _.filter($scope.BCODE.slice(1, $scope.BCODE.length - 2), function(e) {
+        return e.command !== 'Read Sensors';
+      });
     };
 
     $scope.pasteBCODE = function() {
@@ -669,18 +671,20 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 
     // Remove existing Assay
     $scope.remove = function(assay) {
-      if (assay) {
-        assay.$remove();
+      if ($window.confirm('Are you sure you want to delete this record?')) {
+        if (assay) {
+          assay.$remove();
 
-        for (var i in $scope.assays) {
-          if ($scope.assays[i] === assay) {
-            $scope.assays.splice(i, 1);
+          for (var i in $scope.assays) {
+            if ($scope.assays[i] === assay) {
+              $scope.assays.splice(i, 1);
+            }
           }
+        } else {
+          $scope.assay.$remove(function() {
+            $location.path('assays');
+          });
         }
-      } else {
-        $scope.assay.$remove(function() {
-          $location.path('assays');
-        });
       }
     };
 
@@ -829,8 +833,8 @@ angular.module('cartridges').config(['$stateProvider',
 'use strict';
 
 // Cartridges controller
-angular.module('cartridges').controller('CartridgesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Notification', 'Cartridges', 'Assays',
-	function($scope, $http, $stateParams, $location, Authentication, Notification, Cartridges, Assays) {
+angular.module('cartridges').controller('CartridgesController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Notification', 'Cartridges', 'Assays',
+	function($scope, $http, $stateParams, $location, $window, Authentication, Notification, Cartridges, Assays) {
 		$scope.authentication = Authentication;
 		if (!$scope.authentication || $scope.authentication.user === '') {
 			Notification.error('You must sign in to use Brevitest™');
@@ -859,18 +863,20 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 
 		// Remove existing Cartridge
 		$scope.remove = function(cartridge) {
-			if ( cartridge ) {
-				cartridge.$remove();
+			if ($window.confirm('Are you sure you want to delete this record?')) {
+				if ( cartridge ) {
+					cartridge.$remove();
 
-				for (var i in $scope.cartridges) {
-					if ($scope.cartridges [i] === cartridge) {
-						$scope.cartridges.splice(i, 1);
+					for (var i in $scope.cartridges) {
+						if ($scope.cartridges [i] === cartridge) {
+							$scope.cartridges.splice(i, 1);
+						}
 					}
+				} else {
+					$scope.cartridge.$remove(function() {
+						$location.path('cartridges');
+					});
 				}
-			} else {
-				$scope.cartridge.$remove(function() {
-					$location.path('cartridges');
-				});
 			}
 		};
 
@@ -1215,21 +1221,19 @@ angular.module('device-models').config(['$stateProvider',
 'use strict';
 
 // Device models controller
-angular.module('device-models').controller('DeviceModelsController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'DeviceModels', 'Devices',
-  function($scope, $http, $stateParams, $location, Authentication, DeviceModels, Devices) {
+angular.module('device-models').controller('DeviceModelsController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'DeviceModels', 'Devices',
+  function($scope, $http, $stateParams, $location, $window, Authentication, DeviceModels, Devices) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
-			$location.path('/signin');
-		}
+      Notification.error('You must sign in to use Brevitest™');
+      $location.path('/signin');
+    }
 
     $scope.loadDevices = function() {
       if (!$scope.devices) {
-        $http.post('/devices/load_by_model',
-					{
-						deviceModelID: $scope.deviceModel._id
-					}
-				).
+        $http.post('/devices/load_by_model', {
+          deviceModelID: $scope.deviceModel._id
+        }).
         success(function(data, status, headers, config) {
           $scope.devices = data;
         }).
@@ -1264,18 +1268,20 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
 
     // Remove existing Device model
     $scope.remove = function(deviceModel) {
-      if (deviceModel) {
-        deviceModel.$remove();
+      if ($window.confirm('Are you sure you want to delete this record?')) {
+        if (deviceModel) {
+          deviceModel.$remove();
 
-        for (var i in $scope.deviceModels) {
-          if ($scope.deviceModels[i] === deviceModel) {
-            $scope.deviceModels.splice(i, 1);
+          for (var i in $scope.deviceModels) {
+            if ($scope.deviceModels[i] === deviceModel) {
+              $scope.deviceModels.splice(i, 1);
+            }
           }
+        } else {
+          $scope.deviceModel.$remove(function() {
+            $location.path('device-models');
+          });
         }
-      } else {
-        $scope.deviceModel.$remove(function() {
-          $location.path('device-models');
-        });
       }
     };
 
@@ -1345,157 +1351,158 @@ angular.module('devices').config(['$stateProvider',
 'use strict';
 
 // Devices controller
-angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Devices', 'DeviceModels', 'Sparks', 'Notification',
-	function($scope, $http, $stateParams, $location, Authentication, Devices, DeviceModels, Sparks, Notification) {
-		$scope.authentication = Authentication;
-		if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
-			$location.path('/signin');
-		}
+angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Devices', 'DeviceModels', 'Sparks', 'Notification',
+  function($scope, $http, $stateParams, $location, $window, Authentication, Devices, DeviceModels, Sparks, Notification) {
+    $scope.authentication = Authentication;
+    if (!$scope.authentication || $scope.authentication.user === '') {
+      Notification.error('You must sign in to use Brevitest™');
+      $location.path('/signin');
+    }
 
-		$scope.loadData = function() {
-			$scope.deviceModels = DeviceModels.query();
-			$scope.sparks = Sparks.query();
-		};
+    $scope.loadData = function() {
+      $scope.deviceModels = DeviceModels.query();
+      $scope.sparks = Sparks.query();
+    };
 
-		$scope.moveToAndSetCalibrationPoint = function() {
-			$http.post('/devices/move_to_and_set_calibration_point', {
-					device: $scope.device
-				}).
-				success(function(data, status, headers, config) {
-					console.log(data);
-					Notification.success(data.result);
-					$scope.device.$save();
-			  }).
-			  error(function(err, status, headers, config) {
-					console.log(err);
-					Notification.error(err.message);
-			  });
-		};
+    $scope.moveToAndSetCalibrationPoint = function() {
+      $http.post('/devices/move_to_and_set_calibration_point', {
+        device: $scope.device
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success(data.result);
+        $scope.device.$save();
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
 
-		$scope.setOnlineButtonText = function() {
-			if ($scope.online) {
-				$scope.onlineText = 'Online';
-			}
-			else {
-				$scope.onlineText = 'Offline';
-			}
-		};
+    $scope.setOnlineButtonText = function() {
+      if ($scope.online) {
+        $scope.onlineText = 'Online';
+      } else {
+        $scope.onlineText = 'Offline';
+      }
+    };
 
-		$scope.deviceModel = {};
-		$scope.spark = {};
+    $scope.deviceModel = {};
+    $scope.spark = {};
 
-		$scope.openedMfg = false;
-		$scope.openedReg = false;
-		$scope.minRegDate = $scope.manufacturedOn;
+    $scope.openedMfg = false;
+    $scope.openedReg = false;
+    $scope.minRegDate = $scope.manufacturedOn;
 
-		$scope.setRegMinDate = function() {
-			$scope.minRegDate = $scope.manufacturedOn;
-		};
+    $scope.setRegMinDate = function() {
+      $scope.minRegDate = $scope.manufacturedOn;
+    };
 
-		$scope.selectDeviceModel = function(id) {
-			$scope.deviceModel._id = id;
-		};
+    $scope.selectDeviceModel = function(id) {
+      $scope.deviceModel._id = id;
+    };
 
-		$scope.selectSpark = function(id) {
-			$scope.spark._id = id;
-		};
+    $scope.selectSpark = function(id) {
+      $scope.spark._id = id;
+    };
 
-		$scope.openDatepicker = function($event, dateField) {
-	    $event.preventDefault();
-	    $event.stopPropagation();
+    $scope.openDatepicker = function($event, dateField) {
+      $event.preventDefault();
+      $event.stopPropagation();
 
-			switch (dateField) {
-				case 'mfg':
-					$scope.openedMfg = !$scope.openedMfg;
-					break;
-				case 'reg':
-					$scope.openedReg = !$scope.openedReg;
-					break;
-			}
-	  };
+      switch (dateField) {
+        case 'mfg':
+          $scope.openedMfg = !$scope.openedMfg;
+          break;
+        case 'reg':
+          $scope.openedReg = !$scope.openedReg;
+          break;
+      }
+    };
 
-		// Create new Device
-		$scope.create = function() {
-			// Create new Device object
-			var device = new Devices ({
-				name: this.name,
-				serialNumber: this.serialNumber,
-				calibrationSteps: this.calibrationSteps,
-				status: this.status,
-				manufacturedOn: this.manufacturedOn,
-				registeredOn: this.registeredOn,
-				_deviceModel: this.deviceModel._id,
-				_spark: this.spark._id
-			});
+    // Create new Device
+    $scope.create = function() {
+      // Create new Device object
+      var device = new Devices({
+        name: this.name,
+        serialNumber: this.serialNumber,
+        calibrationSteps: this.calibrationSteps,
+        status: this.status,
+        manufacturedOn: this.manufacturedOn,
+        registeredOn: this.registeredOn,
+        _deviceModel: this.deviceModel._id,
+        _spark: this.spark._id
+      });
 
-			// Redirect after save
-			device.$save(function(response) {
-				$location.path('devices/' + response._id);
+      // Redirect after save
+      device.$save(function(response) {
+        $location.path('devices/' + response._id);
 
-				// Clear form fields
-				$scope.name = '';
-				$scope.serialNumber = '';
-				$scope.calibrationSteps = '';
-				$scope.status = '';
-				$scope.manufacturedOn = '';
-				$scope.registeredOn = '';
-				$scope.deviceModel = {};
-				$scope.spark = {};
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+        // Clear form fields
+        $scope.name = '';
+        $scope.serialNumber = '';
+        $scope.calibrationSteps = '';
+        $scope.status = '';
+        $scope.manufacturedOn = '';
+        $scope.registeredOn = '';
+        $scope.deviceModel = {};
+        $scope.spark = {};
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
 
-		// Remove existing Device
-		$scope.remove = function(device) {
-			if ( device ) {
-				device.$remove();
+    // Remove existing Device
+    $scope.remove = function(device) {
+      if ($window.confirm('Are you sure you want to delete this record?')) {
+        if (device) {
+          device.$remove();
 
-				for (var i in $scope.devices) {
-					if ($scope.devices [i] === device) {
-						$scope.devices.splice(i, 1);
-					}
-				}
-			} else {
-				$scope.device.$remove(function() {
-					$location.path('devices');
-				});
-			}
-		};
+          for (var i in $scope.devices) {
+            if ($scope.devices[i] === device) {
+              $scope.devices.splice(i, 1);
+            }
+          }
+        } else {
+          $scope.device.$remove(function() {
+            $location.path('devices');
+          });
+        }
+      }
+    };
 
-		// Update existing Device
-		$scope.update = function() {
-			var device = $scope.device;
-			device._deviceModel = $scope.deviceModel ? $scope.deviceModel._id : '';
-			device._spark = $scope.spark ? $scope.spark._id : '';
+    // Update existing Device
+    $scope.update = function() {
+      var device = $scope.device;
+      device._deviceModel = $scope.deviceModel ? $scope.deviceModel._id : '';
+      device._spark = $scope.spark ? $scope.spark._id : '';
 
-			device.$update(function() {
-				$location.path('devices/' + device._id);
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+      device.$update(function() {
+        $location.path('devices/' + device._id);
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
 
-		// Find a list of Devices
-		$scope.find = function() {
-			$scope.devices = Devices.query();
-		};
+    // Find a list of Devices
+    $scope.find = function() {
+      $scope.devices = Devices.query();
+    };
 
-		// Find existing Device
-		$scope.findOne = function() {
-			$scope.device = Devices.get({
-				deviceId: $stateParams.deviceId
-			}, function() {
-				$scope.deviceModels = $scope.deviceModels || DeviceModels.query();
-				$scope.sparks = $scope.sparks || Sparks.query();
-				$scope.online = $scope.device._spark.connected;
-				$scope.setOnlineButtonText();
-				$scope.deviceModel = $scope.device._deviceModel ? $scope.device._deviceModel : {};
-				$scope.spark = $scope.device._spark ? $scope.device._spark : {};
-			});
-		};
-	}
+    // Find existing Device
+    $scope.findOne = function() {
+      $scope.device = Devices.get({
+        deviceId: $stateParams.deviceId
+      }, function() {
+        $scope.deviceModels = $scope.deviceModels || DeviceModels.query();
+        $scope.sparks = $scope.sparks || Sparks.query();
+        $scope.online = $scope.device._spark.connected;
+        $scope.setOnlineButtonText();
+        $scope.deviceModel = $scope.device._deviceModel ? $scope.device._deviceModel : {};
+        $scope.spark = $scope.device._spark ? $scope.device._spark : {};
+      });
+    };
+  }
 ]);
 
 'use strict';
@@ -1540,90 +1547,92 @@ angular.module('healthcare-providers').config(['$stateProvider',
 'use strict';
 
 // Healthcare providers controller
-angular.module('healthcare-providers').controller('HealthcareProvidersController', ['$scope', '$stateParams', '$location', 'Authentication', 'HealthcareProviders',
-	function($scope, $stateParams, $location, Authentication, HealthcareProviders) {
-		$scope.authentication = Authentication;
-		if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
-			$location.path('/signin');
-		}
+angular.module('healthcare-providers').controller('HealthcareProvidersController', ['$scope', '$stateParams', '$location', '$window', 'Authentication', 'HealthcareProviders',
+  function($scope, $stateParams, $location, $window, Authentication, HealthcareProviders) {
+    $scope.authentication = Authentication;
+    if (!$scope.authentication || $scope.authentication.user === '') {
+      Notification.error('You must sign in to use Brevitest™');
+      $location.path('/signin');
+    }
 
-		$scope.addresses = [];
-		$scope.addressTypes = ['Main', 'Business', 'Clinic', 'Other'];
-		$scope.addressTypes.forEach(function(a) {
-			$scope.addresses.push({
-				location: a,
-				street1: '',
-				street2: '',
-				city: '',
-				state: '',
-				zipcode: ''
-			});
-		});
+    $scope.addresses = [];
+    $scope.addressTypes = ['Main', 'Business', 'Clinic', 'Other'];
+    $scope.addressTypes.forEach(function(a) {
+      $scope.addresses.push({
+        location: a,
+        street1: '',
+        street2: '',
+        city: '',
+        state: '',
+        zipcode: ''
+      });
+    });
 
-		// Create new Healthcare provider
-		$scope.create = function() {
-			// Create new Healthcare provider object
-			var healthcareProvider = new HealthcareProviders ({
-				name: this.name,
-				addresses: this.addresses
-			});
+    // Create new Healthcare provider
+    $scope.create = function() {
+      // Create new Healthcare provider object
+      var healthcareProvider = new HealthcareProviders({
+        name: this.name,
+        addresses: this.addresses
+      });
 
-			// Redirect after save
-			healthcareProvider.$save(function(response) {
-				$location.path('healthcare-providers/' + response._id);
+      // Redirect after save
+      healthcareProvider.$save(function(response) {
+        $location.path('healthcare-providers/' + response._id);
 
-				// Clear form fields
-				$scope.name = '';
-				$scope.addresses = [];
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+        // Clear form fields
+        $scope.name = '';
+        $scope.addresses = [];
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
 
-		// Remove existing Healthcare provider
-		$scope.remove = function(healthcareProvider) {
-			if ( healthcareProvider ) {
-				healthcareProvider.$remove();
+    // Remove existing Healthcare provider
+    $scope.remove = function(healthcareProvider) {
+      if ($window.confirm('Are you sure you want to delete this record?')) {
+        if (healthcareProvider) {
+          healthcareProvider.$remove();
 
-				for (var i in $scope.healthcareProviders) {
-					if ($scope.healthcareProviders [i] === healthcareProvider) {
-						$scope.healthcareProviders.splice(i, 1);
-					}
-				}
-			} else {
-				$scope.healthcareProvider.$remove(function() {
-					$location.path('healthcare-providers');
-				});
-			}
-		};
+          for (var i in $scope.healthcareProviders) {
+            if ($scope.healthcareProviders[i] === healthcareProvider) {
+              $scope.healthcareProviders.splice(i, 1);
+            }
+          }
+        } else {
+          $scope.healthcareProvider.$remove(function() {
+            $location.path('healthcare-providers');
+          });
+        }
+      }
+    };
 
-		// Update existing Healthcare provider
-		$scope.update = function() {
-			var healthcareProvider = $scope.healthcareProvider;
+    // Update existing Healthcare provider
+    $scope.update = function() {
+      var healthcareProvider = $scope.healthcareProvider;
 
-			healthcareProvider.addresses = $scope.addresses;
-			healthcareProvider.$update(function() {
-				$location.path('healthcare-providers/' + healthcareProvider._id);
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+      healthcareProvider.addresses = $scope.addresses;
+      healthcareProvider.$update(function() {
+        $location.path('healthcare-providers/' + healthcareProvider._id);
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
 
-		// Find a list of Healthcare providers
-		$scope.find = function() {
-			$scope.healthcareProviders = HealthcareProviders.query();
-		};
+    // Find a list of Healthcare providers
+    $scope.find = function() {
+      $scope.healthcareProviders = HealthcareProviders.query();
+    };
 
-		// Find existing Healthcare provider
-		$scope.findOne = function() {
-			$scope.healthcareProvider = HealthcareProviders.get({
-				healthcareProviderId: $stateParams.healthcareProviderId
-			},function(){
-				$scope.addresses = $scope.healthcareProvider.addresses.length ? $scope.healthcareProvider.addresses : $scope.addresses;
-			});
-		};
-	}
+    // Find existing Healthcare provider
+    $scope.findOne = function() {
+      $scope.healthcareProvider = HealthcareProviders.get({
+        healthcareProviderId: $stateParams.healthcareProviderId
+      }, function() {
+        $scope.addresses = $scope.healthcareProvider.addresses.length ? $scope.healthcareProvider.addresses : $scope.addresses;
+      });
+    };
+  }
 ]);
 
 'use strict';
@@ -1667,90 +1676,92 @@ angular.module('manufacturers').config(['$stateProvider',
 'use strict';
 
 // Manufacturers controller
-angular.module('manufacturers').controller('ManufacturersController', ['$scope', '$stateParams', '$location', 'Authentication', 'Manufacturers',
-	function($scope, $stateParams, $location, Authentication, Manufacturers) {
-		$scope.authentication = Authentication;
-		if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
-			$location.path('/signin');
-		}
+angular.module('manufacturers').controller('ManufacturersController', ['$scope', '$stateParams', '$location', '$window', 'Authentication', 'Manufacturers',
+  function($scope, $stateParams, $location, $window, Authentication, Manufacturers) {
+    $scope.authentication = Authentication;
+    if (!$scope.authentication || $scope.authentication.user === '') {
+      Notification.error('You must sign in to use Brevitest™');
+      $location.path('/signin');
+    }
 
-		$scope.addresses = [];
-		$scope.addressTypes = ['Main', 'Business', 'Operations', 'Other'];
-		$scope.addressTypes.forEach(function(a) {
-			$scope.addresses.push({
-				location: a,
-				street1: '',
-				street2: '',
-				city: '',
-				state: '',
-				zipcode: ''
-			});
-		});
+    $scope.addresses = [];
+    $scope.addressTypes = ['Main', 'Business', 'Operations', 'Other'];
+    $scope.addressTypes.forEach(function(a) {
+      $scope.addresses.push({
+        location: a,
+        street1: '',
+        street2: '',
+        city: '',
+        state: '',
+        zipcode: ''
+      });
+    });
 
-		// Create new Manufacturer
-		$scope.create = function() {
-			// Create new Manufacturer object
-			var manufacturer = new Manufacturers ({
-				name: this.name,
-				addresses: this.addresses
-			});
+    // Create new Manufacturer
+    $scope.create = function() {
+      // Create new Manufacturer object
+      var manufacturer = new Manufacturers({
+        name: this.name,
+        addresses: this.addresses
+      });
 
-			// Redirect after save
-			manufacturer.$save(function(response) {
-				$location.path('manufacturers/' + response._id);
+      // Redirect after save
+      manufacturer.$save(function(response) {
+        $location.path('manufacturers/' + response._id);
 
-				// Clear form fields
-				$scope.name = '';
-				$scope.addresses = [];
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+        // Clear form fields
+        $scope.name = '';
+        $scope.addresses = [];
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
 
-		// Remove existing Manufacturer
-		$scope.remove = function(manufacturer) {
-			if ( manufacturer ) {
-				manufacturer.$remove();
+    // Remove existing Manufacturer
+    $scope.remove = function(manufacturer) {
+      if ($window.confirm('Are you sure you want to delete this record?')) {
+        if (manufacturer) {
+          manufacturer.$remove();
 
-				for (var i in $scope.manufacturers) {
-					if ($scope.manufacturers [i] === manufacturer) {
-						$scope.manufacturers.splice(i, 1);
-					}
-				}
-			} else {
-				$scope.manufacturer.$remove(function() {
-					$location.path('manufacturers');
-				});
-			}
-		};
+          for (var i in $scope.manufacturers) {
+            if ($scope.manufacturers[i] === manufacturer) {
+              $scope.manufacturers.splice(i, 1);
+            }
+          }
+        } else {
+          $scope.manufacturer.$remove(function() {
+            $location.path('manufacturers');
+          });
+        }
+      }
+    };
 
-		// Update existing Manufacturer
-		$scope.update = function() {
-			var manufacturer = $scope.manufacturer;
+    // Update existing Manufacturer
+    $scope.update = function() {
+      var manufacturer = $scope.manufacturer;
 
-			manufacturer.addresses = $scope.addresses;
-			manufacturer.$update(function() {
-				$location.path('manufacturers/' + manufacturer._id);
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+      manufacturer.addresses = $scope.addresses;
+      manufacturer.$update(function() {
+        $location.path('manufacturers/' + manufacturer._id);
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
 
-		// Find a list of Manufacturers
-		$scope.find = function() {
-			$scope.manufacturers = Manufacturers.query();
-		};
+    // Find a list of Manufacturers
+    $scope.find = function() {
+      $scope.manufacturers = Manufacturers.query();
+    };
 
-		// Find existing Manufacturer
-		$scope.findOne = function() {
-			$scope.manufacturer = Manufacturers.get({
-				manufacturerId: $stateParams.manufacturerId
-			},function(){
-				$scope.addresses = $scope.manufacturer.addresses.length ? $scope.manufacturer.addresses : $scope.addresses;
-			});
-		};
-	}
+    // Find existing Manufacturer
+    $scope.findOne = function() {
+      $scope.manufacturer = Manufacturers.get({
+        manufacturerId: $stateParams.manufacturerId
+      }, function() {
+        $scope.addresses = $scope.manufacturer.addresses.length ? $scope.manufacturer.addresses : $scope.addresses;
+      });
+    };
+  }
 ]);
 
 'use strict';
@@ -1797,132 +1808,140 @@ angular.module('prescriptions').config(['$stateProvider',
 var _ = window._;
 
 // Prescriptions controller
-angular.module('prescriptions').controller('PrescriptionsController', ['$scope', '$stateParams', '$location', 'Authentication', 'Prescriptions', 'Assays',
-	function($scope, $stateParams, $location, Authentication, Prescriptions, Assays) {
-		$scope.authentication = Authentication;
-		if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
-			$location.path('/signin');
-		}
+angular.module('prescriptions').controller('PrescriptionsController', ['$scope', '$stateParams', '$location', '$window', 'Authentication', 'Prescriptions', 'Assays',
+  function($scope, $stateParams, $location, $window, Authentication, Prescriptions, Assays) {
+    $scope.authentication = Authentication;
+    if (!$scope.authentication || $scope.authentication.user === '') {
+      Notification.error('You must sign in to use Brevitest™');
+      $location.path('/signin');
+    }
 
-		$scope.openedPres = false;
-		$scope.openedDOB = false;
+    $scope.openedPres = false;
+    $scope.openedDOB = false;
 
-		$scope.prescriptionAssays = [];
-		$scope.assays = Assays.query();
+    $scope.prescriptionAssays = [];
+    $scope.assays = Assays.query();
 
-		$scope.openDatepicker = function($event, dateField) {
-	    $event.preventDefault();
-	    $event.stopPropagation();
+    $scope.openDatepicker = function($event, dateField) {
+      $event.preventDefault();
+      $event.stopPropagation();
 
-			switch (dateField) {
-				case 'pres':
-					$scope.openedPres = !$scope.openedPres;
-					break;
-				case 'dob':
-					$scope.openedDOB = !$scope.openedDOB;
-					break;
-			}
-	  };
+      switch (dateField) {
+        case 'pres':
+          $scope.openedPres = !$scope.openedPres;
+          break;
+        case 'dob':
+          $scope.openedDOB = !$scope.openedDOB;
+          break;
+      }
+    };
 
-		function assaySort(a, b) {
-			if (a.name > b.name) {
-				return 1;
-			}
-			if (a.name < b.name) {
-				return -1;
-			}
-			return 0;
-		}
+    function assaySort(a, b) {
+      if (a.name > b.name) {
+        return 1;
+      }
+      if (a.name < b.name) {
+        return -1;
+      }
+      return 0;
+    }
 
-		$scope.prescribeAssay = function(id) {
-			var indx = _.findIndex($scope.prescriptionAssays, function(e) {return (e._id === id);});
-			if (indx === -1) {
-				indx = _.findIndex($scope.assays, function(e) {return (e._id === id);});
-				$scope.prescriptionAssays.push($scope.assays[indx]);
-				$scope.assays.splice(indx, 1);
-				$scope.prescriptionAssays.sort(assaySort);
-				$scope.assays.sort(assaySort);
-			}
-		};
+    $scope.prescribeAssay = function(id) {
+      var indx = _.findIndex($scope.prescriptionAssays, function(e) {
+        return (e._id === id);
+      });
+      if (indx === -1) {
+        indx = _.findIndex($scope.assays, function(e) {
+          return (e._id === id);
+        });
+        $scope.prescriptionAssays.push($scope.assays[indx]);
+        $scope.assays.splice(indx, 1);
+        $scope.prescriptionAssays.sort(assaySort);
+        $scope.assays.sort(assaySort);
+      }
+    };
 
-		$scope.removePrescribedAssay = function(id) {
-			var indx = _.findIndex($scope.prescriptionAssays, function(e) {return (e._id === id);});
-			$scope.assays.push($scope.prescriptionAssays[indx]);
-			$scope.prescriptionAssays.splice(indx, 1);
-			$scope.prescriptionAssays.sort(assaySort);
-			$scope.assays.sort(assaySort);
-		};
+    $scope.removePrescribedAssay = function(id) {
+      var indx = _.findIndex($scope.prescriptionAssays, function(e) {
+        return (e._id === id);
+      });
+      $scope.assays.push($scope.prescriptionAssays[indx]);
+      $scope.prescriptionAssays.splice(indx, 1);
+      $scope.prescriptionAssays.sort(assaySort);
+      $scope.assays.sort(assaySort);
+    };
 
-		// Create new Prescription
-		$scope.create = function() {
-			// Create new Prescription object
-			var prescription = new Prescriptions ({
-				name: this.name,
-				prescribedOn: this.prescribedOn,
-				comments: this.comments,
-				patientNumber: this.patientNumber,
-				patientGender: this.patientGender,
-				patientDateOfBirth: this.patientDateOfBirth,
-				_assays: _.pluck(this.prescriptionAssays, '_id')
-			});
+    // Create new Prescription
+    $scope.create = function() {
+      // Create new Prescription object
+      var prescription = new Prescriptions({
+        name: this.name,
+        prescribedOn: this.prescribedOn,
+        comments: this.comments,
+        patientNumber: this.patientNumber,
+        patientGender: this.patientGender,
+        patientDateOfBirth: this.patientDateOfBirth,
+        _assays: _.pluck(this.prescriptionAssays, '_id')
+      });
 
-			// Redirect after save
-			prescription.$save(function(response) {
-				$location.path('#!');
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+      // Redirect after save
+      prescription.$save(function(response) {
+        $location.path('#!');
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
 
-		// Remove existing Prescription
-		$scope.remove = function(prescription) {
-			if ( prescription ) {
-				prescription.$remove();
+    // Remove existing Prescription
+    $scope.remove = function(prescription) {
+      if ($window.confirm('Are you sure you want to delete this record?')) {
+        if (prescription) {
+          prescription.$remove();
 
-				for (var i in $scope.prescriptions) {
-					if ($scope.prescriptions [i] === prescription) {
-						$scope.prescriptions.splice(i, 1);
-					}
-				}
-			} else {
-				$scope.prescription.$remove(function() {
-					$location.path('prescriptions');
-				});
-			}
-		};
+          for (var i in $scope.prescriptions) {
+            if ($scope.prescriptions[i] === prescription) {
+              $scope.prescriptions.splice(i, 1);
+            }
+          }
+        } else {
+          $scope.prescription.$remove(function() {
+            $location.path('prescriptions');
+          });
+        }
+      }
+    };
 
-		// Update existing Prescription
-		$scope.update = function() {
-			var prescription = $scope.prescription;
-			prescription._assays = _.pluck($scope.prescriptionAssays, '_id');
-			console.log(prescription);
-			prescription.$update(function() {
-				$location.path('/prescriptions/' + prescription._id);
-				console.log(prescription);
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+    // Update existing Prescription
+    $scope.update = function() {
+      var prescription = $scope.prescription;
+      prescription._assays = _.pluck($scope.prescriptionAssays, '_id');
+      console.log(prescription);
+      prescription.$update(function() {
+        $location.path('/prescriptions/' + prescription._id);
+        console.log(prescription);
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
 
-		// Find a list of Prescriptions
-		$scope.find = function() {
-			$scope.prescriptions = Prescriptions.query();
-		};
+    // Find a list of Prescriptions
+    $scope.find = function() {
+      $scope.prescriptions = Prescriptions.query();
+    };
 
-		// Find existing Prescription
-		$scope.findOne = function() {
-			$scope.prescription = Prescriptions.get({
-				prescriptionId: $stateParams.prescriptionId
-			}, function() {
-					if ($scope.prescription._assays && $scope.prescription._assays.length) {
-						$scope.prescription._assays.forEach(function(e) {
-							$scope.prescribeAssay(e._id);
-						});
-					}
-			});
-		};
-	}
+    // Find existing Prescription
+    $scope.findOne = function() {
+      $scope.prescription = Prescriptions.get({
+        prescriptionId: $stateParams.prescriptionId
+      }, function() {
+        if ($scope.prescription._assays && $scope.prescription._assays.length) {
+          $scope.prescription._assays.forEach(function(e) {
+            $scope.prescribeAssay(e._id);
+          });
+        }
+      });
+    };
+  }
 ]);
 
 'use strict';
@@ -1967,8 +1986,8 @@ angular.module('sparks').config(['$stateProvider',
 'use strict';
 
 // Sparks controller
-angular.module('sparks').controller('SparksController', ['$scope', '$http', '$stateParams', '$location', '$timeout', 'Authentication', 'Sparks', 'Notification',
-  function($scope, $http, $stateParams, $location, $timeout, Authentication, Sparks, Notification) {
+angular.module('sparks').controller('SparksController', ['$scope', '$http', '$stateParams', '$location', '$timeout', '$window', 'Authentication', 'Sparks', 'Notification',
+  function($scope, $http, $stateParams, $location, $timeout, $window, Authentication, Sparks, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       Notification.error('You must sign in to use Brevitest™');
@@ -2061,18 +2080,20 @@ angular.module('sparks').controller('SparksController', ['$scope', '$http', '$st
 
     // Remove existing Spark
     $scope.remove = function(spark) {
-      if (spark) {
-        spark.$remove();
+      if ($window.confirm('Are you sure you want to delete this record?')) {
+        if (spark) {
+          spark.$remove();
 
-        for (var i in $scope.sparks) {
-          if ($scope.sparks[i] === spark) {
-            $scope.sparks.splice(i, 1);
+          for (var i in $scope.sparks) {
+            if ($scope.sparks[i] === spark) {
+              $scope.sparks.splice(i, 1);
+            }
           }
+        } else {
+          $scope.spark.$remove(function() {
+            $location.path('sparks');
+          });
         }
-      } else {
-        $scope.spark.$remove(function() {
-          $location.path('sparks');
-        });
       }
     };
 
@@ -2511,6 +2532,8 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 
 'use strict';
 
+var _ = window._;
+
 // Tests controller
 angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Notification',
 	function($scope, $http, $location, Authentication, Tests, Prescriptions, Devices, Cartridges, Notification) {
@@ -2520,6 +2543,21 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 			$location.path('/signin');
 		}
 
+		function loadAssays(prescription) {
+			var tests = _.pluck(prescription._tests, '_assay');
+			$scope.pendingAssays = [];
+			$scope.completedAssays = [];
+			prescription._assays.forEach(function(a) {
+					var indx = tests.indexOf(a._id);
+					if (indx === -1) {
+						$scope.pendingAssays.push(a);
+					}
+					else {
+						$scope.completedAssays.push(a);
+					}
+			});
+		}
+
 		$scope.setupRun = function() {
 			$scope.testUnderway = false;
 			$scope.activePrescription = -1;
@@ -2527,7 +2565,14 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 			$scope.deviceInitialized = false;
 			$scope.activeDevice = -1;
 			$scope.activeCartridge = -1;
-			$scope.prescriptions = Prescriptions.query();
+			$http.get('/prescriptions/unfilled').
+				success(function(data, status, headers, config) {
+					$scope.prescriptions = data;
+			  }).
+			  error(function(err, status, headers, config) {
+					console.log(err);
+					Notification.error(err.message);
+			  });
 			$http.get('/devices/available').
 				success(function(data, status, headers, config) {
 					$scope.devices = data;
@@ -2540,11 +2585,12 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 
 		$scope.clickPrescription = function(indx) {
 			$scope.activePrescription = indx;
+			loadAssays($scope.prescriptions[indx]);
 		};
 		$scope.clickAssay = function(indx) {
 			$scope.activeAssay = indx;
 			$http.post('/cartridges/unused', {
-					assayID: $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]._id
+					assayID: $scope.pendingAssays[$scope.activeAssay]._id
 				}).
 				success(function(data, status, headers, config) {
 					$scope.cartridges = data;
@@ -2604,7 +2650,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 				Notification.error('Please select a cartridge for testing');
 				return;
 			}
-			if (!$scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay]) {
+			if (!$scope.pendingAssays[$scope.activeAssay]) {
 				Notification.error('Unknown assay');
 				return;
 			}
@@ -2616,7 +2662,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 				Notification.error('Unknown cartridge');
 				return;
 			}
-			var assay = $scope.prescriptions[$scope.activePrescription]._assays[$scope.activeAssay];
+			var assay = $scope.pendingAssays[$scope.activeAssay];
 			var cartridge = $scope.cartridges[$scope.activeCartridge];
 			var device = $scope.devices[$scope.activeDevice];
 			var prescription = $scope.prescriptions[$scope.activePrescription];
@@ -2656,76 +2702,78 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 'use strict';
 
 // Tests controller
-angular.module('tests').controller('TestsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'Tests', 'Assays',
-	function($scope, $stateParams, $location, $http, Authentication, Tests, Assays) {
-		$scope.authentication = Authentication;
-		if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
-			$location.path('/signin');
-		}
+angular.module('tests').controller('TestsController', ['$scope', '$stateParams', '$location', '$http', '$window', 'Authentication', 'Tests', 'Assays',
+  function($scope, $stateParams, $location, $http, $window, Authentication, Tests, Assays) {
+    $scope.authentication = Authentication;
+    if (!$scope.authentication || $scope.authentication.user === '') {
+      Notification.error('You must sign in to use Brevitest™');
+      $location.path('/signin');
+    }
 
-		$scope.showResultsOnOpen = true;
+    $scope.showResultsOnOpen = true;
 
-		// Create new Test
-		$scope.create = function() {
-			// Create new Test object
-			var test = new Tests ({
-				name: this.name,
-				description: this.description
-			});
+    // Create new Test
+    $scope.create = function() {
+      // Create new Test object
+      var test = new Tests({
+        name: this.name,
+        description: this.description
+      });
 
-			// Redirect after save
-			test.$save(function(response) {
-				$location.path('tests/' + response._id);
+      // Redirect after save
+      test.$save(function(response) {
+        $location.path('tests/' + response._id);
 
-				// Clear form fields
-				$scope.name = '';
-				$scope.description = '';
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+        // Clear form fields
+        $scope.name = '';
+        $scope.description = '';
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
 
-		// Remove existing Test
-		$scope.remove = function(test) {
-			if ( test ) {
-				test.$remove();
+    // Remove existing Test
+    $scope.remove = function(test) {
+      if ($window.confirm('Are you sure you want to delete this record?')) {
+        if (test) {
+          test.$remove();
 
-				for (var i in $scope.tests) {
-					if ($scope.tests [i] === test) {
-						$scope.tests.splice(i, 1);
-					}
-				}
-			} else {
-				$scope.test.$remove(function() {
-					$location.path('tests');
-				});
-			}
-		};
+          for (var i in $scope.tests) {
+            if ($scope.tests[i] === test) {
+              $scope.tests.splice(i, 1);
+            }
+          }
+        } else {
+          $scope.test.$remove(function() {
+            $location.path('tests');
+          });
+        }
+      }
+    };
 
-		// Update existing Test
-		$scope.update = function() {
-			var test = $scope.test;
+    // Update existing Test
+    $scope.update = function() {
+      var test = $scope.test;
 
-			test.$update(function() {
-				$location.path('tests/' + test._id);
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+      test.$update(function() {
+        $location.path('tests/' + test._id);
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
 
-		// Find a list of Tests
-		$scope.find = function() {
-			$scope.tests = Tests.query();
-		};
+    // Find a list of Tests
+    $scope.find = function() {
+      $scope.tests = Tests.query();
+    };
 
-		// Find existing Test
-		$scope.findOne = function() {
-			$scope.test = Tests.get({
-				testId: $stateParams.testId
-			});
-		};
-	}
+    // Find existing Test
+    $scope.findOne = function() {
+      $scope.test = Tests.get({
+        testId: $stateParams.testId
+      });
+    };
+  }
 ]);
 
 'use strict';

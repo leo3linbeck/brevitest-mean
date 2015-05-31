@@ -9,5 +9,7 @@ angular.module('core').controller('HomeController', ['$scope', '$location', 'Aut
 			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
+
+		$scope.showDetail = false;
 	}
 ]);

@@ -15,70 +15,65 @@
     <div class="col-md-3">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title">Prescribe Tests</h3>
+          <a class="btn btn-success btn-block" href="/#!/prescriptions/create">Prescribe
+            Brevitests</a>
         </div>
-        <div class="panel-body">
-          <p>Prescribing a Brevitest™ is easy, and you can order one from your
-            desktop, tablet, or smartphone. Click on the button below, select
-            the assays you want to run, enter a little more information,
-            and your prescription will be saved in the cloud, ready to run!</p>
-          <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
-            <a href="/#!/prescriptions/create" class="btn btn-success btn-block">Prescribe</a>
-          </div>
+        <div class="panel-body" ng-show="showDetail">
+          <p>Prescribing a Brevitest™ is easy, and you can order one from your desktop,
+            tablet, or smartphone. Click on the button below, select the assays you want to
+            run, enter a little more information, and your prescription will be saved in the
+            cloud, ready to run!</p>
         </div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title">Run a Test</h3>
+          <a class="btn btn-success btn-block" href="/#!/tests/run">Run a Brevitest™</a>
         </div>
-        <div class="panel-body">
-          <p>Once you've entered in the necessary information to set up the test,
-            click on the Run button below. You'll be asked to choose the device
-            you want to use, and then guided through a series of easy steps.
-            Before you know it, you'll be running a Brevitest™!
+        <div class="panel-body" ng-show="showDetail">
+          <p>Once you've entered in the necessary information to set up the test, click on
+            the Run button below. You'll be asked to choose the device you want to use, and
+            then guided through a series of easy steps. Before you know it, you'll be
+            running a Brevitest™!
           </p>
-          <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
-            <a href="/#!/tests/run" class="btn btn-success btn-block">Run</a>
-          </div>
         </div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title">Monitor Tests in Progress</h3>
+          <a class="btn btn-success btn-block" href="/#!/tests/monitor">Monitor
+            Brevitests™</a>
         </div>
-        <div class="panel-body">
+        <div class="panel-body" ng-show="showDetail">
           <p>While your tests (that's right, you can monitor multiple tests) are running,
-            you can check on their progress. Click the Monitor button below,
-            and you'll be taken to a control center that displays
-            real-time information on your Brevitest™ devices.</p>
-          <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
-            <a href="/#!/tests/monitor" class="btn btn-success btn-block">Monitor</a>
-          </div>
+            you can check on their progress. Click the Monitor button below, and you'll be
+            taken to a control center that displays real-time information on your Brevitest™
+            devices.</p>
         </div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title">Review Test Results</h3>
+          <a class="btn btn-success btn-block" href="/#!/tests/review">
+            Review Brevitests™</a>
         </div>
-        <div class="panel-body">
-          <p>Getting results is kinda the point of this whole exercise, isn't it? That's why
-            Brevitest™ provides a simple way to review your test results, in a clean,
-            sophisticated user interface. Get numerical and graphical results whenever
-            you want, wherever you are. Brevitest™ makes it easy!</p>
-          <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
-            <a href="/#!/tests/review" class="btn btn-success btn-block">Review</a>
-          </div>
+        <div class="panel-body" ng-show="showDetail">
+          <p>Getting results is kinda the point of this whole exercise, isn't it? That's
+            why Brevitest™ provides a simple way to review your test results, in a clean,
+            sophisticated user interface. Get numerical and graphical results whenever you
+            want, wherever you are. Brevitest™ makes it easy!</p>
         </div>
       </div>
     </div>
   </div>
-  <br>Enjoy &amp; Thanks,
-  <br>The Brevitest™ Team:
-  <br>Dev, Erol, Leo, and Mike
+  <small>
+    <br/><strong>Enjoy &amp; Thanks,</strong>
+    <br/>The Brevitest™ Team:
+    <button btn-checkbox class="btn btn-default pull-right"
+      ng-bind-html="showDetail ? 'Hide Detail' : 'Show Detail'" ng-model="showDetail" type="checkbox"></button>
+    <br/>Dev, Erol, Leo, and Mike
+  </small>
 </section>

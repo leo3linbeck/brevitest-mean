@@ -16,6 +16,7 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 
     $scope.prescriptionAssays = [];
     $scope.assays = Assays.query();
+    $scope.prescribedOn = new Date();
 
     $scope.openDatepicker = function($event, dateField) {
       $event.preventDefault();

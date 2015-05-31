@@ -19,7 +19,6 @@ var db = mongoose.connect(config.db, function(err) {
 		console.log(chalk.red(err));
 	}
 });
-console.log('database', db);
 
 // Init the express application
 var app = require('./config/express')(db);
@@ -28,7 +27,6 @@ var app = require('./config/express')(db);
 require('./config/passport')();
 
 // Start the app by listening on <port>
-console.log('config.port', config.port);
 app.get('server').listen(config.port);
 
 // Expose app

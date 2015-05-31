@@ -14,8 +14,8 @@
 		<ul class="list-group">
 			<li class="list-group-item"><b>ID: </b>{{spark.sparkID}}</li>
 			<li class="list-group-item"><b>Connected: </b>{{spark.connected | uppercase}}</li>
-			<li class="list-group-item"><b>Last Heard: </b>{{device.lastHeard}}</li>
-			<li class="list-group-item"><b>Last IP Address: </b>{{device.lastIpAddress}}</li>
+			<li class="list-group-item"><b>Last Heard: </b>{{spark.lastHeard | date: "medium"}}</li>
+			<li class="list-group-item"><b>Last IP Address: </b>{{spark.lastIpAddress}}</li>
 		</ul>
 	</div>
 	<small>

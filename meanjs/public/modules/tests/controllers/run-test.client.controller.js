@@ -51,11 +51,13 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 			  });
 		};
 
+		var currentPrescription;
 		$scope.clickPrescription = function(indx) {
-			$scope.activePrescription = indx;
+			currentPrescription = indx;
 			loadAssays($scope.prescriptions[indx]);
 		};
 		$scope.clickAssay = function(indx) {
+			$scope.activePrescription = currentPrescription;
 			$scope.activeAssay = indx;
 			$http.post('/cartridges/unused', {
 					assayID: $scope.pendingAssays[$scope.activeAssay]._id

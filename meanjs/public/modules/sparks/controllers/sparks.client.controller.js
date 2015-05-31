@@ -4,6 +4,10 @@
 angular.module('sparks').controller('SparksController', ['$scope', '$http', '$stateParams', '$location', '$timeout', 'Authentication', 'Sparks', 'Notification',
   function($scope, $http, $stateParams, $location, $timeout, Authentication, Sparks, Notification) {
       $scope.authentication = Authentication;
+      if ($scope.authentication.user === '') {
+  			Notification.error('You must sign in to use Brevitest™');
+  			$location.path('/signin');
+  		}
 
       $scope.eraseArchivedData = function() {
         $http.post('/sparks/erase_archived_data', {

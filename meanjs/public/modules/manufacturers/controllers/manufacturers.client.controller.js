@@ -4,6 +4,10 @@
 angular.module('manufacturers').controller('ManufacturersController', ['$scope', '$stateParams', '$location', 'Authentication', 'Manufacturers',
 	function($scope, $stateParams, $location, Authentication, Manufacturers) {
 		$scope.authentication = Authentication;
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		$scope.addresses = [];
 		$scope.addressTypes = ['Main', 'Business', 'Operations', 'Other'];

@@ -4,6 +4,10 @@
 angular.module('tests').controller('TestsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'Tests', 'Assays',
 	function($scope, $stateParams, $location, $http, Authentication, Tests, Assays) {
 		$scope.authentication = Authentication;
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		$scope.showResultsOnOpen = true;
 

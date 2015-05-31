@@ -5,8 +5,12 @@ var c3 = window.c3;
 var d3 = window.d3;
 
 // Tests controller
-angular.module('tests').controller('ReviewTestController', ['$scope', '$http', 'Tests', 'Sparks', 'Notification',
-  function($scope, $http, Tests, Sparks, Notification) {
+angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Sparks', 'Notification',
+  function($scope, $http, $location, Authentication, Tests, Sparks, Notification) {
+    if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
     $scope.loadGraph = function(index) {
       var test = $scope.tests[index];

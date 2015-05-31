@@ -4,6 +4,10 @@
 angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', 'Authentication', 'Devices', 'DeviceModels', 'Sparks', 'Notification',
 	function($scope, $http, $stateParams, $location, Authentication, Devices, DeviceModels, Sparks, Notification) {
 		$scope.authentication = Authentication;
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		$scope.loadData = function() {
 			$scope.deviceModels = DeviceModels.query();

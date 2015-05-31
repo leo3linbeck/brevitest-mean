@@ -3,8 +3,12 @@
 var _ = window._;
 
 // Tests controller
-angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$timeout', 'Tests', 'Notification', 'Socket',
-	function($scope, $http, $timeout, Tests, Notification, Socket) {
+angular.module('tests').controller('MonitorTestController', ['$scope', '$http', '$timeout', '$location', 'Authentication', 'Tests', 'Notification', 'Socket',
+	function($scope, $http, $timeout, $location, Authentication, Tests, Notification, Socket) {
+		if ($scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
 
 		function updateTest(test) {
 			console.log('Updating test', test);

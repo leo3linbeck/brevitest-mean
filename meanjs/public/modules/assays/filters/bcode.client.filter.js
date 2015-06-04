@@ -24,14 +24,17 @@ function parse_bcode_data(bcode_str) {
 	var result = '';
 
 	data.forEach(function(e) {
-		var c, indx = e.indexOf(',');
+		var c, p;
+		var indx = e.indexOf(',');
 		if (indx === -1) {
 			c = e;
+			p = '';
 		}
 		else {
 			c = e.substring(0, indx);
+			p = e.substring(indx + 1);
 		}
-		result += bcode[c] + '  [ ' + (indx !== -1 ? e.substring(indx + 1) : e) + ' ]<br/>';
+		result += bcode[c] + (p.length ? '&nbsp;&nbsp;[&nbsp;' + p + '&nbsp;]<br/>' : '<br/>');
 	});
 
 	return result;

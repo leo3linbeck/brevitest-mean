@@ -26,8 +26,8 @@ module.exports = {
 		callbackURL: '/auth/linkedin/callback'
 	},
 	github: {
-		clientID: process.env.GITHUB_ID || 'APP_ID',
-		clientSecret: process.env.GITHUB_SECRET || 'APP_SECRET',
+		clientID: process.env.GITHUB_ID || '42d3cb4bbdd5f00a47fc',
+		clientSecret: process.env.GITHUB_SECRET || 'ca020ce1d553df65f0f7c6aa55b1ca8b10138660',
 		callbackURL: '/auth/github/callback'
 	},
 	mailer: {

@@ -1,6 +1,6 @@
 'use strict';
 
-var sparkSensorHeader = '<thead><tr><th>Sensor</th><th>Type</th><th>Reading Date<br/>Reading Time</th><th>Value</th></tr></thead><tbody>';
+var sparkSensorHeader = '<thead><tr><th>Sensor</th><th>Type</th><th>Reading Date<br/>Reading Time</th><th>Red</th><th>Green</th><th>Blue</th></tr></thead><tbody>';
 
 var int_time = {
 	0: '700ms',
@@ -21,17 +21,19 @@ function string_to_datetime(str) {
 	return new Date(parseInt(str) * 1000);
 }
 
-function string_to_datetime_string(str) {
+function string_to_datetime_string(str, delim) {
 	var dt = string_to_datetime(str);
-	return dt.toLocaleDateString() + '<br/>' + dt.toLocaleTimeString();
+	return dt.toLocaleDateString() + (delim ? delim :'<br/>') + dt.toLocaleTimeString();
 }
 
 function parse_sensor_reading(str) {
 	var data = str.split('\t');
-	var result = '<tr><td>' + (data[0] === 'A' ? 'Assay' : 'Control') + '</td>';
-	result += '<td>' + (parseInt(data[1], 10) ? 'Result' : 'Baseline') + '</td>';
-  result += '<td>' + string_to_datetime_string(data[2]) + '</td>';
-	result += '<td>' + data[3] + '<td/></tr>';
+	var result = '<tr><td>' + (data[0] === 'A' ? 'Assay' : 'Control');
+	result += '<td>' + (parseInt(data[1], 10) ? 'Result' : 'Baseline');
+  result += '<td>' + string_to_datetime_string(data[2]);
+	result += '<td>' + parseInt(data[3], 10);
+	result += '<td>' + parseInt(data[4], 10);
+	result += '<td>' + parseInt(data[5], 10) + '</tr>';
 	return result;
 }
 
@@ -39,8 +41,8 @@ function parse_test_header(str) {
 	var data = str.split('\t');
 	var result = '<strong>TEST INFORMATION</strong><br/>';
 	result += 'Record number: ' + data[0] + '<br/>';
-	result += 'Test start time: ' + string_to_datetime_string(data[1]) + '<br/>';
-	result += 'Test finish time: ' + string_to_datetime_string(data[2]) + '<br/>';
+	result += 'Test start time: ' + string_to_datetime_string(data[1], ' - ') + '<br/>';
+	result += 'Test finish time: ' + string_to_datetime_string(data[2], ' - ') + '<br/>';
 	result += 'Cartridge ID: ' + data[3] + '<br/>';
 	result += 'BCODE version: ' + data[4] + '<br/>';
 	result += 'BCODE length: ' + data[5] + '<br/>';

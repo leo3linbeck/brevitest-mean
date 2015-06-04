@@ -84,13 +84,14 @@ function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, standardCur
       return new Q(sparkDevice.getVariable('register'));
     })
     .then(function(register) {
+      var reading;
 
       var data = register.result.split('\n');
       var params = data[0].split('\t');
       result.rawData = register.result;
       result.startedOn = Date(parseInt(params[1]));
       result.finishedOn = Date(parseInt(params[2]));
-      result.value = parseInt(data[4].split('\t')[3]) - parseInt(data[2].split('\t')[3]);
+      result.value = parseInt(data[4].split('\t')[5]) - parseInt(data[2].split('\t')[5]);
       result.failed = result.percentComplete < 100;
 
       return new Q(Cartridge.findOneAndUpdate({

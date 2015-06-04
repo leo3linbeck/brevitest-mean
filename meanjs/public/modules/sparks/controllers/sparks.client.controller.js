@@ -127,6 +127,7 @@ angular.module('sparks').controller('SparksController', ['$scope', '$http', '$st
 
     // Refresh a list of Sparks
     $scope.refresh = function() {
+      console.log('Refreshing device list');
       $http.get('/sparks/refresh').
       success(function(data, status, headers, config) {
         $scope.sparks = data;

@@ -1,6 +1,7 @@
 'use strict';
 
 var _ = window._;
+var $ = window.$;
 
 // Tests controller
 angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', '$modal', 'Authentication', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Sparks', 'Notification',
@@ -31,7 +32,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
       success(function(data, status, headers, config) {
         Notification.success('Spark list refreshed');
         $scope.setupRun();
-        // addAlert($scope.alerts, 'success', 'Spark list refreshed');
       }).
       error(function(err, status, headers, config) {
         console.log(err, status, headers(), config);
@@ -43,7 +43,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
       $scope.testUnderway = false;
       $scope.activePrescription = -1;
       $scope.activeAssay = -1;
-      $scope.deviceInitialized = false;
+      $scope.deviceInitialized = true;
       $scope.activeDevice = -1;
       $scope.activeCartridge = -1;
       $http.get('/prescriptions/unfilled').
@@ -191,7 +191,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
       var modalInstance = $modal.open({
         templateUrl: 'modules/tests/views/scan-cartridge-modal.view.html',
         controller: 'ScanCartridgeModalInstanceController',
-        size: 'sm',
+        size: 'md',
         scope: $scope,
         resolve: {
           userMediaExists: function() {
@@ -199,36 +199,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
           }
         }
       });
-
-			modalInstance.opened.then(function() {
-				if ($scope.userMediaExists) {
-			    $scope.canvas = document.getElementById('canvas');
-					$scope.context = $scope.canvas.getContext('2d');
-					$scope.video = document.getElementById('video');
-					$scope.videoObj = {video: true};
-					var errBack = function(error) {
-			        console.log('Video capture error: ', error.code);
-			      };
-
-			    // Put video listeners into place
-			    if (navigator.getUserMedia) { // Standard
-			      navigator.getUserMedia($scope.videoObj, function(stream) {
-							$scope.video.src = stream;
-							$scope.video.play();
-			      }, errBack);
-			    } else if (navigator.webkitGetUserMedia) { // WebKit-prefixed
-			      navigator.webkitGetUserMedia($scope.videoObj, function(stream) {
-							$scope.video.src = window.webkitURL.createObjectURL(stream);
-							$scope.video.play();
-			      }, errBack);
-			    } else if (navigator.mozGetUserMedia) { // Firefox-prefixed
-			      navigator.mozGetUserMedia($scope.videoObj, function(stream) {
-							$scope.video.src = window.URL.createObjectURL(stream);
-							$scope.video.play();
-			      }, errBack);
-			    }
-			  }
-			});
 
       modalInstance.result.then(function(result) {
         console.log(result);
@@ -240,19 +210,67 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
   }
 ]);
 
-angular.module('tests').controller('ScanCartridgeModalInstanceController', function($scope, $modalInstance, userMediaExists) {
+angular.module('tests').controller('ScanCartridgeModalInstanceController', ['$scope', '$modalInstance', '$interval', 'userMediaExists',
+  function($scope, $modalInstance, $interval, userMediaExists) {
+    var stopScan;
 
-  $scope.snapPhoto = function() {
+    var scan = function() {
+      if(userMediaExists) {
+        document.getElementById('qr-canvas').getContext('2d').drawImage(document.getElementById('scanVideo'), 0, 0, 320, 240);
+        try {
+          qrcode.decode();  // jshint ignore:line
+        }
+        catch (e){
+          console.log('Decoding error');
+        }
+      }
+    };
+
+    qrcode.callback = function(data) {  // jshint ignore:line
+      $interval.cancel(stopScan);
+      $modalInstance.close(data);
+    };
+
     if (userMediaExists) {
-      $scope.context.drawImage($scope.video, 0, 0, 640, 480);
+      $scope.videoObj = {
+        video: true
+      };
+      var errBack = function(error) {
+        console.log('Video capture error: ', error);
+      };
+
+      // Put video listeners into place
+      if (navigator.getUserMedia) { // Standard
+        navigator.getUserMedia($scope.videoObj, function(stream) {
+          console.log('Video source loaded');
+          var v = document.getElementById('scanVideo');
+          v.src = stream;
+          v.play();
+          stopScan = $interval(scan, 500);
+        }, errBack);
+      } else {
+        navigator.webkitGetUserMedia($scope.videoObj, function(stream) {
+          console.log('Video source loaded');
+          var v = document.getElementById('scanVideo');
+          v.src = window.URL.createObjectURL(stream);
+          v.play();
+          stopScan = $interval(scan, 500);
+        }, errBack);
+      }
     }
-  };
 
-  $scope.ok = function() {
-    $modalInstance.close('result');
-  };
+    $scope.ok = function() {
+      if (stopScan) {
+        $interval.cancel(stopScan);
+      }
+      $modalInstance.close('result');
+    };
 
-  $scope.cancel = function() {
-    $modalInstance.dismiss('cancel');
-  };
-});
+    $scope.cancel = function() {
+      if (stopScan) {
+        $interval.cancel(stopScan);
+      }
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]);

@@ -1,18 +1,15 @@
-<div data-ng-controller="RunTestController" data-ng-init="setupModal()">
+<!-- <div data-ng-init="setupScan()"> -->
   <div class="modal-header">
     <h3 class="modal-title">Scan Cartridge QR Code</h3>
   </div>
   <div class="modal-body">
     <div ng-show="userMediaExists">
-      <video id="video" width="640" height="480" autoplay ng-model="video"></video>
-      <button id="snap" class="btn btn-primary" ng-click="snapPhoto()">Snap Photo</button>
-      <canvas id="canvas" width="640" height="480" ng-model="canvas"></canvas>
+      <video id="scanVideo" width="320" height="240" autoplay></video>
     </div>
     <div ng-hide="userMediaExists">
       <form action="server.cgi" enctype="multipart/form-data" method="post">
-        <input accept="image/*;capture=camera" name="image" type="file">
-        <canvas></canvas>
-        <input type="submit" value="Upload">
+        <input type="file" capture="camera" accept="image/*" id="cameraInput" name="cameraInput">
+        <canvas ng-hide="true" id="qr-canvas" width="320" height="240"></canvas>
       </form>
     </div>
   </div>
@@ -20,4 +17,4 @@
     <button class="btn btn-primary" ng-click="ok()">OK</button>
     <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
   </div>
-</div>
+<!-- </div> -->

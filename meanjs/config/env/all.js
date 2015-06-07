@@ -31,9 +31,9 @@ module.exports = {
 				'public/lib/angular-ui-notification/dist/angular-ui-notification.min.js',
 				'public/lib/angular-socket-io/socket.min.js',
 				'public/lib/jquery/dist/jquery.min.js',
-				'public/lib/html5-qrcode/lib/html5-qrcode.min.js',
 				'public/lib/d3/d3.min.js',
 				'public/lib/c3/c3.min.js',
+				'public/lib/angular-qr-scanner/src/jsqrcode-combined.min.js',
 				'public/lib/underscore/underscore-min.js'
 			]
 		},

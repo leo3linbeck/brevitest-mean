@@ -74,14 +74,17 @@
           </accordion>
         </div>
       </div>
+      <div ng-hide="activeCartridge === -1">
+        <qrcode data="{{cartridges[activeCartridge]._id}}" size="250"></qrcode>
+      </div>
     </div>
     <div class="col-md-4">
       <div class="panel panel-default"
         ng-show="deviceInitialized && activeAssay !== -1">
         <div class="panel-heading">
           <h3 class="panel-title">Cartridges ({{cartridges.length}} available)
-            <button class="btn btn-xs btn-default pull-right"
-              ng-click="scanCartridge()" type="button">Scan</button>
+            <button class="btn btn-xs btn-default pull-right" ng-click="scanCartridge()"
+              type="button">Scan</button>
           </h3>
         </div>
         <div class="panel-body">

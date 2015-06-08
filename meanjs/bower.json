@@ -21,7 +21,8 @@
     "socket.io": "~1.3.5",
     "c3": "~0.4.10",
     "jquery": "~2.1.4",
-    "angular-qrcode": "monospaced/angular-qrcode#~5.1.0"
+    "angular-qrcode": "monospaced/angular-qrcode#~5.1.0",
+    "bridgeit.js": "~1.0.6"
   },
   "resolutions": {
     "d3": "~3.5.5",

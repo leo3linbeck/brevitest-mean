@@ -7,13 +7,14 @@
       <video id="scanVideo" width="320" height="240" autoplay></video>
     </div>
     <div ng-hide="userMediaExists">
-      <form action="server.cgi" enctype="multipart/form-data" method="post">
-        <input type="file" capture="camera" accept="image/*" id="cameraInput" name="cameraInput">
-        <canvas ng-hide="true" id="qr-canvas" width="320" height="240"></canvas>
+      <form action="server.cgi" method="post" enctype="multipart/form-data">
+        <input type="file" id="scanVideo" accept="image/*" capture width="320" height="240">
       </form>
+      <canvas ng-show="photoLoaded" id="qr-canvas" width="320" height="240"></canvas>
     </div>
   </div>
   <div class="modal-footer">
+    <button ng-show="userMediaExists" class="btn btn-default" ng-click="startScan()">{{scansRemaining? "Scanning..." : "Restart Scan"}}</button>
     <button class="btn btn-primary" ng-click="ok()">OK</button>
     <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
   </div>

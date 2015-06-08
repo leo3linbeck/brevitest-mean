@@ -17,18 +17,61 @@ exports.get_inventory = function(req, res) {
 };
 
 exports.get_unused = function(req, res) {
+	var index = -1, pageNo;
+
 	Cartridge.find({
 		$and: [
 			{_assay: req.body.assayID},
 			{_test: {$exists: false}}
 		]
-	}).sort('-created').exec(function(err, cartridges) {
+	}).sort('-created').populate('user', 'displayName').exec(function(err, cartridges) {
 		if (err) {
 			return res.status(400).send({
 				message: errorHandler.getErrorMessage(err)
 			});
 		} else {
-			res.jsonp(cartridges);
+			console.log(req.body);
+			if (req.body.cartridgeID.length) {
+				console.log('CartridgeID', req.body.cartridgeID, cartridges);
+				_.some(cartridges, function(e, i) {
+					if (e._id.toHexString() === req.body.cartridgeID) {
+						console.log('Cartridge found', e, i);
+						index = i;
+						return true;
+					}
+					else {
+						return false;
+					}
+				});
+				console.log('Cartridge index', index);
+				if(index === -1) {
+					res.jsonp({
+						cartridges: [],
+						currentPage: -1,
+						activeCartridge: -1,
+						number_of_items: 0
+					});
+				}
+				else {
+					pageNo = parseInt(index / req.body.pageSize) + 1;
+					console.log('pageNo', pageNo);
+					res.jsonp({
+						cartridges: cartridges.slice((req.body.page - 1) * req.body.pageSize, req.body.page * req.body.pageSize),
+						currentPage: req.body.page,
+						activeCartridge: req.body.page === pageNo ? parseInt(index % req.body.pageSize) : -1,
+						number_of_items: cartridges.length
+					});
+				}
+			}
+			else {
+				console.log('No cartridge ID');
+				res.jsonp({
+					cartridges: cartridges.slice((req.body.page - 1) * req.body.pageSize, req.body.page * req.body.pageSize),
+					currentPage: req.body.page,
+					activeCartridge: -1,
+					number_of_items: cartridges.length
+				});
+			}
 		}
 	});
 };

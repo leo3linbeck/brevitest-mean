@@ -34,6 +34,7 @@ module.exports = {
 				'public/lib/d3/d3.min.js',
 				'public/lib/c3/c3.min.js',
 				'public/lib/angular-qr-scanner/src/jsqrcode-combined.min.js',
+				'public/lib/bridgeit.js/src/bridgeit.js',
 				'public/lib/underscore/underscore-min.js'
 			]
 		},

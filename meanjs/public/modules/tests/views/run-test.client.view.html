@@ -74,30 +74,41 @@
           </accordion>
         </div>
       </div>
-      <div ng-hide="activeCartridge === -1">
+      <!-- <div ng-hide="activeCartridge === -1">
         <qrcode data="{{cartridges[activeCartridge]._id}}" size="250"></qrcode>
-      </div>
+      </div> -->
     </div>
     <div class="col-md-4">
       <div class="panel panel-default"
         ng-show="deviceInitialized && activeAssay !== -1">
         <div class="panel-heading">
-          <h3 class="panel-title">Cartridges ({{cartridges.length}} available)
-            <button class="btn btn-xs btn-default pull-right" ng-click="scanCartridge()"
-              type="button">Scan</button>
-          </h3>
+          <h3 class="panel-title">Cartridges ({{totalItems}} available)</h3>
         </div>
         <div class="panel-body">
           <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
             <button class="btn btn-success btn-block"
-              ng-class="{disabled: activeCartridge === -1}" ng-click="beginTest()" ng-hide="testUnderway" type="button">Run
+              ng-class="{disabled: selectedCartridge._id === ''}" ng-click="beginTest()" ng-hide="testUnderway" type="button">Run
               Test</button>
             <button class="btn btn-info btn-block" ng-click="setupRun()" ng-show="testUnderway"
               type="button">Reset
               for Another Test</a>
           </div>
-          <br/><br/><br/>
-          <div class="list-group col-xs-12">
+          <br/>
+          <div id="scanDiv" ng-hide="true"></div>
+          <br/>
+          <div ng-show="selectedCartridge._id" style="text-align:center">
+            <strong>Selected Cartridge: {{selectedCartridge._id}}</strong>
+          </div>
+          <br/>
+          <div aria-label="..." class="btn-group" role="group">
+            <button class="btn btn-md btn-default" ng-click="scanCartridge()"
+              type="button">Scan Cartridge</button>
+            <button class="btn btn-md btn-default" ng-click="clickShowCartridges()"
+              type="button">{{showCartridges ? "Hide Cartridges" : "Show Cartridges"}}</button>
+          </div>
+          <br/>
+          <div class="list-group col-xs-12" ng-show="showCartridges">
+            <pagination boundary-links="true" class="pagination-sm" total-items="totalItems" max-size="5" num-pages="numPages" ng-model="currentPage" ng-change="pageChanged()" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></pagination>
             <a class="list-group-item {{activeCartridge === $index ? 'active' : ''}}" href=""
               ng-repeat="cartridge in cartridges" ng_click="clickCartridge($index)">{{cartridge._id | uppercase}}</a>
           </div>

@@ -16,5 +16,6 @@ angular.module('core').run(['Menus',
 		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Prescription', 'prescriptions/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Cartridge Labels', 'cartridges/labels');
 			}
 ]);

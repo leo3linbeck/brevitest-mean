@@ -33,8 +33,9 @@ module.exports = {
 				'public/lib/jquery/dist/jquery.min.js',
 				'public/lib/d3/d3.min.js',
 				'public/lib/c3/c3.min.js',
-				'public/lib/angular-qr-scanner/src/jsqrcode-combined.min.js',
-				'public/lib/bridgeit.js/src/bridgeit.js',
+				'public/lib/qrcode-generator/js/qrcode.js',
+				'public/lib/qrcode-generator/js/qrcode_UTF8.js',
+				'public/lib/angular-qrcode/qrcode.js',
 				'public/lib/underscore/underscore-min.js'
 			]
 		},

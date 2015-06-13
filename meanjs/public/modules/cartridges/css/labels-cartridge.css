@@ -1,0 +1,41 @@
+@media print {
+  .page-header {
+    display: none;
+  }
+  .pagination-sm {
+    display: none;
+  }
+}
+
+.cartridge-label-list {
+  background-color: white;
+  width: 8.5in;
+  height: 11in;
+  margin-left: 0.875in;
+  margin-top: 0.02in;
+  margin-right: 0.875in;
+  margin-bottom: 0;
+  padding: 0;
+}
+.cartridge-label {
+  float: left;
+  width: 3.3in;
+  height: 0.7in;
+  outline: 1px dotted;
+  margin-right: 0.95in;
+  padding: 0.1in;
+}
+.cartridge-label-qrcode {
+  float: left;
+}
+.cartridge-label-name {
+  position:relative;
+  left: .2in;
+  font-size: medium;
+  font-weight: bold;
+}
+.cartridge-label-date {
+  position:relative;
+  left: .2in;
+  font-size: small;
+}

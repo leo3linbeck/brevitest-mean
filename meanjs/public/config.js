@@ -14,7 +14,8 @@ var ApplicationConfiguration = (function() {
 		'ui.bootstrap',
 		'ui.utils',
 		'ui-notification',
-		'btford.socket-io'
+		'btford.socket-io',
+		'monospaced.qrcode'
 	];
 
 	// Add a new vertical module

@@ -74,9 +74,6 @@
           </accordion>
         </div>
       </div>
-      <!-- <div ng-hide="activeCartridge === -1">
-        <qrcode data="{{cartridges[activeCartridge]._id}}" size="250"></qrcode>
-      </div> -->
     </div>
     <div class="col-md-4">
       <div class="panel panel-default"
@@ -101,8 +98,6 @@
           </div>
           <br/>
           <div aria-label="..." class="btn-group" role="group">
-            <button class="btn btn-md btn-default" ng-click="scanCartridge()"
-              type="button">Scan Cartridge</button>
             <button class="btn btn-md btn-default" ng-click="clickShowCartridges()"
               type="button">{{showCartridges ? "Hide Cartridges" : "Show Cartridges"}}</button>
           </div>

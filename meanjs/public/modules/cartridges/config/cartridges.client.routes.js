@@ -9,6 +9,10 @@ angular.module('cartridges').config(['$stateProvider',
 			url: '/cartridges',
 			templateUrl: 'modules/cartridges/views/list-cartridges.client.view.html'
 		}).
+		state('cartridgeLabels', {
+			url: '/cartridges/labels',
+			templateUrl: 'modules/cartridges/views/labels-cartridges.client.view.html'
+		}).
 		state('loadCartridges', {
 			url: '/cartridges/load',
 			templateUrl: 'modules/cartridges/views/list-cartridges.client.view.html'

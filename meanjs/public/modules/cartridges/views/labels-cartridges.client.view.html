@@ -1,0 +1,25 @@
+<section class="cartridge-label-list"
+  data-ng-controller="CartridgeLabelsController" data-ng-init="load()">
+  <div class="page-header">
+    <pagination boundary-links="true" class="pagination-sm" first-text="&laquo;"
+      last-text="&raquo;" max-size="8" next-text="&rsaquo;" ng-change="pageChanged()" ng-model="currentPage"
+      previous-text="&lsaquo;" total-items="totalItems"></pagination>
+    <div>
+      <label class="control-label" for="skips">Skip</label>
+      <input data-ng-model="skips" id="description"
+        placeholder="Number of labels missing from sheet" type="number"></input>
+      <button class="btn btn-default" ng-click="load()">Reset</button>
+    </div>
+  </div>
+  <!-- <div class="col-md-6"> -->
+  <div data-ng-repeat="cartridge in cartridges">
+    <div class="cartridge-label" ng-click="dropLabel($index)">
+      <div class="cartridge-label-qrcode">
+        <qrcode data="{{cartridge._id}}" version="2" error-correction-level="M" size="48" tooltip="{{cartridge._id}}"></qrcode>
+      </div>
+      <div class="cartridge-label-name">{{cartridge._assay.name}}</div>
+      <div class="cartridge-label-date">Mfg date: {{cartridge.manufacturedOn | date:
+        "short"}}</div>
+    </div>
+  </div>
+</section>

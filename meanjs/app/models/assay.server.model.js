@@ -48,6 +48,9 @@ var AssaySchema = new Schema({
 	url: {
 		type: String
 	},
+	usableLife: {
+		type: Number
+	},
 	BCODE: [BCODESchema],
 	analysis: {
 		redMax: {type: Number},

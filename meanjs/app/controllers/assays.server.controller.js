@@ -15,10 +15,15 @@ exports.make10cartridges = function(req, res) {
 	var assay = req.body.assay;
 
 	for (i = 0; i < 10; i += 1) {
+		var now = new Date();
+		var exp = new Date();
+		exp.setDate(exp.getDate() + assay.usableLife);
 		var cartridge = new Cartridge ({
 			name: assay.name + Math.random(),
 			_assay: assay._id,
-			registeredOn: new Date(),
+			manufacturedOn: now,
+			expirationDate: exp,
+			registeredOn: now,
 			_registeredBy: req.user._id,
 			user: req.user
 		});

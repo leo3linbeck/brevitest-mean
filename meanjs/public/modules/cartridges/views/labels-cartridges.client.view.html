@@ -15,11 +15,13 @@
   <div data-ng-repeat="cartridge in cartridges">
     <div class="cartridge-label" ng-click="dropLabel($index)">
       <div class="cartridge-label-qrcode">
-        <qrcode data="{{cartridge._id}}" version="2" error-correction-level="M" size="48" tooltip="{{cartridge._id}}"></qrcode>
+        <qrcode data="{{cartridge._id}}" error-correction-level="M" size="64"
+          tooltip="{{cartridge._id}}" version="2"></qrcode>
       </div>
       <div class="cartridge-label-name">{{cartridge._assay.name}}</div>
-      <div class="cartridge-label-date">Mfg date: {{cartridge.manufacturedOn | date:
+      <div class="cartridge-label-date">Exp date: {{cartridge.expirationDate | date:
         "short"}}</div>
+      <div class="cartridge-label-underline"></div>
     </div>
   </div>
 </section>

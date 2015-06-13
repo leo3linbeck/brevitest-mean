@@ -31,7 +31,12 @@
                 <input class="form-control" data-ng-model="assay.url" id="url"
                   placeholder="Enter URL for more information here" type="url"></input>
               </div>
-              <div class="col-xs-6 col-md-4 col-md-offset-2">
+              <label class="control-label" for="usableLife">Usable Life (days)</label>
+              <div class="controls">
+                <input class="form-control" data-ng-model="assay.usableLife" id="usableLife"
+                  placeholder="Enter days of usable life" type="number"></input>
+              </div>
+        <div class="col-xs-6 col-md-4 col-md-offset-2">
                 <br/>
                 <button class="btn btn-primary" ng-click="make10Cartridges()" type="button">Make
                   10 Cartridges</button>

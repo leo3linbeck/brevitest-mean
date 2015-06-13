@@ -32,6 +32,9 @@ var CartridgeSchema = new Schema({
 		type: Date,
 		default: Date.now
 	},
+	expirationDate: {
+		type: Date
+	},
 	orderedOn: {
 		type: Date
 	},

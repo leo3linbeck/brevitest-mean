@@ -44,9 +44,12 @@
 			$httpBackend = _$httpBackend_;
 			$location = _$location_;
 
+            var windowMock = { confirm: function(msg) { return true } };
+
 			// Initialize the Assays controller.
 			AssaysController = $controller('AssaysController', {
-				$scope: scope
+				$scope: scope,
+                $window: windowMock
 			});
 		}));
 
@@ -79,11 +82,15 @@
 				BCODE: []
 			});
 
+			//$httpBackend.expectGET('assays/525a8422f6d0f87f0e407a33').respond(sampleAssay);
+            //$httpBackend.expectGET('/cartridges/get_inventory/undefined').respond(sampleAssay)
+
 			// Set the URL parameter
 			$stateParams.assayId = '525a8422f6d0f87f0e407a33';
 
 			// Set GET response
 			$httpBackend.expectGET(/assays\/([0-9a-fA-F]{24})$/).respond(sampleAssay);
+            $httpBackend.expectGET('/cartridges/get_inventory/undefined').respond(sampleAssay);
 
 			// Run controller functionality
 			scope.findOne();
@@ -99,7 +106,7 @@
 				name: 'New Assay',
 				analysis: {},
 				standardCurve: [],
-				BCODE: []
+				BCODE: [{"command":"Start Test","params":"0,0"},{"command":"Read Sensors","params":""},{"command":"Finish Test","params":""}] /////////////
 			});
 
 			// Create a sample Assay response

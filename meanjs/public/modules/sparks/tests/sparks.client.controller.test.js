@@ -44,9 +44,12 @@
 			$httpBackend = _$httpBackend_;
 			$location = _$location_;
 
+			var windowMock = { confirm: function(msg) { return true } };
+
 			// Initialize the Sparks controller.
 			SparksController = $controller('SparksController', {
-				$scope: scope
+				$scope: scope,
+                $window: windowMock
 			});
 		}));
 

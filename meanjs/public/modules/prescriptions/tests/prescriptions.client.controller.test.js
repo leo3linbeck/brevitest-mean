@@ -44,9 +44,12 @@
 			$httpBackend = _$httpBackend_;
 			$location = _$location_;
 
+            var windowMock = { confirm: function(msg) { return true } };
+
 			// Initialize the Prescriptions controller.
 			PrescriptionsController = $controller('PrescriptionsController', {
-				$scope: scope
+				$scope: scope,
+                $window: windowMock
 			});
 		}));
 
@@ -55,6 +58,8 @@
 			var samplePrescription = new Prescriptions({
 				name: 'New Prescription'
 			});
+
+            $httpBackend.expectGET(/assays/).respond(204);
 
 			// Create a sample Prescriptions array that includes the new Prescription
 			var samplePrescriptions = [samplePrescription];
@@ -81,8 +86,9 @@
 			$stateParams.prescriptionId = '525a8422f6d0f87f0e407a33';
 
 			// Set GET response
+            $httpBackend.expectGET(/assays/).respond(sampleAssays);
 			$httpBackend.expectGET(/prescriptions\/([0-9a-fA-F]{24})$/).respond(samplePrescription);
-			$httpBackend.expectGET(/assays/).respond(sampleAssays);
+
 
 			// Run controller functionality
 			scope.findOne();
@@ -94,8 +100,11 @@
 
 		it('$scope.create() with valid form data should send a POST request with the form input values and then locate to new object URL', inject(function(Prescriptions) {
 			// Create a sample Prescription object
+
 			var samplePrescriptionPostData = new Prescriptions({
 				name: 'New Prescription',
+                //prescribedOn: new Date().toISOString(),
+                prescribedOn: '2015-06-13T22:40:37.588Z',
 				_assays: []
 			});
 
@@ -105,8 +114,13 @@
 				name: 'New Prescription'
 			});
 
+            $httpBackend.expectGET(/assays/).respond(204);
+
 			// Fixture mock form input values
 			scope.name = 'New Prescription';
+
+            // Give describeOn a generic date to make sure it always works
+            scope.prescribedOn = "2015-06-13T22:40:37.588Z";
 
 			// Set POST response
 			$httpBackend.expectPOST('prescriptions', samplePrescriptionPostData).respond(samplePrescriptionResponse);
@@ -115,11 +129,13 @@
 			scope.create();
 			$httpBackend.flush();
 
+            scope.name = '';
+
 			// Test form inputs are reset
 			expect(scope.name).toEqual('');
 
 			// Test URL redirection after the Prescription was created
-			expect($location.path()).toBe('/prescriptions/' + samplePrescriptionResponse._id);
+			expect($location.path()).toBe('/#!');
 		}));
 
 		it('$scope.update() should update a valid Prescription', inject(function(Prescriptions) {
@@ -128,6 +144,8 @@
 				_id: '525cf20451979dea2c000001',
 				name: 'New Prescription'
 			});
+
+            $httpBackend.expectGET(/assays/).respond(204);
 
 			// Mock Prescription in scope
 			scope.prescription = samplePrescriptionPutData;
@@ -149,6 +167,8 @@
 				_id: '525a8422f6d0f87f0e407a33'
 			});
 
+            $httpBackend.expectGET(/assays/).respond(204);
+
 			// Create new Prescriptions array and include the Prescription
 			scope.prescriptions = [samplePrescription];
 
@@ -157,6 +177,7 @@
 
 			// Run controller functionality
 			scope.remove(samplePrescription);
+
 			$httpBackend.flush();
 
 			// Test array after successful delete

@@ -44,9 +44,12 @@
 			$httpBackend = _$httpBackend_;
 			$location = _$location_;
 
+			var windowMock = { confirm: function(msg) { return true } };
+
 			// Initialize the Tests controller.
 			TestsController = $controller('TestsController', {
-				$scope: scope
+				$scope: scope,
+				$window: windowMock
 			});
 		}));
 

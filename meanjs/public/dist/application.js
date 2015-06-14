@@ -4,7 +4,19 @@
 var ApplicationConfiguration = (function() {
 	// Init module configuration options
 	var applicationModuleName = 'brevitest';
-	var applicationModuleVendorDependencies = ['ngResource', 'ngCookies',  'ngAnimate',  'ngTouch',  'ngSanitize',  'ui.router', 'ui.bootstrap', 'ui.utils', 'ui-notification', 'btford.socket-io'];
+	var applicationModuleVendorDependencies = [
+		'ngResource',
+		'ngCookies',
+		'ngAnimate',
+		'ngTouch',
+		'ngSanitize',
+		'ui.router',
+		'ui.bootstrap',
+		'ui.utils',
+		'ui-notification',
+		'btford.socket-io',
+		'monospaced.qrcode'
+	];
 
 	// Add a new vertical module
 	var registerModule = function(moduleName, dependencies) {
@@ -814,6 +826,10 @@ angular.module('cartridges').config(['$stateProvider',
 			url: '/cartridges',
 			templateUrl: 'modules/cartridges/views/list-cartridges.client.view.html'
 		}).
+		state('cartridgeLabels', {
+			url: '/cartridges/labels',
+			templateUrl: 'modules/cartridges/views/labels-cartridges.client.view.html'
+		}).
 		state('loadCartridges', {
 			url: '/cartridges/load',
 			templateUrl: 'modules/cartridges/views/list-cartridges.client.view.html'
@@ -900,6 +916,7 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 		};
 
 		$scope.currentPage = 0;
+		$scope.itemsPerPage = 10;
 
 		$scope.pageChanged = function() {
 			console.log($scope.currentPage);
@@ -927,6 +944,116 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 			$scope.cartridge = Cartridges.get({
 				cartridgeId: $stateParams.cartridgeId
 			});
+		};
+	}
+]);
+
+'use strict';
+
+var _ = window._;
+
+// Cartridges controller
+angular.module('cartridges').controller('CartridgeLabelsController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Notification', 'Cartridges', 'Assays',
+	function($scope, $http, $stateParams, $location, $window, Authentication, Notification, Cartridges, Assays) {
+		$scope.authentication = Authentication;
+		if (!$scope.authentication || $scope.authentication.user === '') {
+			Notification.error('You must sign in to use Brevitest™');
+			$location.path('/signin');
+		}
+
+		$scope.showResultsOnOpen = true;
+
+		$scope.getQRCode = function(indx) {
+			var id = $scope.cartridges[indx]._id;
+			var qr = qrcode(2, 'Q');  // jshint ignore:line
+			qr.addData(id);
+			qr.make();
+			console.log('qr', qr);
+		};
+
+		$scope.selectedCartridges = {};
+		$scope.numberOfSelectedCartridges = 0;
+		$scope.selectCartridge = function(indx) {
+			var id = $scope.cartridges[indx]._id;
+			$scope.selectedCartridges[id] = !$scope.selectedCartridges[id];
+			$scope.numberOfSelectedCartridges += $scope.selectedCartridges[id] ? 1 : -1;
+		};
+		$scope.cartridgeSelected = function(indx) {
+			return !!$scope.selectedCartridges[$scope.cartridges[indx]._id];
+		};
+		$scope.selectAll = function() {
+			$scope.cartridges.forEach(function(e, i) {
+				$scope.numberOfSelectedCartridges += $scope.selectedCartridges[e._id] ? 0 : 1;
+				$scope.selectedCartridges[e._id] = true;
+			});
+		};
+		$scope.deselectAll = function() {
+			$scope.cartridges.forEach(function(e, i) {
+				$scope.numberOfSelectedCartridges += $scope.selectedCartridges[e._id] ? -1 : 0;
+				$scope.selectedCartridges[e._id] = false;
+			});
+		};
+
+		// Update existing Cartridge
+		$scope.update = function() {
+			var cartridge = $scope.cartridge;
+
+			cartridge.$update(function() {
+				$location.path('cartridges/' + cartridge._id);
+			}, function(errorResponse) {
+				$scope.error = errorResponse.data.message;
+			});
+		};
+
+		$scope.skips = 0;
+
+		$scope.adjustSkips = function() {
+			$http.post('/cartridges/load-labels', {
+				page: $scope.currentPage,
+				pageSize: $scope.itemsPerPage
+			}).
+				success(function(data, status, headers, config) {
+					console.log(data);
+					$scope.cartridges = data.cartridges;
+					for (var i = 0; i < $scope.skips; i += 1) {
+						$scope.cartridges.splice(0, 0, {_id: 'nothing'});
+					}
+					$scope.totalItems = data.number_of_items + $scope.skips;
+					$scope.totalItems = $scope.totalItems > 32 ? 32 : $scope.totalItems;
+					$scope.cartridges.length = $scope.totalItems;
+				}).
+				error(function(err, status, headers, config) {
+					console.log(err);
+					Notification.error(err.message);
+				});
+		};
+
+		$scope.dropLabel = function(indx) {
+			$scope.cartridges.splice(indx, 1);
+		};
+
+		$scope.currentPage = 0;
+		$scope.itemsPerPage = 32;
+
+		$scope.pageChanged = function() {
+			console.log($scope.currentPage);
+			$scope.load();
+		};
+
+		$scope.load = function() {
+	      $http.post('/cartridges/load-labels', {
+					page: $scope.currentPage,
+					pageSize: $scope.itemsPerPage
+				}).
+					success(function(data, status, headers, config) {
+	          console.log(data);
+						$scope.cartridges = data.cartridges;
+						$scope.totalItems = data.number_of_items;
+				  }).
+				  error(function(err, status, headers, config) {
+						console.log(err);
+						Notification.error(err.message);
+				  });
 		};
 	}
 ]);
@@ -962,6 +1089,7 @@ angular.module('core').run(['Menus',
 		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Prescription', 'prescriptions/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Cartridge Labels', 'cartridges/labels');
 			}
 ]);
 
@@ -1901,7 +2029,6 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
       if ($window.confirm('Are you sure you want to delete this record?')) {
         if (prescription) {
           prescription.$remove();
-
           for (var i in $scope.prescriptions) {
             if ($scope.prescriptions[i] === prescription) {
               $scope.prescriptions.splice(i, 1);
@@ -2540,10 +2667,11 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 'use strict';
 
 var _ = window._;
+var $ = window.$;
 
 // Tests controller
-angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', '$modal', 'Authentication', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Sparks', 'Notification',
-  function($scope, $http, $location, $modal, Authentication, Tests, Prescriptions, Devices, Cartridges, Sparks, Notification) {
+angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', '$modal', '$window','Authentication', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Sparks', 'Notification',
+  function($scope, $http, $location, $modal, $window, Authentication, Tests, Prescriptions, Devices, Cartridges, Sparks, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       Notification.error('You must sign in to use Brevitest™');
@@ -2570,7 +2698,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
       success(function(data, status, headers, config) {
         Notification.success('Spark list refreshed');
         $scope.setupRun();
-        // addAlert($scope.alerts, 'success', 'Spark list refreshed');
       }).
       error(function(err, status, headers, config) {
         console.log(err, status, headers(), config);
@@ -2582,25 +2709,27 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
       $scope.testUnderway = false;
       $scope.activePrescription = -1;
       $scope.activeAssay = -1;
-      $scope.deviceInitialized = false;
+      $scope.deviceInitialized = true;
       $scope.activeDevice = -1;
       $scope.activeCartridge = -1;
+      $scope.selectedCartridge = '';
+      $scope.showCartridges = false;
       $http.get('/prescriptions/unfilled').
-      success(function(data, status, headers, config) {
-        $scope.prescriptions = data;
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        Notification.error(err.message);
-      });
+        success(function(data, status, headers, config) {
+          $scope.prescriptions = data;
+        }).
+        error(function(err, status, headers, config) {
+          console.log(err);
+          Notification.error(err.message);
+        });
       $http.get('/devices/available').
-      success(function(data, status, headers, config) {
-        $scope.devices = data;
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        Notification.error(err.message);
-      });
+        success(function(data, status, headers, config) {
+          $scope.devices = data;
+        }).
+        error(function(err, status, headers, config) {
+          console.log(err);
+          Notification.error(err.message);
+        });
     };
 
     var currentPrescription = -1;
@@ -2612,25 +2741,66 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
       }
       currentPrescription = indx;
     };
+
+    $scope.currentPage = 1;
+    $scope.itemsPerPage = 10;
+
+		$scope.loadCartridges = function(forceLoad) {
+      if (forceLoad || $scope.showCartridges) {
+	      $http.post('/cartridges/unused', {
+					page: $scope.currentPage,
+					pageSize: $scope.itemsPerPage,
+          assayID: $scope.pendingAssays[$scope.activeAssay]._id,
+          cartridgeID: $scope.selectedCartridge._id
+				}).
+				success(function(data, status, headers, config) {
+          console.log(data);
+          if (data.currentPage === -1) {
+            Notification.error($scope.selectedCartridge._id + ' is not a cartridge for ' + $scope.pendingAssays[$scope.activeAssay].name);
+            $scope.selectedCartridge._id = '';
+            $scope.showCartridges = false;
+            $scope.activeCartridge = -1;
+          }
+          else {
+            $scope.cartridges = data.cartridges;
+  					$scope.totalItems = data.number_of_items;
+            $scope.currentPage = data.currentPage;
+            $scope.activeCartridge = data.activeCartridge;
+          }
+			  }).
+			  error(function(err, status, headers, config) {
+					console.log(err);
+					Notification.error(err.message);
+			  });
+      }
+		};
+
+    $scope.pageChanged = function() {
+			console.log($scope.currentPage);
+			$scope.loadCartridges();
+		};
+
     $scope.clickAssay = function(indx) {
       $scope.activePrescription = currentPrescription;
       $scope.activeAssay = indx;
-      $http.post('/cartridges/unused', {
-        assayID: $scope.pendingAssays[$scope.activeAssay]._id
-      }).
-      success(function(data, status, headers, config) {
-        $scope.cartridges = data;
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        Notification.error(err.message);
-      });
+      $scope.activeCartridge = -1;
+      $scope.selectedCartridge = {_id: ''};
+      $scope.currentPage = 1;
+      $scope.loadCartridges(true);
     };
     $scope.clickDevice = function(indx) {
       $scope.activeDevice = indx;
     };
     $scope.clickCartridge = function(indx) {
       $scope.activeCartridge = indx;
+      $scope.selectedCartridge = $scope.cartridges[indx];
+  };
+
+    $scope.clickShowCartridges = function() {
+      $scope.showCartridges = !$scope.showCartridges;
+      if ($scope.showCartridges) {
+        $scope.loadCartridges();
+      }
     };
 
     $scope.initializeDevice = function() {
@@ -2667,7 +2837,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
         Notification.error('Please select a device for testing');
         return;
       }
-      if ($scope.activeCartridge < 0) {
+      if ($scope.selectedCartridge._id === '') {
         Notification.error('Please select a cartridge for testing');
         return;
       }
@@ -2679,12 +2849,9 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
         Notification.error('Unknown device');
         return;
       }
-      if (!$scope.cartridges[$scope.activeCartridge]) {
-        Notification.error('Unknown cartridge');
-        return;
-      }
+
       var assay = $scope.pendingAssays[$scope.activeAssay];
-      var cartridge = $scope.cartridges[$scope.activeCartridge];
+      var cartridge = $scope.selectedCartridge;
       var device = $scope.devices[$scope.activeDevice];
       var prescription = $scope.prescriptions[$scope.activePrescription];
       $http.post('/tests/begin', {
@@ -2701,100 +2868,17 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
       success(function(data, status, headers, config) {
         Notification.success('Test underway');
         $scope.testUnderway = true;
-        $http.post('/cartridges/unused', {
-          assayID: assay._id
-        }).
-        success(function(data, status, headers, config) {
-          $scope.cartridges = data;
-        }).
-        error(function(err, status, headers, config) {
-          console.log(err);
-          Notification.error(err.message);
-        });
+        $scope.currentPage = 1;
+        $scope.selectedCartridge = {_id: ''};
+        $scope.loadCartridges();
       }).
       error(function(err, status, headers, config) {
         console.log(err);
         Notification.error(err.message);
       });
     };
-
-    $scope.userMediaExists = !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
-      navigator.mozGetUserMedia || navigator.msGetUserMedia);
-    console.log('UserMedia exists?', $scope.userMediaExists);
-
-    $scope.setupModal = function() {
-      return;
-    };
-
-    $scope.scanCartridge = function() {
-      var modalInstance = $modal.open({
-        templateUrl: 'modules/tests/views/scan-cartridge-modal.view.html',
-        controller: 'ScanCartridgeModalInstanceController',
-        size: 'sm',
-        scope: $scope,
-        resolve: {
-          userMediaExists: function() {
-            return $scope.userMediaExists;
-          }
-        }
-      });
-
-			modalInstance.opened.then(function() {
-				if ($scope.userMediaExists) {
-			    $scope.canvas = document.getElementById('canvas');
-					$scope.context = $scope.canvas.getContext('2d');
-					$scope.video = document.getElementById('video');
-					$scope.videoObj = {video: true};
-					var errBack = function(error) {
-			        console.log('Video capture error: ', error.code);
-			      };
-
-			    // Put video listeners into place
-			    if (navigator.getUserMedia) { // Standard
-			      navigator.getUserMedia($scope.videoObj, function(stream) {
-							$scope.video.src = stream;
-							$scope.video.play();
-			      }, errBack);
-			    } else if (navigator.webkitGetUserMedia) { // WebKit-prefixed
-			      navigator.webkitGetUserMedia($scope.videoObj, function(stream) {
-							$scope.video.src = window.webkitURL.createObjectURL(stream);
-							$scope.video.play();
-			      }, errBack);
-			    } else if (navigator.mozGetUserMedia) { // Firefox-prefixed
-			      navigator.mozGetUserMedia($scope.videoObj, function(stream) {
-							$scope.video.src = window.URL.createObjectURL(stream);
-							$scope.video.play();
-			      }, errBack);
-			    }
-			  }
-			});
-
-      modalInstance.result.then(function(result) {
-        console.log(result);
-      }, function() {
-        console.log('Modal dismissed at: ' + new Date());
-      });
-    };
-
   }
 ]);
-
-angular.module('tests').controller('ScanCartridgeModalInstanceController', ["$scope", "$modalInstance", "userMediaExists", function($scope, $modalInstance, userMediaExists) {
-
-  $scope.snapPhoto = function() {
-    if (userMediaExists) {
-      $scope.context.drawImage($scope.video, 0, 0, 640, 480);
-    }
-  };
-
-  $scope.ok = function() {
-    $modalInstance.close('result');
-  };
-
-  $scope.cancel = function() {
-    $modalInstance.dismiss('cancel');
-  };
-}]);
 
 'use strict';
 

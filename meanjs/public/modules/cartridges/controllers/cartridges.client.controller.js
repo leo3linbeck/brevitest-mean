@@ -5,7 +5,6 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 	function($scope, $http, $stateParams, $location, $window, Authentication, Notification, Cartridges, Assays) {
 		$scope.authentication = Authentication;
 		if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
 

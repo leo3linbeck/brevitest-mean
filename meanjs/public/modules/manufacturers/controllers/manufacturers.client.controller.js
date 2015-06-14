@@ -5,7 +5,6 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
   function($scope, $stateParams, $location, $window, Authentication, Manufacturers) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-      Notification.error('You must sign in to use Brevitest™');
       $location.path('/signin');
     }
 

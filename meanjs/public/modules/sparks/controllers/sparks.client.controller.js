@@ -5,7 +5,6 @@ angular.module('sparks').controller('SparksController', ['$scope', '$http', '$st
   function($scope, $http, $stateParams, $location, $timeout, $window, Authentication, Sparks, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-      Notification.error('You must sign in to use Brevitest™');
       $location.path('/signin');
     }
 

@@ -134,7 +134,6 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
   function($scope, $http, $stateParams, $location, $window, Authentication, Assays, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-      Notification.error('You must sign in to use Brevitest™');
       $location.path('/signin');
     }
 
@@ -856,7 +855,6 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 	function($scope, $http, $stateParams, $location, $window, Authentication, Notification, Cartridges, Assays) {
 		$scope.authentication = Authentication;
 		if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
 
@@ -957,7 +955,6 @@ angular.module('cartridges').controller('CartridgeLabelsController', ['$scope', 
 	function($scope, $http, $stateParams, $location, $window, Authentication, Notification, Cartridges, Assays) {
 		$scope.authentication = Authentication;
 		if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
 
@@ -1136,7 +1133,6 @@ angular.module('core').controller('HomeController', ['$scope', '$location', 'Aut
 		// This provides Authentication context.
 		$scope.authentication = Authentication;
 		if (!$scope.authentication.user) {
-			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
 
@@ -1356,7 +1352,6 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
   function($scope, $http, $stateParams, $location, $window, Authentication, DeviceModels, Devices) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-      Notification.error('You must sign in to use Brevitest™');
       $location.path('/signin');
     }
 
@@ -1486,7 +1481,6 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
   function($scope, $http, $stateParams, $location, $window, Authentication, Devices, DeviceModels, Sparks, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-      Notification.error('You must sign in to use Brevitest™');
       $location.path('/signin');
     }
 
@@ -1682,7 +1676,6 @@ angular.module('healthcare-providers').controller('HealthcareProvidersController
   function($scope, $stateParams, $location, $window, Authentication, HealthcareProviders) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-      Notification.error('You must sign in to use Brevitest™');
       $location.path('/signin');
     }
 
@@ -1811,7 +1804,6 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
   function($scope, $stateParams, $location, $window, Authentication, Manufacturers) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-      Notification.error('You must sign in to use Brevitest™');
       $location.path('/signin');
     }
 
@@ -1943,7 +1935,6 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
   function($scope, $stateParams, $location, $window, Authentication, Prescriptions, Assays) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-      Notification.error('You must sign in to use Brevitest™');
       $location.path('/signin');
     }
 
@@ -2121,7 +2112,6 @@ angular.module('sparks').controller('SparksController', ['$scope', '$http', '$st
   function($scope, $http, $stateParams, $location, $timeout, $window, Authentication, Sparks, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-      Notification.error('You must sign in to use Brevitest™');
       $location.path('/signin');
     }
 
@@ -2441,7 +2431,6 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 	function($scope, $http, $timeout, $location, Authentication, Tests, Notification, Socket) {
 		$scope.authentication = Authentication;
 		if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
 
@@ -2513,7 +2502,6 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
   function($scope, $http, $location, Authentication, Tests, Sparks, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-			Notification.error('You must sign in to use Brevitest™');
 			$location.path('/signin');
 		}
 
@@ -2674,7 +2662,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
   function($scope, $http, $location, $modal, $window, Authentication, Tests, Prescriptions, Devices, Cartridges, Sparks, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-      Notification.error('You must sign in to use Brevitest™');
       $location.path('/signin');
     }
 
@@ -2887,7 +2874,6 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
   function($scope, $stateParams, $location, $http, $window, Authentication, Tests, Assays) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
-      Notification.error('You must sign in to use Brevitest™');
       $location.path('/signin');
     }
 

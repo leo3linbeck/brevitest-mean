@@ -44,9 +44,12 @@
 			$httpBackend = _$httpBackend_;
 			$location = _$location_;
 
+            var windowMock = { confirm: function(msg) { return true } };
+
 			// Initialize the Devices controller.
 			DevicesController = $controller('DevicesController', {
-				$scope: scope
+				$scope: scope,
+                $window: windowMock
 			});
 		}));
 
@@ -76,7 +79,8 @@
 			var sampleSparks = [];
 
 			var sampleDevice = new Devices({
-				name: 'New Device'
+				name: 'New Device',
+                _spark: {connected:true}
 			});
 
 			// Set the URL parameter

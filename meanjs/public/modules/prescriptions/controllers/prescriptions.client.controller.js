@@ -93,7 +93,6 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
       if ($window.confirm('Are you sure you want to delete this record?')) {
         if (prescription) {
           prescription.$remove();
-
           for (var i in $scope.prescriptions) {
             if ($scope.prescriptions[i] === prescription) {
               $scope.prescriptions.splice(i, 1);

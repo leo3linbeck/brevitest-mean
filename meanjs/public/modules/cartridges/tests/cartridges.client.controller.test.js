@@ -44,7 +44,7 @@
 			$httpBackend = _$httpBackend_;
 			$location = _$location_;
 
-			var windowMock = { confirm: function(msg) { return true } };
+			var windowMock = { confirm: function(msg) { return true; } };
 
 			// Initialize the Cartridges controller.
 			CartridgesController = $controller('CartridgesController', {

@@ -44,7 +44,7 @@
 			$httpBackend = _$httpBackend_;
 			$location = _$location_;
 
-            var windowMock = { confirm: function(msg) { return true } };
+            var windowMock = { confirm: function(msg) { return true; } };
 
 			// Initialize the Assays controller.
 			AssaysController = $controller('AssaysController', {
@@ -106,7 +106,7 @@
 				name: 'New Assay',
 				analysis: {},
 				standardCurve: [],
-				BCODE: [{"command":"Start Test","params":"0,0"},{"command":"Read Sensors","params":""},{"command":"Finish Test","params":""}] /////////////
+				BCODE: [{'command':'Start Test','params':'0,0'},{'command':'Read Sensors','params':''},{'command':'Finish Test','params':''}]
 			});
 
 			// Create a sample Assay response

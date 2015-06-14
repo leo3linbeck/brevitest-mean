@@ -44,7 +44,7 @@
 			$httpBackend = _$httpBackend_;
 			$location = _$location_;
 
-            var windowMock = { confirm: function(msg) { return true } };
+            var windowMock = { confirm: function(msg) { return true; } };
 
 			// Initialize the Prescriptions controller.
 			PrescriptionsController = $controller('PrescriptionsController', {
@@ -120,7 +120,7 @@
 			scope.name = 'New Prescription';
 
             // Give describeOn a generic date to make sure it always works
-            scope.prescribedOn = "2015-06-13T22:40:37.588Z";
+            scope.prescribedOn = '2015-06-13T22:40:37.588Z';
 
 			// Set POST response
 			$httpBackend.expectPOST('prescriptions', samplePrescriptionPostData).respond(samplePrescriptionResponse);

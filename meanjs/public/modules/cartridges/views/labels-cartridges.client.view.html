@@ -6,17 +6,17 @@
       previous-text="&lsaquo;" total-items="totalItems"></pagination>
     <div>
       <label class="control-label" for="skips">Skip</label>
-      <input data-ng-model="skips" id="description"
+      <input data-ng-model="skips" style="width:50px" id="description" ng-change="adjustSkips()"
         placeholder="Number of labels missing from sheet" type="number"></input>
       <button class="btn btn-default" ng-click="load()">Reset</button>
     </div>
   </div>
   <!-- <div class="col-md-6"> -->
   <div data-ng-repeat="cartridge in cartridges">
-    <div class="cartridge-label" ng-click="dropLabel($index)">
+    <div class="cartridge-label" ng-click="dropLabel($index)" tooltip="Click to remove from printing set" tooltip-placement="left" ng-style="{'visibility': cartridge._id === 'nothing' ? 'hidden' : 'visible'}">
       <div class="cartridge-label-qrcode">
-        <qrcode data="{{cartridge._id}}" error-correction-level="M" size="64"
-          tooltip="{{cartridge._id}}" version="2"></qrcode>
+        <qrcode data="{{cartridge._id}}" error-correction-level="M" size="60"
+          tooltip="{{cartridge._id}}"  tooltip-placement="right" version="2"></qrcode>
       </div>
       <div class="cartridge-label-name">{{cartridge._assay.name}}</div>
       <div class="cartridge-label-date">Exp date: {{cartridge.expirationDate | date:

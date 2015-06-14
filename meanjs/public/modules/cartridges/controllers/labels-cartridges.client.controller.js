@@ -55,6 +55,33 @@ angular.module('cartridges').controller('CartridgeLabelsController', ['$scope', 
 			});
 		};
 
+		$scope.skips = 0;
+
+		$scope.adjustSkips = function() {
+			$http.post('/cartridges/load-labels', {
+				page: $scope.currentPage,
+				pageSize: $scope.itemsPerPage
+			}).
+				success(function(data, status, headers, config) {
+					console.log(data);
+					$scope.cartridges = data.cartridges;
+					for (var i = 0; i < $scope.skips; i += 1) {
+						$scope.cartridges.splice(0, 0, {_id: 'nothing'});
+					}
+					$scope.totalItems = data.number_of_items + $scope.skips;
+					$scope.totalItems = $scope.totalItems > 32 ? 32 : $scope.totalItems;
+					$scope.cartridges.length = $scope.totalItems;
+				}).
+				error(function(err, status, headers, config) {
+					console.log(err);
+					Notification.error(err.message);
+				});
+		};
+
+		$scope.dropLabel = function(indx) {
+			$scope.cartridges.splice(indx, 1);
+		};
+
 		$scope.currentPage = 0;
 		$scope.itemsPerPage = 32;
 
@@ -64,7 +91,7 @@ angular.module('cartridges').controller('CartridgeLabelsController', ['$scope', 
 		};
 
 		$scope.load = function() {
-	      $http.post('/cartridges/load', {
+	      $http.post('/cartridges/load-labels', {
 					page: $scope.currentPage,
 					pageSize: $scope.itemsPerPage
 				}).

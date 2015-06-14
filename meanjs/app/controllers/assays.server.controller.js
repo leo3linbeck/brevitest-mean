@@ -23,8 +23,6 @@ exports.make10cartridges = function(req, res) {
 			_assay: assay._id,
 			manufacturedOn: now,
 			expirationDate: exp,
-			registeredOn: now,
-			_registeredBy: req.user._id,
 			user: req.user
 		});
 		promises.push(new Q(cartridge.save()));

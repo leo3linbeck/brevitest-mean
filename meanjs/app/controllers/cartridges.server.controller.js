@@ -175,6 +175,29 @@ exports.load = function(req, res) {
 	});
 };
 
+exports.loadLabels = function(req, res) {
+	Cartridge.find({registeredOn: {$exists:false}}).paginate(req.body.page, req.body.pageSize).sort('-created').populate([{
+		path: 'user',
+	  select: 'displayName'
+	}, {
+	  path: '_assay',
+	  select: 'name'
+	}]).exec(function(err, cartridges, total) {
+		if (err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		} else {
+			Cartridge.count({registeredOn: {$exists:false}}).exec(function(err, count) {
+				res.jsonp({
+					cartridges: cartridges,
+					number_of_items: count
+				});
+			});
+		}
+	});
+};
+
 /**
  * Cartridge middleware
  */

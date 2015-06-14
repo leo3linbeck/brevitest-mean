@@ -11,14 +11,14 @@
   background-color: white;
   width: 8.5in;
   height: 11in;
-  margin: 0.018in 0.875in 0 0.875in;
+  margin: 0.05in 0.875in 0 1in;
   padding: 0;
 }
 .cartridge-label {
   float: left;
-  width: 3.3in;
-  height: 0.7059in;
-  margin-right: 0.95in;
+  width: 3.25in;
+  height: 0.71in;
+  margin-right: 1in;
 }
 .cartridge-label-qrcode {
   float: left;

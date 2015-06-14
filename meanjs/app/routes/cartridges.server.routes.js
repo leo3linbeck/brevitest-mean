@@ -9,6 +9,9 @@ module.exports = function(app) {
 		.get(cartridges.list)
 		.post(users.requiresLogin, cartridges.create);
 
+	app.route('/cartridges/load-labels')
+		.post(cartridges.loadLabels);
+
 	app.route('/cartridges/load')
 		.post(cartridges.load);
 

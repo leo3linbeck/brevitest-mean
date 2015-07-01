@@ -1082,12 +1082,12 @@ angular.module('core').run(['Menus',
 		Menus.addSubMenuItem('topbar', 'view', 'Sparks', 'sparks');
 
 		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '');
-		Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create', 'menuItemURL', 'menu.isPublic', ['admin']);
 		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Prescription', 'prescriptions/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Cartridge Labels', 'cartridges/labels');
-			}
+	}
 ]);
 
 'use strict';
@@ -1153,7 +1153,7 @@ angular.module('core').service('Menus', [
 		this.menus = {};
 
 		// A private function for rendering decision
-		var shouldRender = function(user) {
+		var shouldRender = function (user) {
 			if (user) {
 				if (!!~this.roles.indexOf('*')) {
 					return true;
@@ -1172,6 +1172,16 @@ angular.module('core').service('Menus', [
 
 			return false;
 		};
+
+		//var isAdmin = function (user) {
+		//	if (user) {
+		//		if (user.roles.indexOf('admin') > -1) {
+		//			return true;
+		//		}
+		//	} else {
+		//		return false;
+		//	}
+		//};
 
 		// Validate menu existance
 		this.validateMenuExistance = function(menuId) {
@@ -3194,6 +3204,7 @@ angular.module('users').factory('Authentication', [
 		return _this._data;
 	}
 ]);
+
 'use strict';
 
 // Users service used for communicating with the users REST endpoint

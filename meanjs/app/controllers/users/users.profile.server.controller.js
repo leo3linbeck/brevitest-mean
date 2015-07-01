@@ -9,6 +9,55 @@ var _ = require('lodash'),
 	passport = require('passport'),
 	User = mongoose.model('User');
 
+
+
+/**
+ * List of Users
+ */
+exports.list = function (req, res) {
+    User.find().sort('-created').populate('user', 'displayName').exec(function (err, users) {
+        if (err) {
+            return res.status(400).send({
+                message: errorHandler.getErrorMessage(err)
+            });
+        } else {
+            res.jsonp(users);
+        }
+    });
+};
+
+/**
+ * Superuser middleware
+ */
+exports.superuserByID = function(req, res, next) {
+    User.findById(req.params.userId).populate('user', 'displayName').exec(function(err, user) {
+        if (err) return next(err);
+        if (! user) return next(new Error('Failed to load Superuser ' + req.params.userId));
+        res.jsonp(user);
+    });
+};
+
+/**
+ * Update a Superuser
+ */
+exports.superuserUpdate = function(req, res) {
+
+    var superuser = req.superuser;
+
+    superuser = _.extend(superuser, req.body);
+
+    superuser.save(function(err) {
+        if (err) {
+            return res.status(400).send({
+                message: errorHandler.getErrorMessage(err)
+            });
+        } else {
+            res.jsonp(superuser);
+        }
+    });
+};
+
+
 /**
  * Update user details
  */

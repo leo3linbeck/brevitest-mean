@@ -16,7 +16,9 @@ module.exports = {
 				'public/lib/bootstrap/dist/css/bootstrap.css',
 				'public/lib/bootstrap/dist/css/bootstrap-theme.css',
 				'public/lib/angular-ui-notification/dist/angular-ui-notification.min.css',
-				'public/lib/c3/c3.min.css'
+				'public/lib/c3/c3.min.css',
+				'public/lib/font-awesome/css/font-awesome.min.css',
+                'public/lib/bootstrap-social/bootstrap-social.css'
 			],
 			js: [
 				'public/lib/angular/angular.js',

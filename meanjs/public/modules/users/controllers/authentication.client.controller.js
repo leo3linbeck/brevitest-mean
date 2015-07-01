@@ -2,6 +2,16 @@
 
 angular.module('users').controller('AuthenticationController', ['$scope', '$http', '$location', 'Authentication',
 	function($scope, $http, $location, Authentication) {
+		$scope.alerts = [];
+
+		$scope.addAlert = function (message, type) {
+			$scope.alerts.push({msg: message, type: type});
+		};
+
+		$scope.closeAlert = function(index) {
+			$scope.alerts.splice(index, 1);
+		};
+
 		$scope.authentication = Authentication;
 
 		// If user is signed in then redirect back home
@@ -16,6 +26,7 @@ angular.module('users').controller('AuthenticationController', ['$scope', '$http
 				$location.path('/');
 			}).error(function(response) {
 				$scope.error = response.message;
+                $scope.addAlert($scope.error, 'danger');
 			});
 		};
 
@@ -28,6 +39,7 @@ angular.module('users').controller('AuthenticationController', ['$scope', '$http
 				$location.path('/');
 			}).error(function(response) {
 				$scope.error = response.message;
+                $scope.addAlert($scope.error, 'danger');
 			});
 		};
 	}

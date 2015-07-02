@@ -4,6 +4,8 @@ module.exports = function(app) {
 	var users = require('../../app/controllers/users.server.controller');
 	var prescriptions = require('../../app/controllers/prescriptions.server.controller');
 
+	app.use('/prescriptions', users.hasAuthorization(['user']));
+
 	// Prescriptions Routes
 	app.route('/prescriptions')
 		.get(prescriptions.list)

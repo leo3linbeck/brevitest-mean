@@ -4,6 +4,8 @@ module.exports = function(app) {
 	var users = require('../../app/controllers/users.server.controller');
 	var sparks = require('../../app/controllers/sparks.server.controller');
 
+    app.use('/sparks', users.hasAuthorization(['user']));
+
 	// Sparks Routes
 	app.route('/sparks')
 		.get(sparks.list)

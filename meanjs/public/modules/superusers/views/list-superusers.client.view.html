@@ -4,7 +4,7 @@
     </div>
     <a data-ng-repeat="superuser in superusers" data-ng-href="#!/superusers/{{superuser._id}}" style="color: black; text-decoration: none;">
         <div class="col-sm-6 col-xs-12 col-lg-4">
-            <div class="well">
+            <div class="well" ng-class="{ 'border-red': !(superuser.roles.indexOf('user') > -1)}">
                 <h3>
                     <span class="fa fa-user"></span> <span data-ng-bind="superuser.displayName"></span>
                 </h3>

@@ -12,10 +12,10 @@ module.exports = function(app) {
 	// Setting up the users profile api
 	app.route('/users/me').get(users.me);
 	app.route('/users')
-        .get(users.hasAuthorization(['superuser']), users.list)
+        .get(users.list)
         .put(users.update);
     app.route('/users/:userId')
-        .get(users.hasAuthorization(['superuser']), users.superuserByID)
+        .get(users.superuserByID)
         .put(users.superuserUpdate);
         //.delete(users.requiresLogin, superusers.hasAuthorization, superusers.delete);;
 	app.route('/users/accounts').delete(users.removeOAuthProvider);

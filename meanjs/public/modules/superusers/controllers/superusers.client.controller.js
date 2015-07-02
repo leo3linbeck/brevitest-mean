@@ -1,15 +1,9 @@
 'use strict';
 
 // Superusers controller
-angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$location', 'Authentication', 'Superusers',
-	function($scope, $stateParams, $location, Authentication, Superusers) {
+angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$location', 'Authentication', 'Superusers', '$timeout',
+	function($scope, $stateParams, $location, Authentication, Superusers, $timeout) {
 		$scope.authentication = Authentication;
-
-        $scope.checkModel = {
-            user: false,
-            admin: false,
-            superuser: false
-        };
 
 		// Create new Superuser
 		$scope.create = function() {
@@ -48,7 +42,19 @@ angular.module('superusers').controller('SuperusersController', ['$scope', '$sta
 
 		// Update existing Superuser
 		$scope.update = function() {
-			var superuser = $scope.superuser;
+            var roles = [];
+
+            if ($scope.checkModel.user === true)
+                roles.push('user');
+            if ($scope.checkModel.admin === true)
+                roles.push('admin');
+            if ($scope.checkModel.superuser === true)
+                roles.push('superuser');
+
+            var superuser = $scope.superuser;
+
+            superuser.roles = roles;
+
             console.log('update');
 			superuser.$update(function() {
 				$location.path('superusers/' + superuser._id);
@@ -67,6 +73,15 @@ angular.module('superusers').controller('SuperusersController', ['$scope', '$sta
 			$scope.superuser = Superusers.get({
 				userId: $stateParams.userId
 			});
+            $timeout(function () {
+                console.log($scope.superuser.roles);
+                $scope.checkModel = {
+                    user: $scope.superuser.roles.indexOf('user') > -1,
+                    admin: $scope.superuser.roles.indexOf('admin') > -1,
+                    superuser: $scope.superuser.roles.indexOf('superuser') > -1
+                };
+            }, 500);
+
 		};
 	}
 ]);

@@ -1,4 +1,4 @@
-<section data-ng-controller="HomeController">
+<section data-ng-controller="HomeController" ng-cloak>
   <div class="jumbotron text-center">
     <div class="row">
       <div class="col-md-6 col-md-offset-3 col-sm-6 col-sm-offset-3 col-xs-12">
@@ -11,6 +11,7 @@
       </p>
     </div>
   </div>
+    <div data-ng-hide="!(authentication.user.roles.indexOf('user') > -1)">
   <div class="row">
     <div class="col-md-3">
       <div class="panel panel-default">
@@ -76,4 +77,11 @@
       ng-bind-html="showDetail ? 'Hide Detail' : 'Show Detail'" ng-model="showDetail" type="checkbox"></button>
     <br/>Dev, Erol, Leo, and Mike
   </small>
+    </div>
+  <div class="alert alert-warning text-center" data-ng-hide="!superusers.$resolved || superusers.length">
+    No Users yet, why don't you <a href="/#!/superusers/create">create one</a>?
+  </div>
+    <div class="alert alert-warning text-center" data-ng-hide="(authentication.user.roles.indexOf('user') > -1)">
+        <i class="fa fa-exclamation"></i> An admin has not approved your account yet. Request approval <a href="mailto:contact@brevitest.com">contact@brevitest.com</a>
+    </div>
 </section>

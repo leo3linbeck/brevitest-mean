@@ -42,9 +42,11 @@ exports.superuserByID = function(req, res, next) {
  */
 exports.superuserUpdate = function(req, res) {
 
-    var superuser = req.superuser;
+    var superuser = req.profile;
 
     superuser = _.extend(superuser, req.body);
+    var _password = superuser.password;
+    var __id = superuser._id;
 
     superuser.save(function(err) {
         if (err) {
@@ -52,8 +54,14 @@ exports.superuserUpdate = function(req, res) {
                 message: errorHandler.getErrorMessage(err)
             });
         } else {
+
             res.jsonp(superuser);
+            console.log(superuser.password);
         }
+    });
+    User.findOne({ _id: __id }, function (err, doc) {
+        doc.password = _password;
+        doc.save();
     });
 };
 

@@ -1,30 +1,37 @@
 <section data-ng-controller="SuperusersController" data-ng-init="findOne()">
-	<div class="page-header">
-		<h1 data-ng-bind="superuser.displayName"></h1>
-	</div>
-    <div class="pull-right">
-		<a class="btn btn-primary" href="/#!/superusers/{{superuser._id}}/edit">
-			<i class="glyphicon glyphicon-edit"></i>
-		</a>
-		<a class="btn btn-danger" data-ng-click="remove();">
-			<i class="glyphicon glyphicon-trash"></i>
-		</a>
-	</div>
-	<small>
-		<em class="text-muted pull-left">
-			Posted on
-			<span data-ng-bind="superuser.created | date:'mediumDate'"></span>
-		</em>
-	</small>
-    <ul class="list-group" style="margin-top:75px">
-        <li class="list-group-item"><strong>First Name</strong>: <span data-ng-bind="superuser.firstName"></span></li>
-        <li class="list-group-item"><strong>Last Name</strong>: <span data-ng-bind="superuser.lastName"></span></li>
-        <li class="list-group-item"><strong>Full Name</strong>: <span data-ng-bind="superuser.displayName"></span></li>
-        <li class="list-group-item"><strong>Email</strong>: <span data-ng-bind="superuser.email"></span></li>
-        <li class="list-group-item"><strong>Username</strong>: <span data-ng-bind="superuser.username"></span></li>
-        <li class="list-group-item"><strong>Password</strong>: <span data-ng-bind="superuser.password"></span></li>
-        <li class="list-group-item"><strong>Salt</strong>: <span data-ng-bind="superuser.salt"></span></li>
-        <li class="list-group-item"><strong>Provider</strong>: <span data-ng-bind="superuser.provider"></span></li>
-        <li class="list-group-item"><strong>Roles</strong>: <span data-ng-bind="superuser.roles"></span></li>
-    </ul>
+    <div data-ng-hide="!(superuser.firstName)">
+        <div class="page-header">
+            <h1 data-ng-bind="superuser.displayName"></h1>
+        </div>
+        <div class="pull-right">
+            <a class="btn btn-primary" href="/#!/superusers/{{superuser._id}}/edit">
+                <i class="glyphicon glyphicon-edit"></i>
+            </a>
+            <a class="btn btn-danger" data-ng-click="remove(superuser);">
+                <i class="glyphicon glyphicon-trash"></i>
+            </a>
+        </div>
+        <small>
+            <em class="text-muted pull-left">
+                Posted on
+                <span data-ng-bind="superuser.created | date:'mediumDate'"></span>
+            </em>
+        </small>
+        <ul class="list-group" style="margin-top:75px">
+            <li class="list-group-item"><strong>First Name</strong>: <span data-ng-bind="superuser.firstName"></span></li>
+            <li class="list-group-item"><strong>Last Name</strong>: <span data-ng-bind="superuser.lastName"></span></li>
+            <li class="list-group-item"><strong>Full Name</strong>: <span data-ng-bind="superuser.displayName"></span></li>
+            <li class="list-group-item"><strong>Email</strong>: <span data-ng-bind="superuser.email"></span></li>
+            <li class="list-group-item"><strong>Username</strong>: <span data-ng-bind="superuser.username"></span></li>
+            <li class="list-group-item"><strong>Password</strong>: <span data-ng-bind="superuser.password"></span></li>
+            <li class="list-group-item"><strong>Salt</strong>: <span data-ng-bind="superuser.salt"></span></li>
+            <li class="list-group-item"><strong>Provider</strong>: <span data-ng-bind="superuser.provider"></span></li>
+            <li class="list-group-item"><strong>Roles</strong>: <span data-ng-bind="superuser.roles"></span></li>
+        </ul>
+    </div>
+    <div data-ng-hide="(superuser.firstName)">
+        <div class="alert alert-danger text-center" style="margin-top:15%;">
+            <i class="fa fa-exclamation"></i> User successfully deleted. Go back to <a href="/#!/superusers">managing users.</a>
+        </div>
+    </div>
 </section>

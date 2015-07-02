@@ -65,6 +65,23 @@ exports.superuserUpdate = function(req, res) {
     });
 };
 
+/**
+ * Delete an Superuser
+ */
+exports.superuserDelete = function(req, res) {
+    var superuser = req.profile;
+
+    superuser.remove(function(err) {
+        if (err) {
+            return res.status(400).send({
+                message: errorHandler.getErrorMessage(err)
+            });
+        } else {
+            res.jsonp('hello');
+            //res.redirect('/superusers');
+        }
+    });
+};
 
 /**
  * Update user details

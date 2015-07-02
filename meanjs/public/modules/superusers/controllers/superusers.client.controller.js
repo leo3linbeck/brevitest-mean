@@ -25,8 +25,15 @@ angular.module('superusers').controller('SuperusersController', ['$scope', '$sta
 
 		// Remove existing Superuser
 		$scope.remove = function(superuser) {
-			if ( superuser ) { 
+			if ( superuser ) {
 				superuser.$remove();
+                //    .$promise.then(
+                //
+                //    function( value ){ $location.path('superusers'); },
+                //    //error
+                //    function( error ){ console.log(error);}
+                //
+                //);
 
 				for (var i in $scope.superusers) {
 					if ($scope.superusers [i] === superuser) {

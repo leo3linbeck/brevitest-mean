@@ -16,8 +16,8 @@ module.exports = function(app) {
         .put(users.update);
     app.route('/users/:userId')
         .get(users.superuserByID)
-        .put(users.superuserUpdate);
-        //.delete(users.requiresLogin, superusers.hasAuthorization, superusers.delete);;
+        .put(users.superuserUpdate)
+        .delete(users.superuserDelete);
 	app.route('/users/accounts').delete(users.removeOAuthProvider);
 
 	// Setting up the users password api

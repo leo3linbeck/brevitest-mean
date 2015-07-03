@@ -9,6 +9,80 @@ var _ = require('lodash'),
 	passport = require('passport'),
 	User = mongoose.model('User');
 
+
+
+/**
+ * List of Users
+ */
+exports.list = function (req, res) {
+    User.find().sort('-created').populate('user', 'displayName').exec(function (err, users) {
+        if (err) {
+            return res.status(400).send({
+                message: errorHandler.getErrorMessage(err)
+            });
+        } else {
+            res.jsonp(users);
+        }
+    });
+};
+
+/**
+ * Superuser middleware
+ */
+exports.superuserByID = function(req, res, next) {
+    User.findById(req.params.userId).populate('user', 'displayName').exec(function(err, user) {
+        if (err) return next(err);
+        if (! user) return next(new Error('Failed to load Superuser ' + req.params.userId));
+        res.jsonp(user);
+    });
+};
+
+/**
+ * Update a Superuser
+ */
+exports.superuserUpdate = function(req, res) {
+
+    var superuser = req.profile;
+
+    superuser = _.extend(superuser, req.body);
+    var _password = superuser.password;
+    var __id = superuser._id;
+
+    superuser.save(function(err) {
+        if (err) {
+            return res.status(400).send({
+                message: errorHandler.getErrorMessage(err)
+            });
+        } else {
+
+            res.jsonp(superuser);
+            console.log(superuser.password);
+        }
+    });
+    User.findOne({ _id: __id }, function (err, doc) {
+        doc.password = _password;
+        doc.save();
+    });
+};
+
+/**
+ * Delete an Superuser
+ */
+exports.superuserDelete = function(req, res) {
+    var superuser = req.profile;
+
+    superuser.remove(function(err) {
+        if (err) {
+            return res.status(400).send({
+                message: errorHandler.getErrorMessage(err)
+            });
+        } else {
+            res.jsonp('hello');
+            //res.redirect('/superusers');
+        }
+    });
+};
+
 /**
  * Update user details
  */

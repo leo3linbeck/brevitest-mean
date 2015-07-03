@@ -45,8 +45,14 @@ exports.hasAuthorization = function(roles) {
 			if (_.intersection(req.user.roles, roles).length) {
 				return next();
 			} else {
+                var str_res = '';
+                for(var i = 0; i < roles.length; i++) {
+                    str_res += roles[i];
+                    str_res += ' or ';
+                }
+                var new_str_res = str_res.substring(0, str_res.length-3);
 				return res.status(403).send({
-					message: 'User is not authorized'
+					message: 'User is not authorized. Needs ' + new_str_res + ' privileges.'
 				});
 			}
 		});

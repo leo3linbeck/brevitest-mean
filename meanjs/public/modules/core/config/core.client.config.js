@@ -4,18 +4,22 @@
 angular.module('core').run(['Menus',
 	function(Menus) {
 		// Set top bar menu items
-		Menus.addMenuItem('topbar', 'View', 'view', 'dropdown', '');
-		Menus.addSubMenuItem('topbar', 'view', 'Assays', 'assays');
-		Menus.addSubMenuItem('topbar', 'view', 'Devices', 'devices');
-		Menus.addSubMenuItem('topbar', 'view', 'Device Models', 'device-models');
-		Menus.addSubMenuItem('topbar', 'view', 'Prescriptions', 'prescriptions');
-		Menus.addSubMenuItem('topbar', 'view', 'Sparks', 'sparks');
+		Menus.addMenuItem('topbar', 'View', 'view', 'dropdown', '', 'menu.isPublic', ['user']);
+		Menus.addSubMenuItem('topbar', 'view', 'Assays', 'assays', '/assays', 'menu.isPublic', ['admin', 'superuser']);
+		Menus.addSubMenuItem('topbar', 'view', 'Devices', 'devices', '/devices');
+		Menus.addSubMenuItem('topbar', 'view', 'Device Models', 'device-models', '/device-models');
+		Menus.addSubMenuItem('topbar', 'view', 'Prescriptions', 'prescriptions', '/prescriptions');
+		Menus.addSubMenuItem('topbar', 'view', 'Sparks', 'sparks', '/sparks');
 
-		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '');
-		Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create');
-		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create');
-		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create');
-		Menus.addSubMenuItem('topbar', 'new', 'Prescription', 'prescriptions/create');
-		Menus.addSubMenuItem('topbar', 'new', 'Cartridge Labels', 'cartridges/labels');
-			}
+		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '', 'menu.isPublic', ['user']);
+        Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create', '/assays/create', 'menu.isPublic', ['admin', 'superuser']);
+		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create', '/devices/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create', '/device-models/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Prescription', 'prescriptions/create', '/prescriptions/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Cartridge Labels', 'cartridges/labels', '/cartridges/labels');
+
+        Menus.addMenuItem('topbar', 'Manage Users', 'superusers', 'dropdown', '/superusers(/create)?', 'menu.isPublic', ['superuser']);
+        Menus.addSubMenuItem('topbar', 'superusers', 'List Users', 'superusers');
+        //Menus.addSubMenuItem('topbar', 'superusers', 'New Superuser', 'superusers/create');
+	}
 ]);

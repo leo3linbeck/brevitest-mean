@@ -13,3 +13,15 @@
 .ng-valid.ng-dirty {
 	border-color: #78FA89;
 }
+
+.border-red {
+    /*outline: 2px #d9534f solid;*/
+    -moz-box-shadow: 1px 1px 20px #d9534f;
+    -webkit-box-shadow: 1px 1px 20px #d9534f;
+    box-shadow: 1px 1px 20px #d9534f;
+}
+
+.border-green {
+    /*border: 3px #5cb85c solid;*/
+    color: green;
+}

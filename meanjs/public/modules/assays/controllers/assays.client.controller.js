@@ -515,7 +515,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       assay.$update(function() {
         $location.path('assays/' + assay._id + '/edit');
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        //$scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 
@@ -549,7 +550,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
         $scope.standardCurve = [];
         $scope.BCODE = [];
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+          //$scope.error = errorResponse.data.message;
+          Notification.error(errorResponse.data.message);
       });
     };
 
@@ -583,7 +585,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       assay.$update(function() {
         $location.path('assays/' + assay._id);
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+          //$scope.error = errorResponse.data.message;
+          Notification.error(errorResponse.data.message);
       });
     };
 

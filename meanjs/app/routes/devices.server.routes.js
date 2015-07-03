@@ -4,6 +4,8 @@ module.exports = function(app) {
 	var users = require('../../app/controllers/users.server.controller');
 	var devices = require('../../app/controllers/devices.server.controller');
 
+    app.use('/devices', users.hasAuthorization(['user']));
+
 	// Devices Routes
 	app.route('/devices')
 		.get(devices.list)

@@ -3,8 +3,8 @@
 var _ = window._;
 
 // Prescriptions controller
-angular.module('prescriptions').controller('PrescriptionsController', ['$scope', '$stateParams', '$location', '$window', 'Authentication', 'Prescriptions', 'Assays',
-  function($scope, $stateParams, $location, $window, Authentication, Prescriptions, Assays) {
+angular.module('prescriptions').controller('PrescriptionsController', ['$scope', '$stateParams', '$location', '$window', 'Authentication', 'Prescriptions', 'Assays', 'Notification',
+  function($scope, $stateParams, $location, $window, Authentication, Prescriptions, Assays, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       $location.path('/signin');
@@ -83,7 +83,8 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
       prescription.$save(function(response) {
         $location.path('#!');
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        //$scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 
@@ -114,7 +115,8 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
         $location.path('/prescriptions/' + prescription._id);
         console.log(prescription);
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        //$scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 

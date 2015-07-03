@@ -97,7 +97,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         $scope.deviceModel = {};
         $scope.spark = {};
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        //$scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 
@@ -129,7 +130,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
       device.$update(function() {
         $location.path('devices/' + device._id);
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        //$scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 

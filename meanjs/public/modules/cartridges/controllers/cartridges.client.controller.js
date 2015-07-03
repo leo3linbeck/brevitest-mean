@@ -24,7 +24,8 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 				// Clear form fields
 				$scope.name = '';
 			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
+				//$scope.error = errorResponse.data.message;
+				Notification.error(errorResponse.data.message);
 			});
 		};
 
@@ -54,7 +55,8 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 			cartridge.$update(function() {
 				$location.path('cartridges/' + cartridge._id);
 			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
+				//$scope.error = errorResponse.data.message;
+                Notification.error(errorResponse.data.message);
 			});
 		};
 

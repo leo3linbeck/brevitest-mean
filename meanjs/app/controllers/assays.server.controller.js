@@ -8,7 +8,8 @@ var mongoose = require('mongoose'),
 	Assay = mongoose.model('Assay'),
 	Cartridge = mongoose.model('Cartridge'),
 	Q = require('q'),
-	_ = require('lodash');
+	_ = require('lodash'),
+    errror;
 
 exports.make10cartridges = function(req, res) {
 	var i, promises = [];
@@ -91,7 +92,7 @@ exports.update = function(req, res) {
  * Delete an Assay
  */
 exports.delete = function(req, res) {
-	var assay = req.assay ;
+	var assay = req.assay;
 
 	assay.remove(function(err) {
 		if (err) {
@@ -135,8 +136,12 @@ exports.assayByID = function(req, res, next, id) {
  * Assay authorization middleware
  */
 exports.hasAuthorization = function(req, res, next) {
-	if (req.assay.user.id !== req.user.id) {
-		return res.status(403).send('User is not authorized');
-	}
-	next();
+    if (_.contains(req.user.roles, 'superuser', 0))
+        return next();
+    else if (req.assay.user.id !== req.user.id) {
+        var res_err = 'To delete an assay you need to be the creator or a superuser. Assay created by ' + req.assay.user.id + '.';
+        return res.jsonp({error: res_err});
+
+    }
+    next();
 };

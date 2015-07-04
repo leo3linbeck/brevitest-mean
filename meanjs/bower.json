@@ -23,7 +23,8 @@
     "angular-qrcode": "monospaced/angular-qrcode#~5.1.0",
     "jquery": "~2.1.4",
     "fontawesome": "~4.3.0",
-    "bootstrap-social": "~4.9.1"
+    "bootstrap-social": "~4.9.1",
+    "angular-sweetalert": "~1.1.0"
   },
   "resolutions": {
     "d3": "~3.5.5",

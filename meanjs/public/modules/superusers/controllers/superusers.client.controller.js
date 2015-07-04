@@ -1,8 +1,8 @@
 'use strict';
 
 // Superusers controller
-angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$location', 'Authentication', 'Superusers', '$timeout',
-	function($scope, $stateParams, $location, Authentication, Superusers, $timeout) {
+angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$window', '$location', 'Authentication', 'Superusers', '$timeout', 'Notification',
+	function($scope, $stateParams, $window, $location, Authentication, Superusers, $timeout, Notification) {
 		$scope.authentication = Authentication;
 
 		// Create new Superuser
@@ -24,30 +24,48 @@ angular.module('superusers').controller('SuperusersController', ['$scope', '$sta
 		};
 
 		// Remove existing Superuser
-		$scope.remove = function(superuser) {
-			if ( superuser ) {
-				superuser.$remove();
-                //    .$promise.then(
-                //
-                //    function( value ){ $location.path('superusers'); },
-                //    //error
-                //    function( error ){ console.log(error);}
-                //
-                //);
+        $scope.remove = function(superuser) {
+            /*global swal */ //http://stackoverflow.com/questions/11957977/how-to-fix-foo-is-not-defined-error-reported-by-jslint
+            swal({
+                    title: 'Are you sure?',
+                    text: 'Your will not be able to recover this imaginary file!',
+                    type: 'error',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d9534f',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'No, cancel it!',
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(confirmed){
+                    if (confirmed) {
+                        if (superuser) {  // if there is a superuser to be deleted...
+                            superuser.$remove(function (response) {
+                                if(response.error) {
+                                    Notification.error(response.error);
+                                    $scope.superuser = response.superuser;
+                                }
+                                else {
+                                    for (var i in $scope.superusers) {
+                                        if ($scope.superusers [i] === superuser) {
+                                            $scope.superusers.splice(i, 1);
+                                        }
+                                    }
+                                    $location.path('superusers');
+                                }
 
-				for (var i in $scope.superusers) {
-					if ($scope.superusers [i] === superuser) {
-						$scope.superusers.splice(i, 1);
-					}
-				}
-			} else {
-				$scope.superuser.$remove(function() {
-					$location.path('superusers');
-				});
-			}
-		};
+                            });
+                        } else {    // if there is no superuser to be deleted...
+                            $scope.superuser.$remove(function () {
+                                $location.path('superusers');  // redirect to the list superusers page
+                            });
+                        }
+                    }
+                });
+        };
 
-		// Update existing Superuser
+
+        // Update existing Superuser
 		$scope.update = function() {
             var roles = [];
 

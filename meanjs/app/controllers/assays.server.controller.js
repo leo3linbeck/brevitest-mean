@@ -8,8 +8,7 @@ var mongoose = require('mongoose'),
 	Assay = mongoose.model('Assay'),
 	Cartridge = mongoose.model('Cartridge'),
 	Q = require('q'),
-	_ = require('lodash'),
-    errror;
+	_ = require('lodash');
 
 exports.make10cartridges = function(req, res) {
 	var i, promises = [];

@@ -71,16 +71,24 @@ exports.superuserUpdate = function(req, res) {
 exports.superuserDelete = function(req, res) {
     var superuser = req.profile;
 
-    superuser.remove(function(err) {
-        if (err) {
-            return res.status(400).send({
-                message: errorHandler.getErrorMessage(err)
-            });
-        } else {
-            res.jsonp('hello');
-            //res.redirect('/superusers');
-        }
-    });
+    /**
+     * req.profile - user being deleted
+     * req.user - user making request to delete (superuser)
+     */
+
+    if (!req.user._id.equals(req.profile._id)) { // requires .equals function because mongoose uses custom datatypes. http://stackoverflow.com/questions/11637353/comparing-mongoose-id-and-strings
+        superuser.remove(function(err) {
+            if (err) {
+                return res.status(403).send({
+                    message: errorHandler.getErrorMessage(err)
+                });
+            } else {
+                res.jsonp(superuser);
+            }
+        });
+    } else {
+        res.jsonp({superuser: req.profile, error: 'Cannot delete yourself.'});
+    }
 };
 
 /**

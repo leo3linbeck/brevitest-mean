@@ -2,6 +2,7 @@
 
 var _ = window._;
 
+
 // Assays controller
 angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Assays', 'Notification',
   function($scope, $http, $stateParams, $location, $window, Authentication, Assays, Notification) {
@@ -574,7 +575,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
           }
         } else {
           $scope.assay.$remove(function(response) {
-            $location.path('assays');
+              $location.path('assays');
               if(response.error)
                 Notification.error(response.error);
           });

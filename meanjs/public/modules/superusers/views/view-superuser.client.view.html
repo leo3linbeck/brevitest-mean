@@ -29,12 +29,12 @@
             <li class="list-group-item"><strong>Roles</strong>: <span data-ng-bind="superuser.roles"></span></li>
         </ul>
     </div>
-    <div data-ng-hide="(superuser.firstName)">
-        <div class="alert alert-danger text-center" style="margin-top:15%;">
-            <i class="fa fa-exclamation"></i> User successfully deleted. Go back to <a href="/#!/superusers">managing users.</a>
-        </div>
-    </div>
-    <span ng-hide="!superuser.firstName">
+    <!--<div data-ng-hide="(superuser.firstName)">-->
+        <!--<div class="alert alert-danger text-center" style="margin-top:15%;">-->
+            <!--<i class="fa fa-exclamation"></i> User successfully deleted. Go back to <a href="/#!/superusers">managing users.</a>-->
+        <!--</div>-->
+    <!--</div>-->
+    <span ng-show="superuser.firstName" ng-cloak>
         <div data-ng-hide="(superuser.roles.indexOf('user') > -1)">
             <div class="alert alert-danger text-center">
                 <i class="fa fa-exclamation"></i> User requesting authentication. User currently has no permissions. <a href="/#!/superusers/{{superuser._id}}/edit">Edit user permissions</a>.

@@ -81,7 +81,9 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 
       // Redirect after save
       prescription.$save(function(response) {
-        $location.path('#!');
+        $location.path('/prescriptions');
+          /*global swal */
+          swal({title:'Success!', text: 'Prescription ' + response.name +  ' has been created', type: 'success', confirmButtonColor: '#5cb85c'});
       }, function(errorResponse) {
         //$scope.error = errorResponse.data.message;
         Notification.error(errorResponse.data.message);
@@ -89,22 +91,63 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
     };
 
     // Remove existing Prescription
-    $scope.remove = function(prescription) {
-      if ($window.confirm('Are you sure you want to delete this record?')) {
-        if (prescription) {
-          prescription.$remove();
-          for (var i in $scope.prescriptions) {
-            if ($scope.prescriptions[i] === prescription) {
-              $scope.prescriptions.splice(i, 1);
-            }
-          }
-        } else {
-          $scope.prescription.$remove(function() {
-            $location.path('prescriptions');
-          });
-        }
-      }
-    };
+    //$scope.remove = function(prescription) {
+    //    console.log(prescription);
+    //    console.log($scope.prescription);
+    //  if ($window.confirm('Are you sure you want to delete this record?')) {
+    //    if (prescription) {
+    //      prescription.$remove();
+    //      for (var i in $scope.prescriptions) {
+    //        if ($scope.prescriptions[i] === prescription) {
+    //          $scope.prescriptions.splice(i, 1);
+    //        }
+    //      }
+    //    } else {
+    //      $scope.prescription.$remove(function() {
+    //        $location.path('prescriptions');
+    //      });
+    //    }
+    //  }
+    //};
+
+      $scope.remove = function(prescription) {
+          /*global swal */
+          var close = false;
+          swal({
+              title: 'Are you sure?',
+              text: 'Your will not be able to recover this prescription!',
+              type: 'error',
+              showCancelButton: true,
+              confirmButtonColor: '#d9534f',
+              confirmButtonText: 'Yes, delete it!',
+              cancelButtonText: 'No, cancel it!',
+              closeOnConfirm: close,
+              closeOnCancel: true,
+              allowOutsideClick: true
+          }, function (confirmed) {
+                if (confirmed) {
+                    if (prescription) {
+                        prescription.$remove();
+                        for (var i in $scope.prescriptions) {
+                            if ($scope.prescriptions[i] === prescription) {
+                                $scope.prescriptions.splice(i, 1);
+                            }
+                        }
+                    } else {
+                        $scope.prescription.$remove(function(response) {
+                            $location.path('prescriptions');
+                            if (response.error) {
+                                swal({title:'Oops!', text: 'You don\'t have permission to delete this prescription', type: 'error', timer:0});
+                                Notification.error(response.error);
+                            }
+                            else {
+                                swal({title: 'Success!', text: 'Prescription has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
+                            }
+                        });
+                    }
+                }
+              });
+      };
 
     // Update existing Prescription
     $scope.update = function() {

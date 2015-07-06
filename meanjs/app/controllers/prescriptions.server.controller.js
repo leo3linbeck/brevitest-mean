@@ -147,8 +147,11 @@ exports.prescriptionByID = function(req, res, next, id) {
  * Prescription authorization middleware
  */
 exports.hasAuthorization = function(req, res, next) {
-	if (req.prescription.user.id !== req.user.id) {
-		return res.status(403).send('User is not authorized');
+    if (_.contains(req.user.roles, 'superuser', 0))
+        return next();
+	else if (String(req.prescription.user.id) !== String(req.user.id)) {
+        var res_err = 'To delete an prescription you need to be the creator or a superuser. Prescription created by ' + req.prescription.user.id + '.';
+        return res.jsonp({error: res_err});
 	}
 	next();
 };

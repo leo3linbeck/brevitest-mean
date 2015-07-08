@@ -32,7 +32,8 @@ describe('Device CRUD tests', function() {
 			email: 'test@test.com',
 			username: credentials.username,
 			password: credentials.password,
-			provider: 'local'
+			provider: 'local',
+			roles: ['user', 'admin', 'superuser']
 		});
 
 		// Save a user to the test db and create new Device
@@ -163,7 +164,7 @@ describe('Device CRUD tests', function() {
 			});
 	});
 
-	it('should be able to get a list of Devices if not signed in', function(done) {
+	it('should not be able to get a list of Devices if not signed in', function(done) {
 		// Create new Device model instance
 		var deviceObj = new Device(device);
 
@@ -171,9 +172,10 @@ describe('Device CRUD tests', function() {
 		deviceObj.save(function() {
 			// Request Devices
 			request(app).get('/devices')
+                .expect(401)
 				.end(function(req, res) {
 					// Set assertion
-					res.body.should.be.an.Array.with.lengthOf(1);
+                    (res.body.message).should.match('User is not logged in');
 
 					// Call the assertion callback
 					done();
@@ -183,16 +185,17 @@ describe('Device CRUD tests', function() {
 	});
 
 
-	it('should be able to get a single Device if not signed in', function(done) {
+	it('should not be able to get a single Device if not signed in', function(done) {
 		// Create new Device model instance
 		var deviceObj = new Device(device);
 
 		// Save the Device
 		deviceObj.save(function() {
 			request(app).get('/devices/' + deviceObj._id)
+                .expect(401)
 				.end(function(req, res) {
 					// Set assertion
-					res.body.should.be.an.Object.with.property('name', device.name);
+                    (res.body.message).should.match('User is not logged in');
 
 					// Call the assertion callback
 					done();

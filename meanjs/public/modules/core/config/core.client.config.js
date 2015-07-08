@@ -20,6 +20,9 @@ angular.module('core').run(['Menus',
 
         Menus.addMenuItem('topbar', 'Manage Users', 'superusers', 'dropdown', '/superusers(/create)?', 'menu.isPublic', ['superuser']);
         Menus.addSubMenuItem('topbar', 'superusers', 'List Users', 'superusers');
-        //Menus.addSubMenuItem('topbar', 'superusers', 'New Superuser', 'superusers/create');
+
+		Menus.addMenuItem('topbar', 'Analyze Firmware ', 'firmware-tests', 'dropdown', '/firmware-tests(/create)?', 'menu.isPublic', ['superuser']);
+		Menus.addSubMenuItem('topbar', 'firmware-tests', 'List Firmware tests', 'firmware-tests');
+		Menus.addSubMenuItem('topbar', 'firmware-tests', 'New Firmware test', 'firmware-tests/create');
 	}
 ]);

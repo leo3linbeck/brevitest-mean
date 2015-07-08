@@ -159,11 +159,17 @@
 				_id: '525a8422f6d0f87f0e407a33'
 			});
 
+			var response = {
+				data: {
+					error: 'error'
+				}
+			};
+
 			// Create new Assays array and include the Assay
 			scope.assays = [sampleAssay];
 
 			// Set expected DELETE response
-			$httpBackend.expectDELETE(/assays\/([0-9a-fA-F]{24})$/).respond(204);
+			$httpBackend.expectDELETE(/assays\/([0-9a-fA-F]{24})$/).respond(response);
 
 			// Run controller functionality
 			scope.remove(sampleAssay);

@@ -4,7 +4,8 @@
 			<a class="btn btn-primary" href="/#!/prescriptions/{{prescription._id}}/edit">
 				<i class="glyphicon glyphicon-edit"></i>
 			</a>
-			<a class="btn btn-danger" data-ng-click="remove();">
+			<!--<a class="btn btn-danger" data-ng-click="remove();">-->
+			<a class="btn btn-danger" data-ng-click="apiCall(remove, undefined, true, {title: 'Are you sure?', text: 'Your will not be able to recover this prescription!', type: 'error', showCancelButton: true, confirmButtonColor: '#d9534f', confirmButtonText: 'Yes, delete it!', cancelButtonText: 'No, cancel it!', closeOnConfirm: false, closeOnCancel: true, allowOutsideClick: true});;">
 				<i class="glyphicon glyphicon-trash"></i>
 			</a>
 		</div>

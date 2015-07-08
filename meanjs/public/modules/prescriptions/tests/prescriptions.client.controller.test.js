@@ -135,7 +135,7 @@
 			expect(scope.name).toEqual('');
 
 			// Test URL redirection after the Prescription was created
-			expect($location.path()).toBe('/#!');
+			expect($location.path()).toBe('/prescriptions');
 		}));
 
 		it('$scope.update() should update a valid Prescription', inject(function(Prescriptions) {

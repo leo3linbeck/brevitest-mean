@@ -577,6 +577,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
           $scope.assay.$remove(function(response) {
               $location.path('assays');
               if(response.error)
+                var a = 12;
                 Notification.error(response.error);
           });
         }

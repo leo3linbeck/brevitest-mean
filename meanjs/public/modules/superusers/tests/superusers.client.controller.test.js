@@ -1,6 +1,16 @@
 'use strict';
 
 (function() {
+    angular.module('mock.swalConfirm', []).
+        factory('mockSwalConfirm', function() {
+            return {
+                swal: function(callParams, callFunc, swalParams) {
+                    callFunc(callParams);
+                }
+            };
+        }
+    );
+
 	// Superusers Controller Spec
 	describe('Superusers Controller Tests', function() {
 		// Initialize global variables
@@ -31,11 +41,12 @@
 
 		// Then we can start by loading the main application module
 		beforeEach(module(ApplicationConfiguration.applicationModuleName));
+        beforeEach(module('mock.swalConfirm')); // https://gist.github.com/alicial/7681791
 
 		// The injector ignores leading and trailing underscores here (i.e. _$httpBackend_).
 		// This allows us to inject a service but then attach it to a variable
 		// with the same name as the service.
-		beforeEach(inject(function($controller, $rootScope, _$location_, _$stateParams_, _$httpBackend_) {
+		beforeEach(inject(function($controller, $rootScope, _$location_, _$stateParams_, _$httpBackend_, _mockSwalConfirm_) {
 			// Set a new global scope
 			scope = $rootScope.$new();
 
@@ -49,7 +60,8 @@
 			// Initialize the Superusers controller.
 			SuperusersController = $controller('SuperusersController', {
 				$scope: scope,
-                $window: windowMock
+                $window: windowMock,
+                swalConfirm: _mockSwalConfirm_
 			});
 		}));
 
@@ -148,7 +160,7 @@
 			$httpBackend.expectDELETE(/users\/([0-9a-fA-F]{24})$/).respond(204);
 
 			// Run controller functionality
-			scope.apiCall(scope.remove, sampleSuperuser, false, {});
+			scope.remove(sampleSuperuser);
 			$httpBackend.flush();
 
 			// Test array after successful delete

@@ -112,6 +112,7 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
       $scope.apiCall = function (callFunc, callParams, useSwal, swalParams) {
           useSwal = typeof useSwal !== 'undefined' ? useSwal : true; // if useAlerts is NOT undefined set it equal to the value passed, otherwise false
           if (useSwal) {
+              /*global swal */
               swal({title: swalParams.title, text: swalParams.text, type: swalParams.type, showCancelButton: swalParams.showCancelButton, confirmButtonColor: swalParams.confirmButtonColor, confirmButtonText: swalParams.confirmButtonText, cancelButtonText: swalParams.cancelButtonText, closeOnConfirm: swalParams.closeOnConfirm, closeOnCancel: swalParams.closeOnCancel}, function (confirmed) {
                   if (!confirmed)
                       return;

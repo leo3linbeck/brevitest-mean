@@ -709,6 +709,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
           $scope.assay.$remove(function(response) {
               $location.path('assays');
               if(response.error)
+                var a = 12;
                 Notification.error(response.error);
           });
         }
@@ -1153,19 +1154,22 @@ angular.module('core').controller('HeaderController', ['$scope', '$location', 'A
 
 angular.module('core').controller('HomeController', ['$scope', '$location', 'Authentication', 'Notification',
 	function($scope, $location, Authentication, Notification) {
+
 		// This provides Authentication context.
 		$scope.authentication = Authentication;
 		if (!$scope.authentication.user) {
 			$location.path('/signin');
-		}
+        }
 
 		$scope.showDetail = false;
 
         // disable JSHint error: 'confusing user of !'
         /*jshint -W018 */
-        console.log($scope.authentication.user.roles);
-        if (!($scope.authentication.user.roles.indexOf('user') > -1) && $scope.authentication.user) {
-            Notification.error('You do not currently have user privileges. Functionality will be extremely limited. Please contact an administrator and request user privileges.');
+
+        if ($scope.authentication.user) {
+            if (!($scope.authentication.user.roles.indexOf('user') > -1)) { // if the user doesn't have user privileges but does exist display message
+                Notification.error('You do not currently have user privileges. Functionality will be extremely limited. Please contact an administrator and request user privileges.');
+            } else console.log('Roles: ' + $scope.authentication.user.roles);
         }
         /*jshint +W018 */
 
@@ -2033,7 +2037,7 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
     // Create new Prescription
     $scope.create = function() {
       // Create new Prescription object
-      var prescription = new Prescriptions({
+      var prescription = new Prescriptions({ // prescriptions is new resource object
         name: this.name,
         prescribedOn: this.prescribedOn,
         comments: this.comments,
@@ -2049,7 +2053,6 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
           /*global swal */
           swal({title:'Success!', text: 'Prescription ' + response.name +  ' has been created', type: 'success', confirmButtonColor: '#5cb85c'});
       }, function(errorResponse) {
-        //$scope.error = errorResponse.data.message;
         Notification.error(errorResponse.data.message);
       });
     };
@@ -2074,44 +2077,79 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
     //  }
     //};
 
-      $scope.remove = function(prescription) {
-          /*global swal */
-          var close = false;
-          swal({
-              title: 'Are you sure?',
-              text: 'Your will not be able to recover this prescription!',
-              type: 'error',
-              showCancelButton: true,
-              confirmButtonColor: '#d9534f',
-              confirmButtonText: 'Yes, delete it!',
-              cancelButtonText: 'No, cancel it!',
-              closeOnConfirm: close,
-              closeOnCancel: true,
-              allowOutsideClick: true
-          }, function (confirmed) {
-                if (confirmed) {
-                    if (prescription) {
-                        prescription.$remove();
-                        for (var i in $scope.prescriptions) {
-                            if ($scope.prescriptions[i] === prescription) {
-                                $scope.prescriptions.splice(i, 1);
-                            }
-                        }
-                    } else {
-                        $scope.prescription.$remove(function(response) {
-                            $location.path('prescriptions');
-                            if (response.error) {
-                                swal({title:'Oops!', text: 'You don\'t have permission to delete this prescription', type: 'error', timer:0});
-                                Notification.error(response.error);
-                            }
-                            else {
-                                swal({title: 'Success!', text: 'Prescription has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
-                            }
-                        });
-                    }
-                }
+      $scope.apiCall = function (callFunc, callParams, useSwal, swalParams) {
+          useSwal = typeof useSwal !== 'undefined' ? useSwal : true; // if useAlerts is NOT undefined set it equal to the value passed, otherwise false
+          if (useSwal) {
+              /*global swal */
+              swal({title: swalParams.title, text: swalParams.text, type: swalParams.type, showCancelButton: swalParams.showCancelButton, confirmButtonColor: swalParams.confirmButtonColor, confirmButtonText: swalParams.confirmButtonText, cancelButtonText: swalParams.cancelButtonText, closeOnConfirm: swalParams.closeOnConfirm, closeOnCancel: swalParams.closeOnCancel}, function (confirmed) {
+                  if (!confirmed)
+                      return;
+
+                  callFunc(callParams);
               });
+          } else
+              callFunc(callParams);
       };
+
+      $scope.remove = function(prescription) {
+          if (prescription) {
+              prescription.$remove();
+              for (var i in $scope.prescriptions) {
+                  if ($scope.prescriptions[i] === prescription) {
+                      $scope.prescriptions.splice(i, 1);
+                  }
+              }
+          } else {
+              $scope.prescription.$remove(function(response) {
+                  $location.path('prescriptions');
+                  if (response.error) {
+                      swal({title:'Oops!', text: 'You don\'t have permission to delete this prescription', type: 'error', timer:0});
+                      Notification.error(response.error);
+                  }
+                  else {
+                      swal({title: 'Success!', text: 'Prescription has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
+                  }
+              });
+          }
+      };
+
+      //$scope.remove = function(prescription) {
+      //    /*global swal */
+      //    swal({
+      //        title: 'Are you sure?',
+      //        text: 'Your will not be able to recover this prescription!',
+      //        type: 'error',
+      //        showCancelButton: true,
+      //        confirmButtonColor: '#d9534f',
+      //        confirmButtonText: 'Yes, delete it!',
+      //        cancelButtonText: 'No, cancel it!',
+      //        closeOnConfirm: false,
+      //        closeOnCancel: true,
+      //        allowOutsideClick: true
+      //    }, function (confirmed) {
+      //        if (confirmed) {
+      //            if (prescription) {
+      //                prescription.$remove();
+      //                for (var i in $scope.prescriptions) {
+      //                    if ($scope.prescriptions[i] === prescription) {
+      //                        $scope.prescriptions.splice(i, 1);
+      //                    }
+      //                }
+      //            } else {
+      //                $scope.prescription.$remove(function(response) {
+      //                    $location.path('prescriptions');
+      //                    if (response.error) {
+      //                        swal({title:'Oops!', text: 'You don\'t have permission to delete this prescription', type: 'error', timer:0});
+      //                        Notification.error(response.error);
+      //                    }
+      //                    else {
+      //                        swal({title: 'Success!', text: 'Prescription has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
+      //                    }
+      //                });
+      //            }
+      //        }
+      //    });
+      //};
 
     // Update existing Prescription
     $scope.update = function() {
@@ -2471,10 +2509,6 @@ angular.module('superusers').config(['$stateProvider',
 			url: '/superusers',
 			templateUrl: 'modules/superusers/views/list-superusers.client.view.html'
 		}).
-		state('createSuperuser', {
-			url: '/superusers/create',
-			templateUrl: 'modules/superusers/views/create-superuser.client.view.html'
-		}).
 		state('viewSuperuser', {
 			url: '/superusers/:userId',
 			templateUrl: 'modules/superusers/views/view-superuser.client.view.html'
@@ -2489,75 +2523,43 @@ angular.module('superusers').config(['$stateProvider',
 'use strict';
 
 // Superusers controller
-angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$window', '$location', 'Authentication', 'Superusers', 'Notification',
-	function($scope, $stateParams, $window, $location, Authentication, Superusers, Notification) {
-		$scope.authentication = Authentication;
+angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$window', '$location', 'Authentication', 'Superusers', 'Notification', 'swalConfirm',
+    function ($scope, $stateParams, $window, $location, Authentication, Superusers, Notification, swalConfirm) {
+        $scope.authentication = Authentication;
 
-		// Create new Superuser
-		$scope.create = function() {
-			// Create new Superuser object
-			var superuser = new Superusers ({
-				name: this.name
-			});
-
-			// Redirect after save
-			superuser.$save(function(response) {
-				$location.path('superusers/' + response._id);
-
-				// Clear form fields
-				$scope.name = '';
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
-
-		// Remove existing Superuser
-        $scope.remove = function(superuser) {
-            /*global swal */ //http://stackoverflow.com/questions/11957977/how-to-fix-foo-is-not-defined-error-reported-by-jslint
-            swal({
-                    title: 'Are you sure?',
-                    text: 'Your will not be able to recover this user!',
-                    type: 'error',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d9534f',
-                    confirmButtonText: 'Yes, delete it!',
-                    cancelButtonText: 'No, cancel it!',
-                    closeOnConfirm: false,
-                    closeOnCancel: true
-                },
-                function(confirmed) {
-                    if (confirmed) {
-                        if (superuser) {  // if there is a superuser to be deleted...
-                            superuser.$remove(function (response) {
-                                if(response.error) {
-                                    swal({title: '', timer: 0}); // create an alert an close instantly to trick sweet alerts into thinking you displayed a followup alert
-                                    Notification.error(response.error);
-                                    $scope.superuser = response.superuser;
-                                }
-                                else {
-                                    /*global swal */
-                                    swal({title: 'Success!', text: 'User ' + superuser.displayName + ' has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
-                                    for (var i in $scope.superusers) {
-                                        if ($scope.superusers [i] === superuser) {
-                                            $scope.superusers.splice(i, 1);
-                                        }
-                                    }
-                                    $location.path('superusers');
-                                }
-
-                            });
-                        } else {    // if there is no superuser to be deleted...
-                            $scope.superuser.$remove(function () {
-                                $location.path('superusers');  // redirect to the list superusers page
-                            });
+        $scope.remove = function (superuser) {
+            swalConfirm.swal(superuser, function (superuser) {
+                if (superuser) {  // if a superuser is passed
+                    superuser.$remove(function (response) {
+                        if (response.error) {
+                            /*global swal */
+                            swal({title: '', showConfirmButton: false, timer: 0}); // create an alert an close instantly to trick sweet alerts into thinking you displayed a followup alert
+                            Notification.error(response.error);
+                            $scope.superuser = response.superuser;
                         }
-                    }
-                });
+                        else {
+                            /*global swal */
+                            swal({title: 'Success!', text: 'User ' + superuser.displayName + ' has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
+                            for (var i in $scope.superusers) {
+                                if ($scope.superusers [i] === superuser) {
+                                    $scope.superusers.splice(i, 1);
+                                }
+                            }
+                            $location.path('superusers');
+                        }
+                    });
+                } else {    // if no superuser is passed use the scope superuser
+                    $scope.superuser.$remove(function () {
+                        $location.path('superusers');  // redirect to the list superusers page
+                    });
+                }
+            },
+                {title: 'Are you sure?', text: 'Your will not be able to recover this user!', type: 'error', showCancelButton: true, confirmButtonColor: '#d9534f', confirmButtonText: 'Yes, delete it!', cancelButtonText: 'No, cancel it!', closeOnConfirm: false, closeOnCancel: true}
+            );
         };
 
-
         // Update existing Superuser
-		$scope.update = function() {
+        $scope.update = function () {
             $scope.superuser.roles = [];
 
             if ($scope.checkModel.user === true)
@@ -2567,46 +2569,51 @@ angular.module('superusers').controller('SuperusersController', ['$scope', '$sta
             if ($scope.checkModel.superuser === true)
                 $scope.superuser.roles.push('superuser');
 
-            $scope.superuser.$update(function() {
-				$location.path('superusers/' + $scope.superuser._id);
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+            $scope.superuser.$update(function (response) {
+                $location.path('superusers/' + $scope.superuser._id);
+            }, function (errorResponse) {
+                $scope.error = errorResponse.data.message;
+            });
+            swal({title: 'Success!', text: $scope.superuser.displayName + ' has been updated!', type: 'success', confirmButtonColor: '#5cb85c'});
+        };
 
-		// Find a list of Superusers
-		$scope.find = function() {
-			$scope.superusers = Superusers.query();
-		};
+        // Find a list of Superusers
+        $scope.find = function () {
+            $scope.superusers = Superusers.query();
+        };
 
-		// Find existing Superuser
-		$scope.findOne = function() {
-			$scope.superuser = Superusers.get({
-				userId: $stateParams.userId
-			}, function (response) {
+        // Find existing Superuser
+        $scope.findOne = function () {
+            $scope.superuser = Superusers.get({
+                userId: $stateParams.userId
+            }, function (response) {
                 $scope.checkModel = {   // checkModel is bound to 3 buttons on the edit view used for changing user permissions
                     user: $scope.superuser.roles.indexOf('user') > -1,  // true if user has role 'user'
                     admin: $scope.superuser.roles.indexOf('admin') > -1, // true if user has role 'admin'
                     superuser: $scope.superuser.roles.indexOf('superuser') > -1 // true if user has role 'superuser'
                 };
             });
-		};
-	}
+        };
+    }
 ]);
 
-//'use strict';
-//
-////Superusers service used to communicate Superusers REST endpoints
-//angular.module('superusers').factory('Superusers', ['$resource',
-//	function($resource) {
-//		return $resource('superusers/:superuserId', { superuserId: '@_id'
-//		}, {
-//			update: {
-//				method: 'PUT'
-//			}
-//		});
-//	}
-//]);
+'use strict';
+
+// Users service used for communicating with the users REST endpoint
+angular.module('superusers').factory('swalConfirm', [
+    function () {
+        return {
+            swal: function(callParams, callFunc, swalParams) {
+                /*globals swal */
+                swal({title: swalParams.title, text: swalParams.text, type: swalParams.type, showCancelButton: swalParams.showCancelButton, confirmButtonColor: swalParams.confirmButtonColor, confirmButtonText: swalParams.confirmButtonText, cancelButtonText: swalParams.cancelButtonText, closeOnConfirm: swalParams.closeOnConfirm, closeOnCancel: swalParams.closeOnCancel}, function (confirmed) {
+                    if (!confirmed)
+                            return;
+                    callFunc(callParams);
+                });
+            }
+        };
+    }
+]);
 
 'use strict';
 

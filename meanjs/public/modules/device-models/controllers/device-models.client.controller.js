@@ -1,8 +1,8 @@
 'use strict';
 
 // Device models controller
-angular.module('device-models').controller('DeviceModelsController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'DeviceModels', 'Devices',
-  function($scope, $http, $stateParams, $location, $window, Authentication, DeviceModels, Devices) {
+angular.module('device-models').controller('DeviceModelsController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'DeviceModels', 'Devices', 'Notification',
+  function($scope, $http, $stateParams, $location, $window, Authentication, DeviceModels, Devices, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       $location.path('/signin');
@@ -41,7 +41,8 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
         $scope.reference = '';
         $scope.description = '';
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        //$scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 
@@ -71,7 +72,8 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
       deviceModel.$update(function() {
         $location.path('device-models/' + deviceModel._id);
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+          //$scope.error = errorResponse.data.message;
+          Notification.error(errorResponse.data.message);
       });
     };
 

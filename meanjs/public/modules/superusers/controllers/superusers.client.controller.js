@@ -1,94 +1,76 @@
 'use strict';
 
 // Superusers controller
-angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$location', 'Authentication', 'Superusers', '$timeout',
-	function($scope, $stateParams, $location, Authentication, Superusers, $timeout) {
-		$scope.authentication = Authentication;
+angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$window', '$location', 'Authentication', 'Superusers', 'Notification', 'swalConfirm',
+    function ($scope, $stateParams, $window, $location, Authentication, Superusers, Notification, swalConfirm) {
+        $scope.authentication = Authentication;
 
-		// Create new Superuser
-		$scope.create = function() {
-			// Create new Superuser object
-			var superuser = new Superusers ({
-				name: this.name
-			});
+        $scope.remove = function (superuser) {
+            swalConfirm.swal(superuser, function (superuser) {
+                if (superuser) {  // if a superuser is passed
+                    superuser.$remove(function (response) {
+                        if (response.error) {
+                            /*global swal */
+                            swal({title: '', showConfirmButton: false, timer: 0}); // create an alert an close instantly to trick sweet alerts into thinking you displayed a followup alert
+                            Notification.error(response.error);
+                            $scope.superuser = response.superuser;
+                        }
+                        else {
+                            /*global swal */
+                            swal({title: 'Success!', text: 'User ' + superuser.displayName + ' has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
+                            for (var i in $scope.superusers) {
+                                if ($scope.superusers [i] === superuser) {
+                                    $scope.superusers.splice(i, 1);
+                                }
+                            }
+                            $location.path('superusers');
+                        }
+                    });
+                } else {    // if no superuser is passed use the scope superuser
+                    $scope.superuser.$remove(function () {
+                        $location.path('superusers');  // redirect to the list superusers page
+                    });
+                }
+            },
+                {title: 'Are you sure?', text: 'Your will not be able to recover this user!', type: 'error', showCancelButton: true, confirmButtonColor: '#d9534f', confirmButtonText: 'Yes, delete it!', cancelButtonText: 'No, cancel it!', closeOnConfirm: false, closeOnCancel: true}
+            );
+        };
 
-			// Redirect after save
-			superuser.$save(function(response) {
-				$location.path('superusers/' + response._id);
-
-				// Clear form fields
-				$scope.name = '';
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
-
-		// Remove existing Superuser
-		$scope.remove = function(superuser) {
-			if ( superuser ) {
-				superuser.$remove();
-                //    .$promise.then(
-                //
-                //    function( value ){ $location.path('superusers'); },
-                //    //error
-                //    function( error ){ console.log(error);}
-                //
-                //);
-
-				for (var i in $scope.superusers) {
-					if ($scope.superusers [i] === superuser) {
-						$scope.superusers.splice(i, 1);
-					}
-				}
-			} else {
-				$scope.superuser.$remove(function() {
-					$location.path('superusers');
-				});
-			}
-		};
-
-		// Update existing Superuser
-		$scope.update = function() {
-            var roles = [];
+        // Update existing Superuser
+        $scope.update = function () {
+            $scope.superuser.roles = [];
 
             if ($scope.checkModel.user === true)
-                roles.push('user');
+                $scope.superuser.roles.push('user');
             if ($scope.checkModel.admin === true)
-                roles.push('admin');
+                $scope.superuser.roles.push('admin');
             if ($scope.checkModel.superuser === true)
-                roles.push('superuser');
+                $scope.superuser.roles.push('superuser');
 
-            var superuser = $scope.superuser;
+            $scope.superuser.$update(function (response) {
+                $location.path('superusers/' + $scope.superuser._id);
+            }, function (errorResponse) {
+                $scope.error = errorResponse.data.message;
+            });
+            swal({title: 'Success!', text: $scope.superuser.displayName + ' has been updated!', type: 'success', confirmButtonColor: '#5cb85c'});
+        };
 
-            superuser.roles = roles;
+        // Find a list of Superusers
+        $scope.find = function () {
+            $scope.superusers = Superusers.query();
+        };
 
-            console.log('update');
-			superuser.$update(function() {
-				$location.path('superusers/' + superuser._id);
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
-
-		// Find a list of Superusers
-		$scope.find = function() {
-			$scope.superusers = Superusers.query();
-		};
-
-		// Find existing Superuser
-		$scope.findOne = function() {
-			$scope.superuser = Superusers.get({
-				userId: $stateParams.userId
-			});
-            $timeout(function () {
-                console.log($scope.superuser.roles);
-                $scope.checkModel = {
-                    user: $scope.superuser.roles.indexOf('user') > -1,
-                    admin: $scope.superuser.roles.indexOf('admin') > -1,
-                    superuser: $scope.superuser.roles.indexOf('superuser') > -1
+        // Find existing Superuser
+        $scope.findOne = function () {
+            $scope.superuser = Superusers.get({
+                userId: $stateParams.userId
+            }, function (response) {
+                $scope.checkModel = {   // checkModel is bound to 3 buttons on the edit view used for changing user permissions
+                    user: $scope.superuser.roles.indexOf('user') > -1,  // true if user has role 'user'
+                    admin: $scope.superuser.roles.indexOf('admin') > -1, // true if user has role 'admin'
+                    superuser: $scope.superuser.roles.indexOf('superuser') > -1 // true if user has role 'superuser'
                 };
-            }, 500);
-
-		};
-	}
+            });
+        };
+    }
 ]);

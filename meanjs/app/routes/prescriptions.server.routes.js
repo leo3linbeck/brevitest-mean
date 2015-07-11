@@ -19,8 +19,8 @@ module.exports = function(app) {
 
 	app.route('/prescriptions/:prescriptionId')
 		.get(prescriptions.read)
-		.put(users.requiresLogin, prescriptions.hasAuthorization, prescriptions.update)
-		.delete(users.requiresLogin, prescriptions.hasAuthorization, prescriptions.delete);
+		.put(prescriptions.hasAuthorization, prescriptions.update)
+		.delete(prescriptions.hasAuthorization, prescriptions.delete);
 
 	// Finish by binding the Prescription middleware
 	app.param('prescriptionId', prescriptions.prescriptionByID);

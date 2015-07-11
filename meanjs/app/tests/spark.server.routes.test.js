@@ -32,7 +32,8 @@ describe('Spark CRUD tests', function() {
 			email: 'test@test.com',
 			username: credentials.username,
 			password: credentials.password,
-			provider: 'local'
+			provider: 'local',
+			roles: ['user', 'admin', 'superuser']
 		});
 
 		// Save a user to the test db and create new Spark
@@ -192,7 +193,35 @@ describe('Spark CRUD tests', function() {
 			});
 	});
 
-	it('should be able to get a list of Sparks if not signed in', function(done) {
+    it('should be able to get a list of Sparks if signed in', function(done) {
+        agent.post('/auth/signin')
+            .send(credentials)
+            .expect(200)
+            .end(function(signinErr, signinRes) {
+                // Handle sign-in error
+                if (signinErr)
+                    done(signinErr);
+
+                // Save a new Spark
+                agent.post('/sparks')
+                    .send(spark)
+                    .expect(200)
+                    .end(function(sparkSaveErr, sparkSaveRes) {
+                        // Handle Spark save error
+                        if (sparkSaveErr)
+                            done(sparkSaveErr);
+
+                        agent.get('/sparks')
+                            .expect(200)
+                            .end(function(err, res) {
+                                res.body.should.be.an.Array.with.lengthOf(1);
+                                    done();
+                            });
+                    });
+            });
+    });
+
+	it('should not be able to get a list of Sparks if not signed in', function(done) {
 		// Create new Spark model instance
 		var sparkObj = new Spark(spark);
 
@@ -200,9 +229,10 @@ describe('Spark CRUD tests', function() {
 		sparkObj.save(function() {
 			// Request Sparks
 			request(app).get('/sparks')
+                .expect(401)
 				.end(function(req, res) {
 					// Set assertion
-					res.body.should.be.an.Array.with.lengthOf(1);
+                    (res.body.message).should.match('User is not logged in');
 
 					// Call the assertion callback
 					done();
@@ -241,23 +271,53 @@ describe('Spark CRUD tests', function() {
 			});
 	});
 
+    it('should be able to get a single Spark if signed in', function(done) {
+        var sparkObj = new Spark(spark);
 
-	it('should be able to get a single Spark if not signed in', function(done) {
-		// Create new Spark model instance
-		var sparkObj = new Spark(spark);
+        agent.post('/auth/signin')
+            .send(credentials)
+            .expect(200)
+            .end(function(signinErr, signinRes) {
+                // Handle sign-in error
+                if (signinErr)
+                    done(signinErr);
 
-		// Save the Spark
-		sparkObj.save(function() {
-			request(app).get('/sparks/' + sparkObj._id)
-				.end(function(req, res) {
-					// Set assertion
-					res.body.should.be.an.Object.with.property('name', spark.name);
+                // Save a new Spark
+                agent.post('/sparks')
+                    .send(sparkObj)
+                    .expect(200)
+                    .end(function(sparkSaveErr, sparkSaveRes) {
+                        // Handle Spark save error
+                        if (sparkSaveErr)
+                            done(sparkSaveErr);
 
-					// Call the assertion callback
-					done();
-				});
-		});
-	});
+                        agent.get('/sparks/' + sparkObj._id)
+                            .expect(200)
+                            .end(function(err, res) {
+                                res.body.should.be.an.Object.with.property('name', spark.name);
+                                done();
+                            });
+                    });
+            });
+    });
+
+    it('should not be able to get a single Spark if not signed in', function(done) {
+        // Create new Spark model instance
+        var sparkObj = new Spark(spark);
+
+        // Save the Spark
+        sparkObj.save(function() {
+            request(app).get('/sparks/' + sparkObj._id)
+                .expect(401)
+                .end(function(req, res) {
+                    // Set assertion
+                    (res.body.message).should.match('User is not logged in');
+
+                    // Call the assertion callback
+                    done();
+                });
+        });
+    });
 
 	it('should be able to delete Spark instance if signed in', function(done) {
 		agent.post('/auth/signin')

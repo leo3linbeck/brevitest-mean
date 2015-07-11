@@ -16,8 +16,8 @@ module.exports = function(app) {
 
 	app.route('/assays/:assayId')
 		.get(assays.read)
-		.put(users.requiresLogin, assays.hasAuthorization, assays.update)
-		.delete(users.requiresLogin, assays.hasAuthorization, assays.delete);
+		.put(assays.hasAuthorization, assays.update)
+		.delete(assays.hasAuthorization, assays.delete);
 
 	// Finish by binding the Assay middleware
 	app.param('assayId', assays.assayByID);

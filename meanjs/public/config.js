@@ -10,6 +10,7 @@ var ApplicationConfiguration = (function() {
 		'ngAnimate',
 		'ngTouch',
 		'ngSanitize',
+        'oitozero.ngSweetAlert',
 		'ui.router',
 		'ui.bootstrap',
 		'ui.utils',

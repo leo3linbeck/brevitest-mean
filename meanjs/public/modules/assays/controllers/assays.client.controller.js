@@ -2,6 +2,7 @@
 
 var _ = window._;
 
+
 // Assays controller
 angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Assays', 'Notification',
   function($scope, $http, $stateParams, $location, $window, Authentication, Assays, Notification) {
@@ -559,7 +560,13 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     $scope.remove = function(assay) {
       if ($window.confirm('Are you sure you want to delete this record?')) {
         if (assay) {
-          assay.$remove();
+          assay.$remove(function (response) {
+              console.log(response.data.error);
+              }, function(errorResponse) {
+              console.log(errorResponse);
+                    console.log(errorResponse.data.error);
+                  Notification.error(errorResponse.data.message);
+          });
 
           for (var i in $scope.assays) {
             if ($scope.assays[i] === assay) {
@@ -567,8 +574,11 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
             }
           }
         } else {
-          $scope.assay.$remove(function() {
-            $location.path('assays');
+          $scope.assay.$remove(function(response) {
+              $location.path('assays');
+              if(response.error)
+                var a = 12;
+                Notification.error(response.error);
           });
         }
       }

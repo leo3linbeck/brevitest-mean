@@ -10,6 +10,7 @@ var ApplicationConfiguration = (function() {
 		'ngAnimate',
 		'ngTouch',
 		'ngSanitize',
+        'oitozero.ngSweetAlert',
 		'ui.router',
 		'ui.bootstrap',
 		'ui.utils',
@@ -132,6 +133,7 @@ angular.module('assays').config(['$stateProvider',
 'use strict';
 
 var _ = window._;
+
 
 // Assays controller
 angular.module('assays').controller('AssaysController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Assays', 'Notification',
@@ -646,7 +648,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       assay.$update(function() {
         $location.path('assays/' + assay._id + '/edit');
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        //$scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 
@@ -680,7 +683,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
         $scope.standardCurve = [];
         $scope.BCODE = [];
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+          //$scope.error = errorResponse.data.message;
+          Notification.error(errorResponse.data.message);
       });
     };
 
@@ -688,7 +692,13 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     $scope.remove = function(assay) {
       if ($window.confirm('Are you sure you want to delete this record?')) {
         if (assay) {
-          assay.$remove();
+          assay.$remove(function (response) {
+              console.log(response.data.error);
+              }, function(errorResponse) {
+              console.log(errorResponse);
+                    console.log(errorResponse.data.error);
+                  Notification.error(errorResponse.data.message);
+          });
 
           for (var i in $scope.assays) {
             if ($scope.assays[i] === assay) {
@@ -696,8 +706,11 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
             }
           }
         } else {
-          $scope.assay.$remove(function() {
-            $location.path('assays');
+          $scope.assay.$remove(function(response) {
+              $location.path('assays');
+              if(response.error)
+                var a = 12;
+                Notification.error(response.error);
           });
         }
       }
@@ -714,7 +727,8 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       assay.$update(function() {
         $location.path('assays/' + assay._id);
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+          //$scope.error = errorResponse.data.message;
+          Notification.error(errorResponse.data.message);
       });
     };
 
@@ -878,7 +892,8 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 				// Clear form fields
 				$scope.name = '';
 			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
+				//$scope.error = errorResponse.data.message;
+				Notification.error(errorResponse.data.message);
 			});
 		};
 
@@ -908,7 +923,8 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 			cartridge.$update(function() {
 				$location.path('cartridges/' + cartridge._id);
 			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
+				//$scope.error = errorResponse.data.message;
+                Notification.error(errorResponse.data.message);
 			});
 		};
 
@@ -1078,19 +1094,19 @@ angular.module('cartridges').factory('Cartridges', ['$resource',
 angular.module('core').run(['Menus',
 	function(Menus) {
 		// Set top bar menu items
-		Menus.addMenuItem('topbar', 'View', 'view', 'dropdown', '');
-		Menus.addSubMenuItem('topbar', 'view', 'Assays', 'assays', 'menuItemURL', 'menu.isPublic', ['admin', 'superuser']);
-		Menus.addSubMenuItem('topbar', 'view', 'Devices', 'devices');
-		Menus.addSubMenuItem('topbar', 'view', 'Device Models', 'device-models');
-		Menus.addSubMenuItem('topbar', 'view', 'Prescriptions', 'prescriptions');
-		Menus.addSubMenuItem('topbar', 'view', 'Sparks', 'sparks');
+		Menus.addMenuItem('topbar', 'View', 'view', 'dropdown', '', 'menu.isPublic', ['user']);
+		Menus.addSubMenuItem('topbar', 'view', 'Assays', 'assays', '/assays', 'menu.isPublic', ['admin', 'superuser']);
+		Menus.addSubMenuItem('topbar', 'view', 'Devices', 'devices', '/devices');
+		Menus.addSubMenuItem('topbar', 'view', 'Device Models', 'device-models', '/device-models');
+		Menus.addSubMenuItem('topbar', 'view', 'Prescriptions', 'prescriptions', '/prescriptions');
+		Menus.addSubMenuItem('topbar', 'view', 'Sparks', 'sparks', '/sparks');
 
-		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '');
-        Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create', 'menuItemURL', 'menu.isPublic', ['admin', 'superuser']);
-		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create');
-		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create');
-		Menus.addSubMenuItem('topbar', 'new', 'Prescription', 'prescriptions/create');
-		Menus.addSubMenuItem('topbar', 'new', 'Cartridge Labels', 'cartridges/labels');
+		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '', 'menu.isPublic', ['user']);
+        Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create', '/assays/create', 'menu.isPublic', ['admin', 'superuser']);
+		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create', '/devices/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create', '/device-models/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Prescription', 'prescriptions/create', '/prescriptions/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Cartridge Labels', 'cartridges/labels', '/cartridges/labels');
 
         Menus.addMenuItem('topbar', 'Manage Users', 'superusers', 'dropdown', '/superusers(/create)?', 'menu.isPublic', ['superuser']);
         Menus.addSubMenuItem('topbar', 'superusers', 'List Users', 'superusers');
@@ -1138,13 +1154,25 @@ angular.module('core').controller('HeaderController', ['$scope', '$location', 'A
 
 angular.module('core').controller('HomeController', ['$scope', '$location', 'Authentication', 'Notification',
 	function($scope, $location, Authentication, Notification) {
+
 		// This provides Authentication context.
 		$scope.authentication = Authentication;
 		if (!$scope.authentication.user) {
 			$location.path('/signin');
-		}
+        }
 
 		$scope.showDetail = false;
+
+        // disable JSHint error: 'confusing user of !'
+        /*jshint -W018 */
+
+        if ($scope.authentication.user) {
+            if (!($scope.authentication.user.roles.indexOf('user') > -1)) { // if the user doesn't have user privileges but does exist display message
+                Notification.error('You do not currently have user privileges. Functionality will be extremely limited. Please contact an administrator and request user privileges.');
+            } else console.log('Roles: ' + $scope.authentication.user.roles);
+        }
+        /*jshint +W018 */
+
 	}
 ]);
 
@@ -1356,8 +1384,8 @@ angular.module('device-models').config(['$stateProvider',
 'use strict';
 
 // Device models controller
-angular.module('device-models').controller('DeviceModelsController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'DeviceModels', 'Devices',
-  function($scope, $http, $stateParams, $location, $window, Authentication, DeviceModels, Devices) {
+angular.module('device-models').controller('DeviceModelsController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'DeviceModels', 'Devices', 'Notification',
+  function($scope, $http, $stateParams, $location, $window, Authentication, DeviceModels, Devices, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       $location.path('/signin');
@@ -1396,7 +1424,8 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
         $scope.reference = '';
         $scope.description = '';
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        //$scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 
@@ -1426,7 +1455,8 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
       deviceModel.$update(function() {
         $location.path('device-models/' + deviceModel._id);
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+          //$scope.error = errorResponse.data.message;
+          Notification.error(errorResponse.data.message);
       });
     };
 
@@ -1581,7 +1611,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         $scope.deviceModel = {};
         $scope.spark = {};
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        //$scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 
@@ -1613,7 +1644,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
       device.$update(function() {
         $location.path('devices/' + device._id);
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        //$scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 
@@ -1939,8 +1971,8 @@ angular.module('prescriptions').config(['$stateProvider',
 var _ = window._;
 
 // Prescriptions controller
-angular.module('prescriptions').controller('PrescriptionsController', ['$scope', '$stateParams', '$location', '$window', 'Authentication', 'Prescriptions', 'Assays',
-  function($scope, $stateParams, $location, $window, Authentication, Prescriptions, Assays) {
+angular.module('prescriptions').controller('PrescriptionsController', ['$scope', '$stateParams', '$location', '$window', 'Authentication', 'Prescriptions', 'Assays', 'Notification',
+  function($scope, $stateParams, $location, $window, Authentication, Prescriptions, Assays, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       $location.path('/signin');
@@ -2005,7 +2037,7 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
     // Create new Prescription
     $scope.create = function() {
       // Create new Prescription object
-      var prescription = new Prescriptions({
+      var prescription = new Prescriptions({ // prescriptions is new resource object
         name: this.name,
         prescribedOn: this.prescribedOn,
         comments: this.comments,
@@ -2017,29 +2049,107 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
 
       // Redirect after save
       prescription.$save(function(response) {
-        $location.path('#!');
+        $location.path('/prescriptions');
+          /*global swal */
+          swal({title:'Success!', text: 'Prescription ' + response.name +  ' has been created', type: 'success', confirmButtonColor: '#5cb85c'});
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 
     // Remove existing Prescription
-    $scope.remove = function(prescription) {
-      if ($window.confirm('Are you sure you want to delete this record?')) {
-        if (prescription) {
-          prescription.$remove();
-          for (var i in $scope.prescriptions) {
-            if ($scope.prescriptions[i] === prescription) {
-              $scope.prescriptions.splice(i, 1);
-            }
+    //$scope.remove = function(prescription) {
+    //    console.log(prescription);
+    //    console.log($scope.prescription);
+    //  if ($window.confirm('Are you sure you want to delete this record?')) {
+    //    if (prescription) {
+    //      prescription.$remove();
+    //      for (var i in $scope.prescriptions) {
+    //        if ($scope.prescriptions[i] === prescription) {
+    //          $scope.prescriptions.splice(i, 1);
+    //        }
+    //      }
+    //    } else {
+    //      $scope.prescription.$remove(function() {
+    //        $location.path('prescriptions');
+    //      });
+    //    }
+    //  }
+    //};
+
+      $scope.apiCall = function (callFunc, callParams, useSwal, swalParams) {
+          useSwal = typeof useSwal !== 'undefined' ? useSwal : true; // if useAlerts is NOT undefined set it equal to the value passed, otherwise false
+          if (useSwal) {
+              /*global swal */
+              swal({title: swalParams.title, text: swalParams.text, type: swalParams.type, showCancelButton: swalParams.showCancelButton, confirmButtonColor: swalParams.confirmButtonColor, confirmButtonText: swalParams.confirmButtonText, cancelButtonText: swalParams.cancelButtonText, closeOnConfirm: swalParams.closeOnConfirm, closeOnCancel: swalParams.closeOnCancel}, function (confirmed) {
+                  if (!confirmed)
+                      return;
+
+                  callFunc(callParams);
+              });
+          } else
+              callFunc(callParams);
+      };
+
+      $scope.remove = function(prescription) {
+          if (prescription) {
+              prescription.$remove();
+              for (var i in $scope.prescriptions) {
+                  if ($scope.prescriptions[i] === prescription) {
+                      $scope.prescriptions.splice(i, 1);
+                  }
+              }
+          } else {
+              $scope.prescription.$remove(function(response) {
+                  $location.path('prescriptions');
+                  if (response.error) {
+                      swal({title:'Oops!', text: 'You don\'t have permission to delete this prescription', type: 'error', timer:0});
+                      Notification.error(response.error);
+                  }
+                  else {
+                      swal({title: 'Success!', text: 'Prescription has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
+                  }
+              });
           }
-        } else {
-          $scope.prescription.$remove(function() {
-            $location.path('prescriptions');
-          });
-        }
-      }
-    };
+      };
+
+      //$scope.remove = function(prescription) {
+      //    /*global swal */
+      //    swal({
+      //        title: 'Are you sure?',
+      //        text: 'Your will not be able to recover this prescription!',
+      //        type: 'error',
+      //        showCancelButton: true,
+      //        confirmButtonColor: '#d9534f',
+      //        confirmButtonText: 'Yes, delete it!',
+      //        cancelButtonText: 'No, cancel it!',
+      //        closeOnConfirm: false,
+      //        closeOnCancel: true,
+      //        allowOutsideClick: true
+      //    }, function (confirmed) {
+      //        if (confirmed) {
+      //            if (prescription) {
+      //                prescription.$remove();
+      //                for (var i in $scope.prescriptions) {
+      //                    if ($scope.prescriptions[i] === prescription) {
+      //                        $scope.prescriptions.splice(i, 1);
+      //                    }
+      //                }
+      //            } else {
+      //                $scope.prescription.$remove(function(response) {
+      //                    $location.path('prescriptions');
+      //                    if (response.error) {
+      //                        swal({title:'Oops!', text: 'You don\'t have permission to delete this prescription', type: 'error', timer:0});
+      //                        Notification.error(response.error);
+      //                    }
+      //                    else {
+      //                        swal({title: 'Success!', text: 'Prescription has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
+      //                    }
+      //                });
+      //            }
+      //        }
+      //    });
+      //};
 
     // Update existing Prescription
     $scope.update = function() {
@@ -2050,7 +2160,8 @@ angular.module('prescriptions').controller('PrescriptionsController', ['$scope',
         $location.path('/prescriptions/' + prescription._id);
         console.log(prescription);
       }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
+        //$scope.error = errorResponse.data.message;
+        Notification.error(errorResponse.data.message);
       });
     };
 
@@ -2087,6 +2198,7 @@ angular.module('prescriptions').factory('Prescriptions', ['$resource',
 		});
 	}
 ]);
+
 'use strict';
 
 //Setting up route
@@ -2397,10 +2509,6 @@ angular.module('superusers').config(['$stateProvider',
 			url: '/superusers',
 			templateUrl: 'modules/superusers/views/list-superusers.client.view.html'
 		}).
-		state('createSuperuser', {
-			url: '/superusers/create',
-			templateUrl: 'modules/superusers/views/create-superuser.client.view.html'
-		}).
 		state('viewSuperuser', {
 			url: '/superusers/:userId',
 			templateUrl: 'modules/superusers/views/view-superuser.client.view.html'
@@ -2415,89 +2523,97 @@ angular.module('superusers').config(['$stateProvider',
 'use strict';
 
 // Superusers controller
-angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$location', 'Authentication', 'Superusers',
-	function($scope, $stateParams, $location, Authentication, Superusers) {
-		$scope.authentication = Authentication;
+angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$window', '$location', 'Authentication', 'Superusers', 'Notification', 'swalConfirm',
+    function ($scope, $stateParams, $window, $location, Authentication, Superusers, Notification, swalConfirm) {
+        $scope.authentication = Authentication;
 
-        $scope.checkModel = {
-            user: false,
-            admin: false,
-            superuser: false
+        $scope.remove = function (superuser) {
+            swalConfirm.swal(superuser, function (superuser) {
+                if (superuser) {  // if a superuser is passed
+                    superuser.$remove(function (response) {
+                        if (response.error) {
+                            /*global swal */
+                            swal({title: '', showConfirmButton: false, timer: 0}); // create an alert an close instantly to trick sweet alerts into thinking you displayed a followup alert
+                            Notification.error(response.error);
+                            $scope.superuser = response.superuser;
+                        }
+                        else {
+                            /*global swal */
+                            swal({title: 'Success!', text: 'User ' + superuser.displayName + ' has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
+                            for (var i in $scope.superusers) {
+                                if ($scope.superusers [i] === superuser) {
+                                    $scope.superusers.splice(i, 1);
+                                }
+                            }
+                            $location.path('superusers');
+                        }
+                    });
+                } else {    // if no superuser is passed use the scope superuser
+                    $scope.superuser.$remove(function () {
+                        $location.path('superusers');  // redirect to the list superusers page
+                    });
+                }
+            },
+                {title: 'Are you sure?', text: 'Your will not be able to recover this user!', type: 'error', showCancelButton: true, confirmButtonColor: '#d9534f', confirmButtonText: 'Yes, delete it!', cancelButtonText: 'No, cancel it!', closeOnConfirm: false, closeOnCancel: true}
+            );
         };
 
-		// Create new Superuser
-		$scope.create = function() {
-			// Create new Superuser object
-			var superuser = new Superusers ({
-				name: this.name
-			});
+        // Update existing Superuser
+        $scope.update = function () {
+            $scope.superuser.roles = [];
 
-			// Redirect after save
-			superuser.$save(function(response) {
-				$location.path('superusers/' + response._id);
+            if ($scope.checkModel.user === true)
+                $scope.superuser.roles.push('user');
+            if ($scope.checkModel.admin === true)
+                $scope.superuser.roles.push('admin');
+            if ($scope.checkModel.superuser === true)
+                $scope.superuser.roles.push('superuser');
 
-				// Clear form fields
-				$scope.name = '';
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
+            $scope.superuser.$update(function (response) {
+                $location.path('superusers/' + $scope.superuser._id);
+            }, function (errorResponse) {
+                $scope.error = errorResponse.data.message;
+            });
+            swal({title: 'Success!', text: $scope.superuser.displayName + ' has been updated!', type: 'success', confirmButtonColor: '#5cb85c'});
+        };
 
-		// Remove existing Superuser
-		$scope.remove = function(superuser) {
-			if ( superuser ) { 
-				superuser.$remove();
+        // Find a list of Superusers
+        $scope.find = function () {
+            $scope.superusers = Superusers.query();
+        };
 
-				for (var i in $scope.superusers) {
-					if ($scope.superusers [i] === superuser) {
-						$scope.superusers.splice(i, 1);
-					}
-				}
-			} else {
-				$scope.superuser.$remove(function() {
-					$location.path('superusers');
-				});
-			}
-		};
-
-		// Update existing Superuser
-		$scope.update = function() {
-			var superuser = $scope.superuser;
-            console.log('update');
-			superuser.$update(function() {
-				$location.path('superusers/' + superuser._id);
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
-
-		// Find a list of Superusers
-		$scope.find = function() {
-			$scope.superusers = Superusers.query();
-		};
-
-		// Find existing Superuser
-		$scope.findOne = function() {
-			$scope.superuser = Superusers.get({
-				userId: $stateParams.userId
-			});
-		};
-	}
+        // Find existing Superuser
+        $scope.findOne = function () {
+            $scope.superuser = Superusers.get({
+                userId: $stateParams.userId
+            }, function (response) {
+                $scope.checkModel = {   // checkModel is bound to 3 buttons on the edit view used for changing user permissions
+                    user: $scope.superuser.roles.indexOf('user') > -1,  // true if user has role 'user'
+                    admin: $scope.superuser.roles.indexOf('admin') > -1, // true if user has role 'admin'
+                    superuser: $scope.superuser.roles.indexOf('superuser') > -1 // true if user has role 'superuser'
+                };
+            });
+        };
+    }
 ]);
 
-//'use strict';
-//
-////Superusers service used to communicate Superusers REST endpoints
-//angular.module('superusers').factory('Superusers', ['$resource',
-//	function($resource) {
-//		return $resource('superusers/:superuserId', { superuserId: '@_id'
-//		}, {
-//			update: {
-//				method: 'PUT'
-//			}
-//		});
-//	}
-//]);
+'use strict';
+
+// Users service used for communicating with the users REST endpoint
+angular.module('superusers').factory('swalConfirm', [
+    function () {
+        return {
+            swal: function(callParams, callFunc, swalParams) {
+                /*globals swal */
+                swal({title: swalParams.title, text: swalParams.text, type: swalParams.type, showCancelButton: swalParams.showCancelButton, confirmButtonColor: swalParams.confirmButtonColor, confirmButtonText: swalParams.confirmButtonText, cancelButtonText: swalParams.cancelButtonText, closeOnConfirm: swalParams.closeOnConfirm, closeOnCancel: swalParams.closeOnCancel}, function (confirmed) {
+                    if (!confirmed)
+                            return;
+                    callFunc(callParams);
+                });
+            }
+        };
+    }
+]);
 
 'use strict';
 

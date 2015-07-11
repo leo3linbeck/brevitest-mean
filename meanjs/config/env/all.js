@@ -18,7 +18,8 @@ module.exports = {
 				'public/lib/angular-ui-notification/dist/angular-ui-notification.min.css',
 				'public/lib/c3/c3.min.css',
 				'public/lib/font-awesome/css/font-awesome.min.css',
-                'public/lib/bootstrap-social/bootstrap-social.css'
+                'public/lib/bootstrap-social/bootstrap-social.css',
+                'public/lib/sweetalert/dist/sweetalert.css'
 			],
 			js: [
 				'public/lib/angular/angular.js',
@@ -38,7 +39,9 @@ module.exports = {
 				'public/lib/qrcode-generator/js/qrcode.js',
 				'public/lib/qrcode-generator/js/qrcode_UTF8.js',
 				'public/lib/angular-qrcode/qrcode.js',
-				'public/lib/underscore/underscore-min.js'
+				'public/lib/underscore/underscore-min.js',
+                'public/lib/sweetalert/dist/sweetalert.min.js',
+                'public/lib/angular-sweetalert/SweetAlert.js'
 			]
 		},
 		css: [

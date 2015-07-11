@@ -1,6 +1,16 @@
 'use strict';
 
 (function() {
+    angular.module('mock.swalConfirm', []).
+        factory('mockSwalConfirm', function() {
+            return {
+                swal: function(callParams, callFunc, swalParams) {
+                    callFunc(callParams);
+                }
+            };
+        }
+    );
+
 	// Superusers Controller Spec
 	describe('Superusers Controller Tests', function() {
 		// Initialize global variables
@@ -31,11 +41,12 @@
 
 		// Then we can start by loading the main application module
 		beforeEach(module(ApplicationConfiguration.applicationModuleName));
+        beforeEach(module('mock.swalConfirm')); // https://gist.github.com/alicial/7681791
 
 		// The injector ignores leading and trailing underscores here (i.e. _$httpBackend_).
 		// This allows us to inject a service but then attach it to a variable
 		// with the same name as the service.
-		beforeEach(inject(function($controller, $rootScope, _$location_, _$stateParams_, _$httpBackend_) {
+		beforeEach(inject(function($controller, $rootScope, _$location_, _$stateParams_, _$httpBackend_, _mockSwalConfirm_) {
 			// Set a new global scope
 			scope = $rootScope.$new();
 
@@ -44,9 +55,13 @@
 			$httpBackend = _$httpBackend_;
 			$location = _$location_;
 
+            var windowMock = { confirm: function(msg) { return true; } }; // for automatically dismissing alerts
+
 			// Initialize the Superusers controller.
 			SuperusersController = $controller('SuperusersController', {
-				$scope: scope
+				$scope: scope,
+                $window: windowMock,
+                swalConfirm: _mockSwalConfirm_
 			});
 		}));
 
@@ -60,7 +75,7 @@
 			var sampleSuperusers = [sampleSuperuser];
 
 			// Set GET response
-			$httpBackend.expectGET('superusers').respond(sampleSuperusers);
+			$httpBackend.expectGET('users').respond(sampleSuperusers);
 
 			// Run controller functionality
 			scope.find();
@@ -73,14 +88,25 @@
 		it('$scope.findOne() should create an array with one Superuser object fetched from XHR using a superuserId URL parameter', inject(function(Superusers) {
 			// Define a sample Superuser object
 			var sampleSuperuser = new Superusers({
-				name: 'New Superuser'
+				name: 'New Superuser',
+                roles: []
 			});
 
+            // Define a sample Checkmodel
+            var sampleCheckModel = {
+                user: false,
+                admin: false,
+                superuser: false
+            };
+
+            // Mock Checkmodel in scope
+            scope.checkModel = sampleCheckModel;
+
 			// Set the URL parameter
-			$stateParams.superuserId = '525a8422f6d0f87f0e407a33';
+			$stateParams.userId = '525a8422f6d0f87f0e407a33';
 
 			// Set GET response
-			$httpBackend.expectGET(/superusers\/([0-9a-fA-F]{24})$/).respond(sampleSuperuser);
+			$httpBackend.expectGET(/users\/([0-9a-fA-F]{24})$/).respond(sampleSuperuser);
 
 			// Run controller functionality
 			scope.findOne();
@@ -90,47 +116,28 @@
 			expect(scope.superuser).toEqualData(sampleSuperuser);
 		}));
 
-		it('$scope.create() with valid form data should send a POST request with the form input values and then locate to new object URL', inject(function(Superusers) {
-			// Create a sample Superuser object
-			var sampleSuperuserPostData = new Superusers({
-				name: 'New Superuser'
-			});
-
-			// Create a sample Superuser response
-			var sampleSuperuserResponse = new Superusers({
-				_id: '525cf20451979dea2c000001',
-				name: 'New Superuser'
-			});
-
-			// Fixture mock form input values
-			scope.name = 'New Superuser';
-
-			// Set POST response
-			$httpBackend.expectPOST('superusers', sampleSuperuserPostData).respond(sampleSuperuserResponse);
-
-			// Run controller functionality
-			scope.create();
-			$httpBackend.flush();
-
-			// Test form inputs are reset
-			expect(scope.name).toEqual('');
-
-			// Test URL redirection after the Superuser was created
-			expect($location.path()).toBe('/superusers/' + sampleSuperuserResponse._id);
-		}));
-
 		it('$scope.update() should update a valid Superuser', inject(function(Superusers) {
 			// Define a sample Superuser put data
 			var sampleSuperuserPutData = new Superusers({
 				_id: '525cf20451979dea2c000001',
-				name: 'New Superuser'
+				firstName: 'New Superuser'
 			});
+
+            // Define a sample Checkmodel
+            var sampleCheckModel = {
+                user: false,
+                admin: false,
+                superuser: false
+            };
 
 			// Mock Superuser in scope
 			scope.superuser = sampleSuperuserPutData;
 
+            // Mock Checkmodel in scope
+            scope.checkModel = sampleCheckModel;
+
 			// Set PUT response
-			$httpBackend.expectPUT(/superusers\/([0-9a-fA-F]{24})$/).respond();
+			$httpBackend.expectPUT(/users\/([0-9a-fA-F]{24})$/).respond();
 
 			// Run controller functionality
 			scope.update();
@@ -150,7 +157,7 @@
 			scope.superusers = [sampleSuperuser];
 
 			// Set expected DELETE response
-			$httpBackend.expectDELETE(/superusers\/([0-9a-fA-F]{24})$/).respond(204);
+			$httpBackend.expectDELETE(/users\/([0-9a-fA-F]{24})$/).respond(204);
 
 			// Run controller functionality
 			scope.remove(sampleSuperuser);

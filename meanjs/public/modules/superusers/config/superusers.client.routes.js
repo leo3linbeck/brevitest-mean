@@ -9,10 +9,6 @@ angular.module('superusers').config(['$stateProvider',
 			url: '/superusers',
 			templateUrl: 'modules/superusers/views/list-superusers.client.view.html'
 		}).
-		state('createSuperuser', {
-			url: '/superusers/create',
-			templateUrl: 'modules/superusers/views/create-superuser.client.view.html'
-		}).
 		state('viewSuperuser', {
 			url: '/superusers/:userId',
 			templateUrl: 'modules/superusers/views/view-superuser.client.view.html'

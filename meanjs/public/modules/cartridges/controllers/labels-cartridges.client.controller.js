@@ -12,14 +12,6 @@ angular.module('cartridges').controller('CartridgeLabelsController', ['$scope', 
 
 		$scope.showResultsOnOpen = true;
 
-		$scope.getQRCode = function(indx) {
-			var id = $scope.cartridges[indx]._id;
-			var qr = qrcode(2, 'Q');  // jshint ignore:line
-			qr.addData(id);
-			qr.make();
-			console.log('qr', qr);
-		};
-
 		$scope.selectedCartridges = {};
 		$scope.numberOfSelectedCartridges = 0;
 		$scope.selectCartridge = function(indx) {

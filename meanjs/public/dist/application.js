@@ -80,6 +80,10 @@ ApplicationConfiguration.registerModule('devices');
 'use strict';
 
 // Use applicaion configuration module to register a new module
+ApplicationConfiguration.registerModule('firmware-tests');
+'use strict';
+
+// Use applicaion configuration module to register a new module
 ApplicationConfiguration.registerModule('healthcare-providers');
 'use strict';
 
@@ -1110,7 +1114,10 @@ angular.module('core').run(['Menus',
 
         Menus.addMenuItem('topbar', 'Manage Users', 'superusers', 'dropdown', '/superusers(/create)?', 'menu.isPublic', ['superuser']);
         Menus.addSubMenuItem('topbar', 'superusers', 'List Users', 'superusers');
-        //Menus.addSubMenuItem('topbar', 'superusers', 'New Superuser', 'superusers/create');
+
+		Menus.addMenuItem('topbar', 'Analyze Firmware ', 'firmware-tests', 'dropdown', '/firmware-tests(/create)?', 'menu.isPublic', ['superuser']);
+		Menus.addSubMenuItem('topbar', 'firmware-tests', 'List Firmware tests', 'firmware-tests');
+		Menus.addSubMenuItem('topbar', 'firmware-tests', 'New Firmware test', 'firmware-tests/create');
 	}
 ]);
 
@@ -1165,7 +1172,6 @@ angular.module('core').controller('HomeController', ['$scope', '$location', 'Aut
 
         // disable JSHint error: 'confusing user of !'
         /*jshint -W018 */
-
         if ($scope.authentication.user) {
             if (!($scope.authentication.user.roles.indexOf('user') > -1)) { // if the user doesn't have user privileges but does exist display message
                 Notification.error('You do not currently have user privileges. Functionality will be extremely limited. Please contact an administrator and request user privileges.');
@@ -1684,6 +1690,110 @@ angular.module('devices').factory('Devices', ['$resource',
 	}
 ]);
 
+'use strict';
+
+//Setting up route
+angular.module('firmware-tests').config(['$stateProvider',
+	function($stateProvider) {
+		// Firmware tests state routing
+		$stateProvider.
+		state('listFirmwareTests', {
+			url: '/firmware-tests',
+			templateUrl: 'modules/firmware-tests/views/list-firmware-tests.client.view.html'
+		}).
+		state('createFirmwareTest', {
+			url: '/firmware-tests/create',
+			templateUrl: 'modules/firmware-tests/views/create-firmware-test.client.view.html'
+		}).
+		state('viewFirmwareTest', {
+			url: '/firmware-tests/:firmwareTestId',
+			templateUrl: 'modules/firmware-tests/views/view-firmware-test.client.view.html'
+		}).
+		state('editFirmwareTest', {
+			url: '/firmware-tests/:firmwareTestId/edit',
+			templateUrl: 'modules/firmware-tests/views/edit-firmware-test.client.view.html'
+		});
+	}
+]);
+'use strict';
+
+// Firmware tests controller
+angular.module('firmware-tests').controller('FirmwareTestsController', ['$scope', '$stateParams', '$location', 'Authentication', 'FirmwareTests',
+	function($scope, $stateParams, $location, Authentication, FirmwareTests) {
+		$scope.authentication = Authentication;
+
+		// Create new Firmware test
+		$scope.create = function() {
+			// Create new Firmware test object
+			var firmwareTest = new FirmwareTests ({
+				name: this.name
+			});
+
+			// Redirect after save
+			firmwareTest.$save(function(response) {
+				$location.path('firmware-tests/' + response._id);
+
+				// Clear form fields
+				$scope.name = '';
+			}, function(errorResponse) {
+				$scope.error = errorResponse.data.message;
+			});
+		};
+
+		// Remove existing Firmware test
+		$scope.remove = function(firmwareTest) {
+			if ( firmwareTest ) { 
+				firmwareTest.$remove();
+
+				for (var i in $scope.firmwareTests) {
+					if ($scope.firmwareTests [i] === firmwareTest) {
+						$scope.firmwareTests.splice(i, 1);
+					}
+				}
+			} else {
+				$scope.firmwareTest.$remove(function() {
+					$location.path('firmware-tests');
+				});
+			}
+		};
+
+		// Update existing Firmware test
+		$scope.update = function() {
+			var firmwareTest = $scope.firmwareTest;
+
+			firmwareTest.$update(function() {
+				$location.path('firmware-tests/' + firmwareTest._id);
+			}, function(errorResponse) {
+				$scope.error = errorResponse.data.message;
+			});
+		};
+
+		// Find a list of Firmware tests
+		$scope.find = function() {
+			$scope.firmwareTests = FirmwareTests.query();
+		};
+
+		// Find existing Firmware test
+		$scope.findOne = function() {
+			$scope.firmwareTest = FirmwareTests.get({ 
+				firmwareTestId: $stateParams.firmwareTestId
+			});
+		};
+	}
+]);
+'use strict';
+
+//Firmware tests service used to communicate Firmware tests REST endpoints
+angular.module('firmware-tests').factory('FirmwareTests', ['$resource',
+	function($resource) {
+		return $resource('firmware-tests/:firmwareTestId', { firmwareTestId: '@_id'
+		}, {
+			update: {
+				method: 'PUT'
+			}
+		});
+	}
+]);
 'use strict';
 
 //Setting up route

@@ -5,15 +5,11 @@ module.exports = function(app) {
 	var superusers = require('../../app/controllers/superusers.server.controller');
 
 	// Superusers Routes
-	app.route('/superusers')
-		.get(superusers.list)
-		.post(users.requiresLogin, superusers.create);
 
-	app.route('/superusers/:superuserId')
-		.get(superusers.read)
-		.put(users.requiresLogin, superusers.hasAuthorization, superusers.update)
-		.delete(users.requiresLogin, superusers.hasAuthorization, superusers.delete);
+    app.route('/users/:userId')
+        .get(superusers.superuserByID)
+        .put(superusers.update)
+        .delete(superusers.delete);
 
-	// Finish by binding the Superuser middleware
-	app.param('superuserId', superusers.superuserByID);
+    app.param('userId', users.userByID);
 };

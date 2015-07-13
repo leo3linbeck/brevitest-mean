@@ -6,40 +6,30 @@
 var mongoose = require('mongoose'),
 	errorHandler = require('./errors.server.controller'),
 	Superuser = mongoose.model('Superuser'),
+	User = mongoose.model('User'),
 	_ = require('lodash');
 
 /**
- * Create a Superuser
+ * Superuser middleware
  */
-exports.create = function(req, res) {
-	var superuser = new Superuser(req.body);
-	superuser.user = req.user;
-
-	superuser.save(function(err) {
-		if (err) {
-			return res.status(400).send({
-				message: errorHandler.getErrorMessage(err)
-			});
-		} else {
-			res.jsonp(superuser);
-		}
+exports.superuserByID = function(req, res, next) {
+	User.findById(req.params.userId).populate('user', 'displayName').exec(function(err, user) {
+		if (err) return next(err);
+		if (! user) return next(new Error('Failed to load Superuser ' + req.params.userId));
+		res.jsonp(user);
 	});
-};
-
-/**
- * Show the current Superuser
- */
-exports.read = function(req, res) {
-	res.jsonp(req.superuser);
 };
 
 /**
  * Update a Superuser
  */
 exports.update = function(req, res) {
-	var superuser = req.superuser ;
 
-	superuser = _.extend(superuser , req.body);
+	var superuser = req.profile;
+
+	superuser = _.extend(superuser, req.body);
+	var _password = superuser.password;
+	var __id = superuser._id;
 
 	superuser.save(function(err) {
 		if (err) {
@@ -47,8 +37,14 @@ exports.update = function(req, res) {
 				message: errorHandler.getErrorMessage(err)
 			});
 		} else {
+
 			res.jsonp(superuser);
+			console.log(superuser.password);
 		}
+	});
+	User.findOne({ _id: __id }, function (err, doc) {
+		doc.password = _password;
+		doc.save();
 	});
 };
 
@@ -56,52 +52,24 @@ exports.update = function(req, res) {
  * Delete an Superuser
  */
 exports.delete = function(req, res) {
-	var superuser = req.superuser ;
+	var superuser = req.profile;
 
-	superuser.remove(function(err) {
-		if (err) {
-			return res.status(400).send({
-				message: errorHandler.getErrorMessage(err)
-			});
-		} else {
-			res.jsonp(superuser);
-		}
-	});
-};
+	/**
+	 * req.profile - user being deleted
+	 * req.user - user making request to delete (superuser)
+	 */
 
-/**
- * List of Superusers
- */
-exports.list = function(req, res) { 
-	Superuser.find().sort('-created').populate('user', 'displayName').exec(function(err, superusers) {
-		if (err) {
-			return res.status(400).send({
-				message: errorHandler.getErrorMessage(err)
-			});
-		} else {
-			res.jsonp(superusers);
-		}
-	});
-};
-
-/**
- * Superuser middleware
- */
-exports.superuserByID = function(req, res, next, id) { 
-	Superuser.findById(id).populate('user', 'displayName').exec(function(err, superuser) {
-		if (err) return next(err);
-		if (! superuser) return next(new Error('Failed to load Superuser ' + id));
-		req.superuser = superuser ;
-		next();
-	});
-};
-
-/**
- * Superuser authorization middleware
- */
-exports.hasAuthorization = function(req, res, next) {
-	if (req.superuser.user.id !== req.user.id) {
-		return res.status(403).send('User is not authorized');
+	if (!req.user._id.equals(req.profile._id)) { // requires .equals function because mongoose uses custom datatypes. http://stackoverflow.com/questions/11637353/comparing-mongoose-id-and-strings
+		superuser.remove(function(err) {
+			if (err) {
+				return res.status(403).send({
+					message: errorHandler.getErrorMessage(err)
+				});
+			} else {
+				res.jsonp(superuser);
+			}
+		});
+	} else {
+		res.jsonp({superuser: req.profile, error: 'Cannot delete yourself.'});
 	}
-	next();
 };

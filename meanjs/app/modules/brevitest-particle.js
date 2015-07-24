@@ -1,114 +1,80 @@
 'use strict';
 
-// brevitest-spark.js
+// brevitest-particle.js
 
 /**
  * Module dependencies.
  */
 var mongoose = require('mongoose'),
-  Test = mongoose.model('Test'),
-  Assay = mongoose.model('Assay'),
   Device = mongoose.model('Device'),
-  Cartridge = mongoose.model('Cartridge'),
-  Spark = mongoose.model('Spark'),
-  sparkcore = require('spark'),
+  particle = require('spark'),
   Q = require('q'),
   _ = require('lodash');
 
-var sparkDevices = [];
+var particles = [];
 
 
-function getSparkDeviceList(user, forceReload) {
+function getParticleList(user, forceReload) {
   var now = new Date(); // if less than 1 minute left in the token, get new one
-  if (sparkDevices.length === 0 || !user.sparkAccessToken || now > user.sparkTokenExpires || forceReload) {
-    return new Q(sparkcore.login({
-        username: 'leo3@linbeck.com',
-        password: '2january88'
+  if (particles.length === 0 || !user.particleAccessToken || now > user.particleTokenExpires || forceReload) {
+    return new Q(particle.login({
+        username: 'particle@brevitest.com',
+        password: 'FbM-c9p-SGJ-LN8'
       }))
       .then(function(response) {
         if (!response.access_token) {
           throw new Error('Access token not obtained');
         }
         console.log('Access token obtained');
-        user.sparkAccessToken = response.access_token;
-        user.sparkTokenExpires = new Date();
-        user.sparkTokenExpires.setMinutes(user.sparkTokenExpires.getMinutes() + 60);  // 1 hour
+        user.particleAccessToken = response.access_token;
+        user.particleTokenExpires = new Date();
+        user.particleTokenExpires.setMinutes(user.particleTokenExpires.getMinutes() + 60); // 1 hour
         return new Q(user.save());
       })
       .then(function() {
         console.log('Access token saved');
-        return new Q(sparkcore.listDevices());
+        return new Q(particle.listDevices());
       })
       .then(function(devices) {
         console.log('Device list obtained');
-        sparkDevices = devices;
-        return sparkDevices;
+        particles = devices;
+        return particles;
       });
   } else {
-    return new Q(sparkDevices);
+    return new Q(particles);
   }
 }
 
-function getSparkDevice(user, sparkID, forceReload) {
-  return getSparkDeviceList(user, forceReload)
+function getParticle(user, particleID, forceReload) {
+  return getParticleList(user, forceReload)
     .then(function() {
-      var sparkDevice = _.findWhere(sparkDevices, {
-        id: sparkID
+      var p = _.findWhere(particles, {
+        id: particleID
       });
 
-      if (!sparkDevice.connected) {
-        throw new Error(sparkDevice.name + ' is not online.');
+      if (!p.connected) {
+        throw new Error(p.name + ' is not online.');
       }
 
-      return sparkDevice;
+      return p;
     });
 }
 
 // all exported functions return a Q promise
 
 module.exports = {
-  get_spark_device_list: function(user, forceReload) {
-    return getSparkDeviceList(user, forceReload);
+  get_particle_list: function(user, forceReload) {
+    return getParticleList(user, forceReload);
   },
-  get_spark_device_from_testID: function(user, testID) {
-
-  },
-  get_spark_device_from_sparkID: function(user, sparkID) {
-
-  },
-  get_spark_device_from_cartridgeID: function(user, cartridgeID) {
-
-  },
-  get_spark_device_from_deviceID: function(user, deviceID) {
+  get_particle_from_deviceID: function(user, deviceID) {
     return Q.fcall(function(id) {
-        return new Q(Device.findById(id).populate('_spark', 'sparkID').exec());
+        return new Q(Device.findById(id).exec());
       }, deviceID)
       .then(function(device) {
-        return getSparkDevice(user, device._spark.sparkID);
+        return getParticle(user, device.particleID);
       });
   },
-  get_spark_device_from_test: function(user, test) {
-
-  },
-  get_spark_device_from_spark: function(user, spark) {
-    return Q.fcall(function(s) {
-      return getSparkDevice(user, s.sparkID);
-    }, spark);
-  },
-  get_spark_device_from_cartridge: function(user, cartridge) {
-
-  },
-  get_spark_device_from_device: function(user, device) {
-    if (typeof device._spark === 'string') { // primary key, needs to be resolved
-      return Q.fcall(function(id) {
-        return new Q(Spark.findById(id).exec());
-      }, device._spark)
-      .then(function(spark) {
-        return getSparkDevice(user, spark.sparkID);
-      });
-    }
-    else {
-      return getSparkDevice(user, device._spark.sparkID);
-    }
+  get_particle_from_device: function(user, device) {
+    return getParticle(user, device.particleID);
   }
 };

@@ -35,7 +35,7 @@ exports.reflash = function(req, res) {
       }
       var firmware = [];
       files.forEach(function(f) {
-        if (f.substring(0, 8) === 'firmware' && f.substring(f.length - 4) === '.bin') {
+        if (f.substring(0, 15) === 'photon_firmware' && f.substring(f.length - 4) === '.bin') {
           firmware.push(f);
         }
       });

@@ -7,21 +7,17 @@ var mongoose = require('mongoose'),
   errorHandler = require('./errors.server.controller'),
   Cartridge = mongoose.model('Cartridge'),
   Device = mongoose.model('Device'),
-  sparkcore = require('spark'),
   Q = require('q'),
   _ = require('lodash');
 
+  var brevitestParticle = require('../../app/modules/brevitest-particle');
   var brevitestCommand = require('../../app/modules/brevitest-command');
-  var brevitestSpark = require('../../app/modules/brevitest-particle');
-
-function errorCallback(err) {
-  return err;
-}
+  var brevitestRequest = require('../../app/modules/brevitest-request');
 
 exports.move_to_and_set_calibration_point = function(req, res) {
-  brevitestSpark.get_spark_device_from_device(req.user, req.body.device)
-    .then(function(sparkDevice) {
-      return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.calibrate + req.body.device.calibrationSteps));
+  brevitestParticle.get_particle_from_device(req.user, req.body.device)
+    .then(function(particle) {
+      return new Q(brevitestCommand.set_calibration_point(req.body.device.calibrationSteps));
     })
     .then(function(result) {
       if (result.return_value !== 1) {
@@ -40,13 +36,36 @@ exports.move_to_and_set_calibration_point = function(req, res) {
     .done();
 };
 
+exports.claim = function(req, res) {
+  brevitestParticle.get_particle_from_device(req.user, req.body.device)
+    .then(function(particle) {
+      return new Q(brevitestCommand.claim_device(req.user, req.body.assay));
+    })
+    .then(function(result) {
+      if (result.return_value === -1) {
+          return new Q(brevitestCommand.start_send_assay(req.body.assay));
+      }
+      else {
+          return result;
+      }
+    .then(function(result) {
+      res.jsonp({
+        result: req.body.device.name + ' moved to calibration point'
+      });
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        message: error.message
+      });
+    })
+    .done();
+};
+
 exports.load_by_model = function(req, res) {
   Device.find({_deviceModel: req.body.deviceModelID}).sort('-created').populate([{
     path: 'user',
     select: 'displayName'
-  }, {
-    path: '_spark',
-    select: '_id name sparkID connected'
   }]).exec(function(err, devices) {
     if (err) {
       return res.status(400).send({
@@ -75,9 +94,6 @@ exports.available = function(req, res) {
       }).sort('name').populate([{
         path: '_deviceModel',
         select: '_id name'
-      }, {
-        path: '_spark',
-        select: '_id name sparkID connected'
       }]).exec());
     })
     .then(function(availableDevices) {
@@ -85,28 +101,6 @@ exports.available = function(req, res) {
     })
     .fail(function(err) {
       console.log('Error searching for active devices', err);
-    })
-    .done();
-};
-
-exports.initialize = function(req, res) {
-  brevitestSpark.get_spark_device_from_device(req.user, req.body.device)
-    .then(function(sparkDevice) {
-      return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.initialize_device));
-    })
-    .then(function(result) {
-      if (result.return_value !== 1) {
-        throw new Error('Initialization failed to start');
-      }
-      res.jsonp({
-        result: 'Initialization successfully started'
-      });
-    })
-    .fail(function(error) {
-      console.error(error);
-      return res.status(400).send({
-        message: error.message
-      });
     })
     .done();
 };

@@ -75,10 +75,10 @@ var UserSchema = new Schema({
 		}],
 		default: []
 	},
-	sparkAccessToken: {
+	particleAccessToken: {
 		type: String
 	},
-	sparkTokenExpires: {
+	particleTokenExpires: {
 		type: Date
 	},
 	updated: {

@@ -5,7 +5,8 @@
 module.exports = {
   'serial_number': '00',
   'test_record': '01',
-  'test_record_by_uuid': '02',
+  'assay_record': '02',
   'all_params': '03',
-  'one_param': '04'
+  'one_param': '04',
+  'qr_code': '05'
 };

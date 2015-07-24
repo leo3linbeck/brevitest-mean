@@ -32,9 +32,21 @@ var DeviceSchema = new Schema({
 	registeredOn: {
 		type: Date
 	},
-	_spark: {
-		type: Schema.ObjectId,
-		ref: 'Spark'
+	particleID: {
+		type: String,
+		required: 'Please fill Particle ID'
+	},
+	lastHeard: {
+		type: Date
+	},
+	lastIpAddress: {
+		type: String
+	},
+	connected: {
+		type: Boolean
+	},
+	claimed: {
+		type: Boolean
 	},
 	_deviceModel: {
 		type: Schema.ObjectId,

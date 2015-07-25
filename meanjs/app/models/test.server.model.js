@@ -34,10 +34,6 @@ var TestSchema = new Schema({
 	result: {
 		type: String
 	},
-	_prescription: {
-		type: Schema.ObjectId,
-		ref: 'Prescription'
-	},
 	_assay: {
 		type: Schema.ObjectId,
 		ref: 'Assay'

@@ -9,7 +9,6 @@ var mongoose = require('mongoose'),
   Assay = mongoose.model('Assay'),
   Cartridge = mongoose.model('Cartridge'),
   Device = mongoose.model('Device'),
-  Prescription = mongoose.model('Prescription'),
   d3 = require('d3'),
   Q = require('q'),
   _ = require('lodash');
@@ -28,9 +27,6 @@ var testPopulate = [{
 }, {
   path: '_device',
   select: '_id name particleID'
-}, {
-  path: '_prescription',
-  select: '_id name patientNumber patientGender patientDateOfBirth'
 }, {
   path: '_cartridge',
   select: '_id name result failed bcodeString rawData startedOn finishedOn'
@@ -175,7 +171,6 @@ exports.begin = function(req, res) {
       test._assay = req.body.assayID;
       test._device = req.body.deviceID;
       test._cartridge = req.body.cartridgeID;
-      test._prescription = req.body.prescriptionID;
       test.name = req.body.name ? req.body.name : ('Assay ' + req.body.assayName + ' on device ' + req.body.deviceName + ' using cartridge ' + req.body.cartridgeID);
       test.status = 'Starting';
       test.percentComplete = 0;
@@ -193,16 +188,6 @@ exports.begin = function(req, res) {
         bcodeString: req.body.bcodestring,
         _runBy: test.user
       }).exec());
-    })
-    .then(function() {
-      return new Q(Prescription.findOne({
-        _id: req.body.prescriptionID
-      }).exec());
-    })
-    .then(function(prescription) {
-      prescription._tests.push(test._id);
-      prescription.filled = prescription._tests.length >= prescription._assays.length;
-      return new Q(prescription.save());
     })
     .then(function() {
       particle.subscribe(req.body.cartridgeID, createParticleSubscribeCallback(test, req.app.get('socketio'), req.user, req.body.analysis, req.body.standardCurve));
@@ -246,30 +231,6 @@ exports.cancel = function(req, res) {
         finishedOn: now,
         status: 'Cancelled'
       }).exec());
-    })
-    .then(function(test) {
-      return new Q(Prescription.findOne({
-        _tests: {
-            $elemMatch: {
-              $eq: req.body.testID
-            }
-          }
-      }).exec());
-    })
-    .then(function(prescription) {
-      var indx = -1;
-
-      prescription._tests.forEach(function(e, i) {
-        if (e.equals(req.body.testID)) {
-          indx = i;
-        }
-      });
-      if (indx !== -1) {
-        prescription._tests.splice(indx, 1);
-      }
-      prescription.filled = false;
-
-      return new Q(prescription.save());
     })
     .then(function() {
       res.jsonp('Cancelled');

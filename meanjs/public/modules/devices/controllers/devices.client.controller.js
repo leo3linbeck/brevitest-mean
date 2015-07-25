@@ -1,8 +1,8 @@
 'use strict';
 
 // Devices controller
-angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Devices', 'DeviceModels', 'Sparks', 'Notification',
-  function($scope, $http, $stateParams, $location, $window, Authentication, Devices, DeviceModels, Sparks, Notification) {
+angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Devices', 'DeviceModels', 'Notification',
+  function($scope, $http, $stateParams, $location, $window, Authentication, Devices, DeviceModels, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       $location.path('/signin');
@@ -10,11 +10,40 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 
     $scope.loadData = function() {
       $scope.deviceModels = DeviceModels.query();
-      $scope.sparks = Sparks.query();
     };
 
     $scope.moveToAndSetCalibrationPoint = function() {
       $http.post('/devices/move_to_and_set_calibration_point', {
+        device: $scope.device
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success(data.result);
+        $scope.device.$save();
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.flashFirmware = function() {
+      $http.post('/devices/reflash', {
+        device: $scope.device
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success(data.result);
+        $scope.device.$save();
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.attachParticle = function() {
+      $http.post('/devices/attach_particle', {
         device: $scope.device
       }).
       success(function(data, status, headers, config) {
@@ -37,7 +66,6 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
     };
 
     $scope.deviceModel = {};
-    $scope.spark = {};
 
     $scope.openedMfg = false;
     $scope.openedReg = false;
@@ -49,10 +77,6 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 
     $scope.selectDeviceModel = function(id) {
       $scope.deviceModel._id = id;
-    };
-
-    $scope.selectSpark = function(id) {
-      $scope.spark._id = id;
     };
 
     $scope.openDatepicker = function($event, dateField) {
@@ -80,7 +104,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         manufacturedOn: this.manufacturedOn,
         registeredOn: this.registeredOn,
         _deviceModel: this.deviceModel._id,
-        _spark: this.spark._id
+        particleID: this.particleID
       });
 
       // Redirect after save
@@ -89,13 +113,13 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 
         // Clear form fields
         $scope.name = '';
+        $scope.particleID = '';
         $scope.serialNumber = '';
         $scope.calibrationSteps = '';
         $scope.status = '';
         $scope.manufacturedOn = '';
         $scope.registeredOn = '';
         $scope.deviceModel = {};
-        $scope.spark = {};
       }, function(errorResponse) {
         //$scope.error = errorResponse.data.message;
         Notification.error(errorResponse.data.message);
@@ -125,7 +149,6 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
     $scope.update = function() {
       var device = $scope.device;
       device._deviceModel = $scope.deviceModel ? $scope.deviceModel._id : '';
-      device._spark = $scope.spark ? $scope.spark._id : '';
 
       device.$update(function() {
         $location.path('devices/' + device._id);
@@ -146,11 +169,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         deviceId: $stateParams.deviceId
       }, function() {
         $scope.deviceModels = $scope.deviceModels || DeviceModels.query();
-        $scope.sparks = $scope.sparks || Sparks.query();
-        $scope.online = $scope.device._spark.connected;
         $scope.setOnlineButtonText();
         $scope.deviceModel = $scope.device._deviceModel ? $scope.device._deviceModel : {};
-        $scope.spark = $scope.device._spark ? $scope.device._spark : {};
       });
     };
   }

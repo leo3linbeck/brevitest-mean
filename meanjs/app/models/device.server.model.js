@@ -36,6 +36,9 @@ var DeviceSchema = new Schema({
 		type: String,
 		required: 'Please fill Particle ID'
 	},
+	particleName: {
+		type: String
+	},
 	lastHeard: {
 		type: Date
 	},

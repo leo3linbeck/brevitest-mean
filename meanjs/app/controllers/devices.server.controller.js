@@ -10,26 +10,57 @@ var mongoose = require('mongoose'),
   Q = require('q'),
   _ = require('lodash');
 
-  var brevitestParticle = require('../../app/modules/brevitest-particle');
-  var brevitestCommand = require('../../app/modules/brevitest-command');
-  var brevitestRequest = require('../../app/modules/brevitest-request');
+var particle = require('../../app/modules/brevitest-particle');
 
-exports.move_to_and_set_calibration_point = function(req, res) {
-  brevitestParticle.get_particle_from_device(req.user, req.body.device)
-    .then(function(particle) {
-      return new Q(brevitestCommand.set_calibration_point(req.body.device.calibrationSteps));
+exports.reflash = function(req, res) {
+  particle.get_particle_device(req.user, req.body.device)
+    .then(function(particle_device) {
+      return particle.reflash(particle_device);
     })
     .then(function(result) {
-      if (result.return_value !== 1) {
-        throw new Error('Calibration failed, error code ' + result.return_value);
-      }
-      res.jsonp({
-        result: req.body.device.name + ' moved to calibration point'
-      });
+      result.msg = 'Particle firmware reflashed for ' + req.body.device.name;
+      res.jsonp(result);
     })
     .fail(function(error) {
       console.error(error);
       return res.status(400).send({
+        msg: 'Particle reflash failed  for ' + req.body.device.name,
+        message: error.message
+      });
+    })
+    .done();
+};
+
+exports.attach_particle = function(req, res) {
+  particle.get_particle_device(req.user, req.body.device)
+    .then(function(result) {
+      // update device data here
+      result.msg = 'Particle attached to ' + req.body.device.name;
+      res.jsonp(result);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Particle not able to attach to ' + req.body.device.name,
+        message: error.message
+      });
+    })
+    .done();
+};
+
+exports.move_to_and_set_calibration_point = function(req, res) {
+  particle.get_particle_device(req.user, req.body.device)
+    .then(function(particle_device) {
+      return particle.execute_particle_command(particle_device, 'set_calibration_point', req.body.device.calibrationSteps);
+    })
+    .then(function(result) {
+      result.msg = req.body.device.name + ' moved to calibration point';
+      res.jsonp(result);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Calibration failed for ' + req.body.device.name,
         message: error.message
       });
     })
@@ -37,31 +68,70 @@ exports.move_to_and_set_calibration_point = function(req, res) {
 };
 
 exports.claim = function(req, res) {
-  brevitestParticle.get_particle_from_device(req.user, req.body.device)
-    .then(function(particle) {
-      return new Q(brevitestCommand.claim_device(req.user, req.body.assay));
+  particle.get_particle_device(req.user, req.body.device)
+    .then(function(particle_device) {
+      return [particle_device, particle.execute_particle_command(particle_device, 'claim_device', req.user.id)];
     })
-    .then(function(result) {
-      if (result.return_value === -1) {
-          return new Q(brevitestCommand.start_send_assay(req.body.assay));
+    .spread(function(particle_device, result) {
+      if (result.return_value === 9999) {  // assay not found in cache; send to particle
+        return particle.send_assay_to_particle(particle_device, 'start_send_assay', req.body.assay);
       }
       else {
-          return result;
+        return result;
       }
-    .then(function(result) {
-      res.jsonp({
-        result: req.body.device.name + ' moved to calibration point'
-      });
+    })
+    .then(function(result){
+      result.msg = req.body.device.name + ' claimed';
+      req.body.device.claimed = true;
+      req.body.device.save();
+      res.jsonp(result);
     })
     .fail(function(error) {
       console.error(error);
       return res.status(400).send({
+        msg: 'Error claiming device ' + req.body.device.name,
         message: error.message
       });
     })
     .done();
 };
 
+exports.release = function(req, res) {
+  particle.get_particle_device(req.user, req.body.device)
+    .then(function(particle_device) {
+      return particle.execute_particle_command(particle_device, 'release_device', req.body.device);
+    })
+    .then(function(result) {
+      result.msg = req.body.device.name + ' released';
+      res.jsonp(result);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Error releasing device ' + req.body.device.name,
+        message: error.message
+      });
+    })
+    .done();
+};
+
+exports.get_test_data = function(req, res) {
+  particle.get_particle_device(req.user, req.body.device)
+    .then(function(particle_device) {
+      return particle_device.execute_particle_request(particle_device, 'test_record', req.body.testID);
+    })
+    .then(function(register) {
+      res.jsonp(register.result);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Error reading test record ' + req.body.testID + ' on device '+ req.body.device.name,
+        message: error.message
+      });
+    })
+    .done();
+};
 exports.load_by_model = function(req, res) {
   Device.find({_deviceModel: req.body.deviceModelID}).sort('-created').populate([{
     path: 'user',
@@ -97,7 +167,7 @@ exports.available = function(req, res) {
       }]).exec());
     })
     .then(function(availableDevices) {
-      res.jsonp(_.filter(availableDevices, function(e) {return e._spark.connected;}));
+      res.jsonp(_.filter(availableDevices, function(e) {return e.connected;}));
     })
     .fail(function(err) {
       console.log('Error searching for active devices', err);
@@ -132,9 +202,6 @@ exports.read = function(req, res) {
   device.populate([{
     path: '_deviceModel',
     select: '_id name'
-  }, {
-    path: '_spark',
-    select: '_id name sparkID connected'
   }], function(err) {
     if (err) {
       return res.status(400).send({
@@ -189,9 +256,6 @@ exports.list = function(req, res) {
   Device.find().sort('-created').populate([{
     path: 'user',
     select: 'displayName'
-  }, {
-    path: '_spark',
-    select: '_id name sparkID connected'
   }]).exec(function(err, devices) {
     if (err) {
       return res.status(400).send({
@@ -210,9 +274,6 @@ exports.deviceByID = function(req, res, next, id) {
   Device.findById(id).populate([{
     path: 'user',
     select: 'displayName'
-  }, {
-    path: '_spark',
-    select: '_id name sparkID'
   }, {
     path: '_deviceModel',
     select: '_id name'

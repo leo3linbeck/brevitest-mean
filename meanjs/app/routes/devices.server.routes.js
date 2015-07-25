@@ -14,11 +14,14 @@ module.exports = function(app) {
 	app.route('/devices/available')
 		.get(devices.available);
 
+	app.route('/devices/reflash')
+		.post(devices.reflash);
+
+	app.route('/devices/attach_particle')
+		.post(devices.attach_particle);
+
 	app.route('/devices/load_by_model')
 		.post(devices.load_by_model);
-
-	app.route('/devices/initialize')
-		.post(devices.initialize);
 
 	app.route('/devices/move_to_and_set_calibration_point')
 		.post(devices.move_to_and_set_calibration_point);

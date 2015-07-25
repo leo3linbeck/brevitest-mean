@@ -6,39 +6,46 @@
     <fieldset>
       <label class="control-label" for="name">Name</label>
       <div class="controls">
-        <input class="form-control" data-ng-model="name" id="name"
-          placeholder="Enter device name here" required type="text"></input>
+        <input class="form-control" data-ng-model="name" id="name" placeholder="Enter device name here" required type="text"></input>
       </div>
       <label class="control-label" for="serialNumber">Serial Number</label>
       <div class="controls">
-        <input class="form-control" data-ng-model="serialNumber" id="serialNumber"
-          placeholder="Enter device serial number here" type="text"></input>
+        <input class="form-control" data-ng-model="serialNumber" id="serialNumber" placeholder="Enter device serial number here" type="text"></input>
+      </div>
+      <label class="control-label" for="particleID">Particle ID</label>
+      <div class="controls">
+        <p class="input-group">
+          <input class="form-control" data-ng-model="particleID" id="particleID" placeholder="Enter Particle ID here" type="text"></input>
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="attachParticle()" type="button">Attach Particle to This Device</button>
+          </span>
+        <span class="input-group-btn">
+          <button class="btn btn-default" ng-click="flashFirmware()" type="button">Flash Latest Firmware</button>
+        </span>
+        </p>
       </div>
       <label class="control-label" for="calibrationSteps">Calibration Steps</label>
       <div class="controls">
         <p class="input-group">
-          <input class="form-control" data-ng-model="calibrationSteps" id="calibrationSteps"
-            placeholder="Enter number of steps to move device to zero mark" type="text"></input>
+          <input class="form-control" data-ng-model="calibrationSteps" id="calibrationSteps" placeholder="Enter number of steps to move device to zero mark" type="text"></input>
           <span class="input-group-btn">
-            <button class="btn btn-default" ng-click="moveToAndSetCalibrationPoint()"
-              type="button">Save
-              and Move to Calibration Point</button>
+            <button class="btn btn-default" ng-click="moveToAndSetCalibrationPoint()" type="button">Save and Move to Calibration Point</button>
           </span>
         </p>
       </div>
       <br/>
-      <div class="col-md-4">
+      <div class="col-md-6">
         <div class="panel panel-default">
-          <div class="panel-heading"><b>Dates</b></div>
+          <div class="panel-heading">
+            <b>Dates</b>
+          </div>
           <div class="panel-body">
             <label class="control-label" for="manufacturedOn">Manufactured On</label>
             <div class="controls">
               <p class="input-group">
-                <input class="form-control" close-text="Close" datepicker-popup="MMM d, y"
-                  is-open="openedMfg" ng-change="setRegMinDate()" ng-model="manufacturedOn" type="text"></input>
+                <input class="form-control" close-text="Close" datepicker-popup="MMM d, y" is-open="openedMfg" ng-change="setRegMinDate()" ng-model="manufacturedOn" type="text"></input>
                 <span class="input-group-btn">
-                  <button class="btn btn-default" ng-click="openDatepicker($event, 'mfg')"
-                    type="button">
+                  <button class="btn btn-default" ng-click="openDatepicker($event, 'mfg')" type="button">
                     <i class="glyphicon glyphicon-calendar"></i>
                   </button>
                 </span>
@@ -47,11 +54,9 @@
             <label class="control-label" for="registeredOn">Registered On</label>
             <div class="controls">
               <p class="input-group">
-                <input class="form-control" close-text="Close" datepicker-popup="MMM d, y"
-                  is-open="openedReg" min-date="minRegDate" ng-model="registeredOn" type="text"></input>
+                <input class="form-control" close-text="Close" datepicker-popup="MMM d, y" is-open="openedReg" min-date="minRegDate" ng-model="registeredOn" type="text"></input>
                 <span class="input-group-btn">
-                  <button class="btn btn-default" ng-click="openDatepicker($event, 'reg')"
-                    type="button">
+                  <button class="btn btn-default" ng-click="openDatepicker($event, 'reg')" type="button">
                     <i class="glyphicon glyphicon-calendar"></i>
                   </button>
                 </span>
@@ -60,24 +65,14 @@
           </div>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-6">
         <div class="panel panel-default">
-          <div class="panel-heading"><b>Device Model</b></div>
-          <div class="panel-body">
-            <div class="list-group">
-              <a active class="list-group-item {{dm._id === deviceModel._id ? 'active' : ''}}"
-                href='' ng-repeat="dm in deviceModels" ng_click="selectDeviceModel('{{dm._id}}')">{{dm.name}}</a>
-            </div>
+          <div class="panel-heading">
+            <b>Device Model</b>
           </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="panel panel-default">
-          <div class="panel-heading"><b>Spark Processor</b></div>
           <div class="panel-body">
             <div class="list-group">
-              <a active class="list-group-item {{s._id === spark._id ? 'active' : ''}}" href=''
-                ng-repeat="s in sparks" ng_click="selectSpark('{{s._id}}')">{{s.name}}</a>
+              <a active class="list-group-item {{dm._id === deviceModel._id ? 'active' : ''}}" href='' ng-repeat="dm in deviceModels" ng_click="selectDeviceModel('{{dm._id}}')">{{dm.name}}</a>
             </div>
           </div>
         </div>

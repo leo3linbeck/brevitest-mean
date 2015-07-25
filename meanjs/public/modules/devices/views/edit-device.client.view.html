@@ -14,6 +14,11 @@
         <input class="form-control" data-ng-model="device.serialNumber" id="serialNumber"
           placeholder="Enter device serial number here" type="text"></input>
       </div>
+      <label class="control-label" for="particleID">Particle ID</label>
+      <div class="controls">
+        <input class="form-control" data-ng-model="device.particleID" id="particleID"
+          placeholder="Enter Particle ID here" type="text"></input>
+      </div>
       <label class="control-label" for="calibrationSteps">Calibration Steps</label>
       <div class="controls">
         <p class="input-group">
@@ -27,7 +32,7 @@
         </p>
       </div>
       <br/>
-      <div class="col-md-4">
+      <div class="col-md-6">
         <div class="panel panel-default">
           <div class="panel-heading"><b>Dates</b></div>
           <div class="panel-body">
@@ -60,24 +65,13 @@
           </div>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-6">
         <div class="panel panel-default">
           <div class="panel-heading"><b>Device Model</b></div>
           <div class="panel-body">
             <div class="list-group">
               <a active class="list-group-item {{dm._id === deviceModel._id ? 'active' : ''}}"
                 href='' ng-repeat="dm in deviceModels" ng_click="selectDeviceModel('{{dm._id}}')">{{dm.name}}</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="panel panel-default">
-          <div class="panel-heading"><b>Spark Processor</b></div>
-          <div class="panel-body">
-            <div class="list-group">
-              <a active class="list-group-item {{s._id === spark._id ? 'active' : ''}}" href=''
-                ng-repeat="s in sparks" ng_click="selectSpark('{{s._id}}')">{{s.name}}</a>
             </div>
           </div>
         </div>

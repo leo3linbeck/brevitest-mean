@@ -14,8 +14,9 @@
 		<ul class="list-group">
 			<li class="list-group-item"><b>Model: </b>{{device._deviceModel.name | date: mediumDate}}</li>
 			<li class="list-group-item"><b>Serial Number: </b>{{device.serialNumber}}</li>
-			<li class="list-group-item"><b>Spark: </b>{{device._spark.name | date: mediumDate}}</li>
-			<li class="list-group-item"><b>Online: </b>{{device.online}}</li>
+			<li class="list-group-item"><b>Particle ID: </b>{{device.particleID}}</li>
+			<li class="list-group-item"><b>Particle Name: </b>{{device.particleName}}</li>
+			<li class="list-group-item"><b>Online: </b>{{device.connected}}</li>
 			<li class="list-group-item"><b>Status: </b>{{device.status}}</li>
 			<li class="list-group-item"><b>Calibration Steps: </b>{{device.calibrationSteps}}</li>
 			<li class="list-group-item"><b>Manufactured On: </b>{{device.manufacturedOn | date: mediumDate}}</li>

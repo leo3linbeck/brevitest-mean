@@ -9,7 +9,6 @@ angular.module('core').run(['Menus',
 		Menus.addSubMenuItem('topbar', 'view', 'Devices', 'devices', '/devices');
 		Menus.addSubMenuItem('topbar', 'view', 'Device Models', 'device-models', '/device-models');
 		Menus.addSubMenuItem('topbar', 'view', 'Prescriptions', 'prescriptions', '/prescriptions');
-		Menus.addSubMenuItem('topbar', 'view', 'Sparks', 'sparks', '/sparks');
 
 		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '', 'menu.isPublic', ['user']);
         Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create', '/assays/create', 'menu.isPublic', ['admin', 'superuser']);

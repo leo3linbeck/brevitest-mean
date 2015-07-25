@@ -10,16 +10,11 @@ var mongoose = require('mongoose'),
   Cartridge = mongoose.model('Cartridge'),
   Device = mongoose.model('Device'),
   Prescription = mongoose.model('Prescription'),
-  Spark = mongoose.model('Spark'),
-  sparkcore = require('spark'),
-  sparks = require('../../app/controllers/sparks.server.controller'),
   d3 = require('d3'),
   Q = require('q'),
   _ = require('lodash');
 
-var brevitestSpark = require('../../app/modules/brevitest-particle');
-var brevitestCommand = require('../../app/modules/brevitest-command');
-var brevitestRequest = require('../../app/modules/brevitest-request');
+var particle = require('../../app/modules/brevitest-particle');
 var bt = require('../../app/modules/brevitest-BCODE');
 var bcmds = bt.BCODE;
 var get_BCODE_duration = bt.calculate_duration;
@@ -32,7 +27,7 @@ var testPopulate = [{
   select: '_id name standardCurve analysis'
 }, {
   path: '_device',
-  select: '_id name'
+  select: '_id name particleID'
 }, {
   path: '_prescription',
   select: '_id name patientNumber patientGender patientDateOfBirth'
@@ -45,43 +40,14 @@ exports.run = function(req, res) {
   res.send();
 };
 
-function zeropad(num, numZeros) {
-  var an = Math.abs(num);
-  var digitCount = (num === 0 ? 1 : 1 + Math.floor(Math.log(an) / Math.LN10));
-  if (digitCount >= numZeros) {
-    return num;
-  }
-  var zeroString = Math.pow(10, numZeros - digitCount).toString().substr(1);
-  return num < 0 ? '-' + zeroString.substr(1) + an.toString() : zeroString + an.toString();
-}
-
-function bObjectToCodeString(bco) {
-  var str = '';
-
-  _.each(bco, function(e, i, a) {
-    str += _.findWhere(bcmds, {
-      name: e.command
-    }).num + (e.params !== '' ? ',' + e.params : '') + (i < a.length - 1 ? '\n' : '');
-  });
-
-  return str;
-}
-
 function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, standardCurve, percentComplete, status) {
-  var sparkDevice, result = {};
+  var result = {};
   result.percentComplete = percentComplete > 100 ? 100 : percentComplete;
   result.status = percentComplete === 100 ? 'Complete' : (status ? status : 'Unknown');
 
-  return brevitestSpark.get_spark_device_from_deviceID(user, deviceID)
-    .then(function(s) {
-      sparkDevice = s;
-      return new Q(sparkDevice.callFunction('requestdata', cartridgeID + '000000' + brevitestRequest.test_record_by_uuid));
-    })
-    .then(function(result) {
-      if (result.return_value < 0) {
-        throw new Error('Request to read register failed');
-      }
-      return new Q(sparkDevice.getVariable('register'));
+  particle.get_particle_device_from_uuid(user, deviceID)
+    .then(function(particle_device) {
+      return particle.execute_particle_request(particle_device, 'get_test_record', testID);
     })
     .then(function(register) {
       var reading;
@@ -153,9 +119,9 @@ function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, standardCur
     });
 }
 
-function createSparkSubscribeCallback(test, socket, user, analysis, standardCurve) {
+function createParticleSubscribeCallback(test, socket, user, analysis, standardCurve) {
 
-  return function sparkSubscribeCallback(event) {
+  return function particleSubscribeCallback(event) {
     var data = event.data.split('\n');
 
     test.percentComplete = data[2] ? parseInt(data[2]) : 0;
@@ -177,78 +143,60 @@ function createSparkSubscribeCallback(test, socket, user, analysis, standardCurv
 }
 
 exports.begin = function(req, res) {
-  var assayID = req.body.assayID;
-  var assayName = req.body.assayName;
-  var assayBCODE = req.body.assayBCODE;
-  var analysis = req.body.analysis;
-  var standardCurve = req.body.standardCurve;
-  var cartridgeID = req.body.cartridgeID;
-  var deviceID = req.body.deviceID;
-  var deviceName = req.body.deviceName;
-  var prescriptionID = req.body.prescriptionID;
-  var test = new Test();
-  var bcodeString, sparkDevice;
+  var bcodeString, test;
 
-  brevitestSpark.get_spark_device_from_deviceID(req.user, deviceID)
-    .then(function(s) {
-      sparkDevice = s;
-
-      var duration, max_payload, packet_count;
-      var end, i, len, num, payload, start;
-      var args = [];
-
-      bcodeString = bObjectToCodeString(assayBCODE);
-      duration = get_BCODE_duration(assayBCODE);
-      max_payload = (56 - cartridgeID.length); // max string = 63 - length(command code) - length(num) - length(len) - length(cartridgeId)
-      packet_count = Math.ceil(bcodeString.length / max_payload);
-
-      args.push(brevitestCommand.receive_BCODE + '000' + zeropad(packet_count, 2) + cartridgeID);
-      for (i = 1; i <= packet_count; i += 1) {
-        start = (i - 1) * max_payload;
-        end = start + max_payload;
-        payload = bcodeString.substring(start, end);
-        len = zeropad(payload.length, 2);
-        num = zeropad(i, 3);
-        args.push(brevitestCommand.receive_BCODE + num + len + cartridgeID + payload);
-      }
-
-      args.push(brevitestCommand.run_test + cartridgeID + zeropad(Math.round(duration), 4));
-      return args.reduce(function(soFar, arg) {
-        return soFar.then(function() {
-          return sparkDevice.callFunction('runcommand', arg);
-        });
-      }, new Q());
+  particle.get_particle_device(req.user, req.body.device)
+    .then(function(particle_device) {
+      return [particle_device, particle.execute_particle_command(particle_device, 'claim_device', req.user.id)];
     })
-    .then(function(result) {
-      if (result.return_value !== 1) {
-        throw new Error('Test not started');
+    .spread(function(particle_device, result) {
+      if (result.return_value === 9999) {  // assay not found in cache; send to particle
+        result = particle.send_assay_to_particle(particle_device, 'start_send_assay', req.body.assay);
+        if (result.return_value < 0) {
+          throw new Error('Error transferring assay data');
+        }
       }
-
+      return particle_device;
+    })
+    .then(function(particle_device){
+      req.body.device.claimed = true;
+      req.body.device.save();
+      return particle_device;
+    })
+    .then(function(particle_device){
+      return [particle_device, particle.verify_QR_code(particle_device, req.body.cartridgeID)];
+    })
+    .spread(function(particle_device, result) {
+      if (result.return_value < 0) {
+        throw new Error('Error validating cartridge, code = ' + result.return_value);
+      }
+      test = new Test();
       test.user = req.user;
-      test._assay = assayID;
-      test._device = deviceID;
-      test._cartridge = cartridgeID;
-      test._prescription = prescriptionID;
-      test.name = req.body.name ? req.body.name : ('Assay ' + assayName + ' on device ' + deviceName + ' using cartridge ' + cartridgeID);
+      test._assay = req.body.assayID;
+      test._device = req.body.deviceID;
+      test._cartridge = req.body.cartridgeID;
+      test._prescription = req.body.prescriptionID;
+      test.name = req.body.name ? req.body.name : ('Assay ' + req.body.assayName + ' on device ' + req.body.deviceName + ' using cartridge ' + req.body.cartridgeID);
       test.status = 'Starting';
       test.percentComplete = 0;
       test.startedOn = new Date();
-      return new Q(test.save());
+      test.save();
+      return particle_device;
     })
-    .then(function() {
+    .then(function(particle_device) {
       return new Q(Cartridge.findOneAndUpdate({
-        _id: cartridgeID
+        _id: req.body.cartridgeID
       }, {
         _test: test._id,
-        _device: deviceID,
+        _device: req.body.deviceID,
         startedOn: test.startedOn,
-        bcodeString: bcodeString,
+        bcodeString: req.body.bcodestring,
         _runBy: test.user
       }).exec());
     })
     .then(function() {
       return new Q(Prescription.findOne({
-        _id: prescriptionID
+        _id: req.body.prescriptionID
       }).exec());
     })
     .then(function(prescription) {
@@ -257,7 +205,7 @@ exports.begin = function(req, res) {
       return new Q(prescription.save());
     })
     .then(function() {
-      sparkDevice.subscribe(cartridgeID, createSparkSubscribeCallback(test, req.app.get('socketio'), req.user, analysis, standardCurve));
+      particle.subscribe(req.body.cartridgeID, createParticleSubscribeCallback(test, req.app.get('socketio'), req.user, req.body.analysis, req.body.standardCurve));
 
       res.jsonp({
         message: 'Test started',
@@ -275,18 +223,15 @@ exports.begin = function(req, res) {
 exports.cancel = function(req, res) {
   console.log('Cancelling test');
 
-  var testID = req.body.testID;
-  var cartridgeID = req.body.cartridgeID;
-  var deviceID = req.body.deviceID;
   var now = new Date();
 
-  brevitestSpark.get_spark_device_from_deviceID(req.user, deviceID)
-    .then(function(sparkDevice) {
-      return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.cancel_process));
+  particle.get_particle_device(req.user, req.body.device)
+    .then(function(particle_device) {
+      return [particle_device, particle.execute_particle_command(particle_device, 'cancel_test', req.user.id)];
     })
     .then(function(register) {
       return new Q(Cartridge.findOneAndUpdate({
-        _id: cartridgeID
+        _id: req.body.cartridgeID
       }, {
         finishedOn: now,
         failed: true
@@ -296,7 +241,7 @@ exports.cancel = function(req, res) {
     })
     .then(function(cartridge) {
       return new Q(Test.findOneAndUpdate({
-        _id: testID
+        _id: req.body.testID
       }, {
         finishedOn: now,
         status: 'Cancelled'
@@ -306,7 +251,7 @@ exports.cancel = function(req, res) {
       return new Q(Prescription.findOne({
         _tests: {
             $elemMatch: {
-              $eq: testID
+              $eq: req.body.testID
             }
           }
       }).exec());
@@ -315,7 +260,7 @@ exports.cancel = function(req, res) {
       var indx = -1;
 
       prescription._tests.forEach(function(e, i) {
-        if (e.equals(testID)) {
+        if (e.equals(req.body.testID)) {
           indx = i;
         }
       });

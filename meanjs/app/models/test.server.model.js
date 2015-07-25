@@ -10,15 +10,17 @@ var mongoose = require('mongoose'),
  * Test Schema
  */
 var TestSchema = new Schema({
-	name: {
+	reference: {
 		type: String,
 		default: '',
-		required: 'Please fill Test name',
+		required: 'Please fill Test reference',
 		trim: true
 	},
+	subject: {
+		type: String
+	},
 	description: {
-		type: String,
-		trim: true
+		type: String
 	},
 	status: {
 		type: String

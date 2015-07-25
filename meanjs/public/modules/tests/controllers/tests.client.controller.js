@@ -14,7 +14,8 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
     $scope.create = function() {
       // Create new Test object
       var test = new Tests({
-        name: this.name,
+        reference: this.reference,
+        subject: this.subject,
         description: this.description
       });
 
@@ -23,7 +24,8 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
         $location.path('tests/' + response._id);
 
         // Clear form fields
-        $scope.name = '';
+        $scope.reference = '';
+        $scope.subject = '';
         $scope.description = '';
       }, function(errorResponse) {
         $scope.error = errorResponse.data.message;

@@ -78,36 +78,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
     $scope.currentPage = 1;
     $scope.itemsPerPage = 10;
 
-		$scope.loadCartridges = function(forceLoad) {
-      if (forceLoad || $scope.showCartridges) {
-	      $http.post('/cartridges/unused', {
-					page: $scope.currentPage,
-					pageSize: $scope.itemsPerPage,
-          assayID: $scope.pendingAssays[$scope.activeAssay]._id,
-          cartridgeID: $scope.selectedCartridge._id
-				}).
-				success(function(data, status, headers, config) {
-          console.log(data);
-          if (data.currentPage === -1) {
-            Notification.error($scope.selectedCartridge._id + ' is not a cartridge for ' + $scope.pendingAssays[$scope.activeAssay].name);
-            $scope.selectedCartridge._id = '';
-            $scope.showCartridges = false;
-            $scope.activeCartridge = -1;
-          }
-          else {
-            $scope.cartridges = data.cartridges;
-  					$scope.totalItems = data.number_of_items;
-            $scope.currentPage = data.currentPage;
-            $scope.activeCartridge = data.activeCartridge;
-          }
-			  }).
-			  error(function(err, status, headers, config) {
-					console.log(err);
-					Notification.error(err.message);
-			  });
-      }
-		};
-
     $scope.pageChanged = function() {
 			console.log($scope.currentPage);
 			$scope.loadCartridges();

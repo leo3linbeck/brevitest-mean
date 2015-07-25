@@ -6,28 +6,12 @@
       </div>
     </div>
     <div class="row">
-      <p class="lead">
-        Fast, Accurate, Point-of-Care Immunoassays
-      </p>
+      <h4 style="color: blue">Fast, Accurate, Point-of-Care Immunoassays</h4>
     </div>
   </div>
     <div data-ng-hide="!(authentication.user.roles.indexOf('user') > -1)">
   <div class="row">
-    <div class="col-md-3">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <a class="btn btn-success btn-block" href="/#!/prescriptions/create">Prescribe
-            Brevitests</a>
-        </div>
-        <div class="panel-body" ng-show="showDetail">
-          <p>Prescribing a Brevitest™ is easy, and you can order one from your desktop,
-            tablet, or smartphone. Click on the button below, select the assays you want to
-            run, enter a little more information, and your prescription will be saved in the
-            cloud, ready to run!</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
       <div class="panel panel-default">
         <div class="panel-heading">
           <a class="btn btn-success btn-block" href="/#!/tests/run">Run a Brevitest™</a>
@@ -41,7 +25,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
       <div class="panel panel-default">
         <div class="panel-heading">
           <a class="btn btn-success btn-block" href="/#!/tests/monitor">Monitor
@@ -55,7 +39,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
       <div class="panel panel-default">
         <div class="panel-heading">
           <a class="btn btn-success btn-block" href="/#!/tests/review">
@@ -74,8 +58,8 @@
     <br/><strong>Enjoy &amp; Thanks,</strong>
     <br/>The Brevitest™ Team:
     <button btn-checkbox class="btn btn-default pull-right"
-      ng-bind-html="showDetail ? 'Hide Detail' : 'Show Detail'" ng-model="showDetail" type="checkbox"></button>
-    <br/>Dev, Erol, Leo, and Mike
+      ng-bind-html="showDetail ? 'Hide Explanations' : 'Show Explanations'" ng-model="showDetail" type="checkbox"></button>
+    <br/>Dev, Erol, Mike, Nick, Peter, and Leo
   </small>
     </div>
   <div class="alert alert-warning text-center" data-ng-hide="!superusers.$resolved || superusers.length">

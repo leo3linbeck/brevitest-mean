@@ -1,0 +1,27 @@
+<section data-ng-controller="DevicePoolsController" data-ng-init="findOne()">
+  <div class="page-header">
+    <h1>Edit Device Pool</h1>
+  </div>
+  <div class="col-md-12">
+    <form class="form-horizontal" data-ng-submit="update()" novalidate>
+      <fieldset>
+        <div class="form-group">
+          <label class="control-label" for="name">Name</label>
+          <div class="controls">
+            <input class="form-control" data-ng-model="devicePool.name" id="name" placeholder="Enter device pool name here" required type="text"></input>
+          </div>
+          <label class="control-label" for="description">Description</label>
+          <div class="controls">
+            <input class="form-control" data-ng-model="devicePool.description" id="description" placeholder="Enter device pool description here" type="text"></input>
+          </div>
+        </div>
+        <div class="form-group">
+          <input class="btn btn-default" type="submit" value="Update"></input>
+        </div>
+        <div class="text-danger" data-ng-show="error">
+          <strong data-ng-bind="error"></strong>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</section>

@@ -66,6 +66,10 @@ var UserSchema = new Schema({
 		type: String,
 		required: 'Provider is required'
 	},
+	_devicePool: {
+		type: Schema.ObjectId,
+		ref: 'DevicePool'
+	},
 	providerData: {},
 	additionalProvidersData: {},
 	roles: {

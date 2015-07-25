@@ -55,6 +55,10 @@ var DeviceSchema = new Schema({
 		type: Schema.ObjectId,
 		ref: 'DeviceModel'
 	},
+	_devicePool: {
+		type: Schema.ObjectId,
+		ref: 'DevicePool'
+	},
 	_tests: [
 		{
 			type: Schema.Types.ObjectId,

@@ -1,0 +1,22 @@
+<section data-ng-controller="DevicePoolsController" data-ng-init="findOne()">
+	<div class="page-header">
+		<h1 data-ng-bind="devicePool.name"></h1>
+	</div>
+	<div class="pull-right" data-ng-show="(authentication.user)">
+		<a class="btn btn-primary" href="/#!/device-pools/{{devicePool._id}}/edit">
+			<i class="glyphicon glyphicon-edit"></i>
+		</a>
+		<a class="btn btn-primary" data-ng-click="remove();">
+			<i class="glyphicon glyphicon-trash"></i>
+		</a>
+	</div>
+	<h4 data-ng-bind="devicePool.description"></h4>
+	<small>
+		<em class="text-muted">
+			Posted on
+			<span data-ng-bind="devicePool.created | date:'mediumDate'"></span>
+			by
+			<span data-ng-bind="devicePool.user.displayName"></span>
+		</em>
+	</small>
+</section>

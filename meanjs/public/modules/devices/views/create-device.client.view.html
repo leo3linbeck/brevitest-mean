@@ -19,7 +19,8 @@
       <div class="controls input-group">
         <input class="form-control" data-ng-model="particleID" id="particleID" placeholder="Enter Particle ID here" type="text"></input>
         <span class="input-group-btn">
-          <button class="btn btn-default" ng-click="attachParticle()" type="button">Attach Particle to This Device</button>
+          <button class="btn btn-default" ng-click="attachParticle()" ng-hide="attached" type="button">Attach Particle to This Device</button>
+          <button class="btn btn-default" ng-click="detachParticle()" ng-show="attached" type="button">Detach Particle from This Device</button>
         </span>
       </div>
       <label class="control-label" for="calibrationSteps">Calibration Steps</label>
@@ -30,7 +31,7 @@
         </span>
       </div>
       <br/>
-      <div class="col-md-6">
+      <div class="col-md-4">
         <div class="panel panel-default">
           <div class="panel-heading">
             <b>Dates</b>
@@ -45,8 +46,8 @@
                     <i class="glyphicon glyphicon-calendar"></i>
                   </button>
                 </span>
-              </div>
-            </p>
+              </p>
+            </div>
             <label class="control-label" for="registeredOn">Registered On</label>
             <div class="controls">
               <p class="input-group">
@@ -61,7 +62,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-4">
         <div class="panel panel-default">
           <div class="panel-heading">
             <b>Device Model</b>
@@ -69,6 +70,18 @@
           <div class="panel-body">
             <div class="list-group">
               <a active class="list-group-item {{dm._id === deviceModel._id ? 'active' : ''}}" href='' ng-repeat="dm in deviceModels" ng_click="selectDeviceModel('{{dm._id}}')">{{dm.name}}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <b>Device Pool</b>
+          </div>
+          <div class="panel-body">
+            <div class="list-group">
+              <a active class="list-group-item {{dp._id === devicePool._id ? 'active' : ''}}" href='' ng-repeat="dp in devicePools" ng_click="selectDevicePool('{{dp._id}}')">{{dp.name}}</a>
             </div>
           </div>
         </div>

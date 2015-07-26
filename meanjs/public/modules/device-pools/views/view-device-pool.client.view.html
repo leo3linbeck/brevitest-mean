@@ -11,6 +11,17 @@
 		</a>
 	</div>
 	<h4 data-ng-bind="devicePool.description"></h4>
+	<br/>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<b>Devices</b>
+		</div>
+		<div class="panel-body">
+			<div class="list-group">
+				<a active class="list-group-item" ng-repeat="device in devices">{{device.name}}</a>
+			</div>
+		</div>
+	</div>
 	<small>
 		<em class="text-muted">
 			Posted on

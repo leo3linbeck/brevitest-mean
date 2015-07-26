@@ -14,7 +14,7 @@
   </div>
   <div class="col-xs-12">
     <div><br/></div>
-    <div class="col-md-8">
+    <div class="col-md-4">
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title">Enter Test Information</h3>
@@ -48,9 +48,8 @@
           <h3 class="panel-title">Available Devices</h3>
         </div>
         <div class="panel-body">
-          <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
-            <button class="btn btn-success btn-block" ng-class="{disabled: activeDevice === -1}" ng-click="beginTest()" ng-hide="testUnderway" type="button">Run Test</button>
-          </div>
+          <button class="btn btn-success btn-block" ng-class="{disabled: activeDevice === -1}" ng-click="beginTest()" ng-hide="testUnderway" type="button">Run Test</button>
+          <br/>
           <div class="list-group" ng-show="devices.length">
             <a class="list-group-item {{activeDevice === $index ? 'active' : ''}}" href="" ng-repeat="device in devices" ng_click="clickDevice($index)">{{device.name}}</a>
           </div>
@@ -61,6 +60,30 @@
           </div>
           <div class="panel-body">
             The device you wish to use may not be online, or may be in use on another test. Check to make sure it is plugged in, connected to the network, and not being used.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <button class="btn btn-xs btn-default pull-right glyphicon glyphicon-refresh" ng-click="reloadCartridge()" type="button"></button>
+          <h3 class="panel-title">Cartridge Information</h3>
+        </div>
+        <div class="panel-body">
+          <ul class="list-group" ng-show="cartridge">
+            <li class="list-group-item">Cartridge ID: {{cartridge._id}}</li>
+            <li class="list-group-item">Cartridge Expiration Date: {{cartridge.expirationDate | date: "medium"}}</li>
+            <li class="list-group-item">Assay: {{assay.name}}</li>
+          </ul>
+        </div>
+        <div class="col-xs-12 panel panel-warning" ng-hide="cartridge">
+          <div class="panel-heading">
+            No cartridge found
+          </div>
+          <div class="panel-body">
+            The device was unable to read the cartridge QR code. Check to make sure the cartridge is properly placed in the Brevitest™ device,
+            and click the refresh button at the upper-right corner of this box.
           </div>
         </div>
       </div>

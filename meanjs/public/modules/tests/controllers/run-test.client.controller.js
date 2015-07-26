@@ -41,7 +41,19 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
     };
 
     $scope.clickDevice = function(indx) {
-      $scope.activeDevice = indx;
+      $http.post('/devices/claim', {
+        currentDeviceID: $scope.activeDevice === -1 ? null : $scope.devices[$scope.activeDevice]._id,
+        newDeviceID: $scope.devices[indx]._id
+      }).
+      success(function(data, status, headers, config) {
+        $scope.activeDevice = indx;
+        $scope.cartridge = data.cartridge;
+        $scope.assay = data.assay;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
     };
 
     $scope.beginTest = function() {

@@ -6,6 +6,8 @@
 var mongoose = require('mongoose'),
   errorHandler = require('./errors.server.controller'),
   Device = mongoose.model('Device'),
+  Cartridge = mongoose.model('Cartridge'),
+  Assay = mongoose.model('Assay'),
   Q = require('q'),
   _ = require('lodash');
 
@@ -81,6 +83,20 @@ exports.refresh_pool = function(req, res) {
   });
 };
 
+exports.pool = function(req, res) {
+  Device.find({
+    _devicePool: req.body.devicePoolID
+  }).sort('-created').populate(devicePopulate).exec(function(err, devices) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      res.jsonp(devices);
+    }
+  });
+};
+
 exports.refresh = function(req, res) {
   Device.find().sort('-created').populate(devicePopulate).exec(function(err, devices) {
     if (err) {
@@ -132,27 +148,66 @@ exports.move_to_and_set_calibration_point = function(req, res) {
 };
 
 exports.claim = function(req, res) {
-  particle.get_particle_device(req.user, req.body.device)
-    .then(function(particle_device) {
-      return [particle_device, particle.execute_particle_command(particle_device, 'claim_device', req.user.id)];
+  console.log(req.body);
+  var releasePromise = new Q();
+  if (req.body.currentDeviceID) {
+    releasePromise = particle.get_particle_device_from_uuid(req.user, req.body.currentDeviceID)
+        .spread(function(device, particle_device) {
+          return [device, particle.execute_particle_command(particle_device, 'release_device', device)];
+        })
+        .spread(function(device, result) {
+          result.msg = device.name + ' released';
+          device.claimed = false;
+          device.save();
+        });
+  }
+  releasePromise
+    .then(function(){
+      console.log('Getting particle device');
+      return particle.get_particle_device_from_uuid(req.user, req.body.newDeviceID);
     })
-    .spread(function(particle_device, result) {
+    .spread(function(device, particle_device) {
+      console.log('Claiming device');
+      return [device, particle_device, particle.execute_particle_command(particle_device, 'claim_device', req.user._id)];
+    })
+    .spread(function(device, particle_device, result) {
+      console.log('Checking assay', result);
       if (result.return_value === 9999) { // assay not found in cache; send to particle
-        return particle.send_assay_to_particle(particle_device, 'start_send_assay', req.body.assay);
-      } else {
-        return result;
+        var cartridgeID = particle.get_register_contents();
+        new Q(Cartridge.findById(cartridgeID).exec())
+          .then(function(cartridge) {
+            return Assay.findById(cartridge._assay).exec();
+          })
+          .then(function(assay) {
+            return particle.send_assay_to_particle(particle_device, 'start_send_assay', assay);
+          })
+          .fail(function(error) {
+            console.error(error);
+            throw new Error({
+              msg: 'Error loading assay into ' + device.name,
+              message: error.message
+            });
+          })
+          .done();
       }
+      return [device, result];
     })
-    .then(function(result) {
-      result.msg = req.body.device.name + ' claimed';
-      req.body.device.claimed = true;
-      req.body.device.save();
-      res.jsonp(result);
+    .spread(function(device, result) {
+      result.msg = device.name + ' claimed';
+      device.claimed = true;
+      device.save();
+      return [device, result];
+    })
+    .spread(function(device, result) {
+      res.jsonp({
+        device: device,
+        result: result
+      });
     })
     .fail(function(error) {
       console.error(error);
       return res.status(400).send({
-        msg: 'Error claiming device ' + req.body.device.name,
+        msg: 'Error claiming device ' + req.body.newDeviceID,
         message: error.message
       });
     })
@@ -160,13 +215,21 @@ exports.claim = function(req, res) {
 };
 
 exports.release = function(req, res) {
-  particle.get_particle_device(req.user, req.body.device)
-    .then(function(particle_device) {
-      return particle.execute_particle_command(particle_device, 'release_device', req.body.device);
+  particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
+  .spread(function(device, particle_device) {
+      return [device, particle.execute_particle_command(particle_device, 'release_device', device)];
     })
-    .then(function(result) {
-      result.msg = req.body.device.name + ' released';
-      res.jsonp(result);
+    .spread(function(device, result) {
+      result.msg = device.name + ' released';
+      device.claimed = false;
+      device.save();
+      return [device, result];
+    })
+    .spread(function(device, result) {
+      res.jsonp({
+        device: device,
+        result: result
+      });
     })
     .fail(function(error) {
       console.error(error);
@@ -210,7 +273,25 @@ exports.load_by_model = function(req, res) {
 };
 
 exports.available = function(req, res) {
-  res.jsonp(req.body);
+  return new Q(Device.find({
+    $and: [
+      {_devicePool: req.user._devicePool},
+      {connected: true},
+      {attached: true},
+      {claimed: {$ne: true}}
+    ]
+    }).exec())
+    .then(function(devices) {
+      res.jsonp(devices);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Error loading device pool ' + req.user._devicePool,
+        message: error.message
+      });
+    })
+    .done();
 };
 
 /**

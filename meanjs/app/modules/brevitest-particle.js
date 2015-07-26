@@ -99,6 +99,7 @@ var command =  {
   'claim_device': {
     code: '03',
     exec: function(particle_device, userID) {
+      console.log('Claiming device: ', particle_device, userID);
       return particle_device.callFunction('runcommand', this.code + userID);
     }
   },
@@ -224,7 +225,7 @@ function getParticleList(user, forceReload) {
       })
       .then(function(devices) {
         console.log('Device list obtained');
-        particles = _.pluck(devices, 'attributes');
+        particles = _.map(devices, function(d) {delete d._spark.devices; return d;});
         return particles;
       });
   } else {
@@ -277,9 +278,14 @@ module.exports = {
   get_particle_device: function(user, device) {
     return getParticle(user, device.particleID);
   },
+  get_register_contents: function() {
+    return particle.getVariable('register');
+  },
   execute_particle_command: function(device, cmd, arg1, arg2, arg3) {
-    return new Q(command[cmd].exec(device, arg1, arg2, arg3))
+    console.log('Executing particle command: ', cmd, command[cmd]);
+    return new Q(command[cmd].exec(device, arg1 || null, arg2 || null, arg3 || null))
       .then(function(result) {
+        console.log('Checking result: ', result);
         if (result.return_value < 0) {
           throw new Error('Error ' + result.return_value + ' detected in command ' + cmd + '(' + arg1 + ', ' + arg2 + ', ' + arg3 +')');
         }

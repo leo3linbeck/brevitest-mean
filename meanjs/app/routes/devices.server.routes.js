@@ -13,6 +13,9 @@ module.exports = function(app) {
 	app.route('/devices/detach_particle')
 		.post(devices.detach_particle);
 
+	app.route('/devices/pool')
+		.post(devices.pool);
+
 	app.route('/devices/refresh_pool')
 		.get(devices.refresh_pool);
 
@@ -25,8 +28,11 @@ module.exports = function(app) {
 	app.route('/devices/flash_firmware')
 		.post(devices.flash_firmware);
 
-	app.route('/devices/attach_particle')
-		.post(devices.attach_particle);
+	app.route('/devices/claim')
+		.post(devices.claim);
+
+	app.route('/devices/release')
+		.post(devices.release);
 
 	app.route('/devices/load_by_model')
 		.post(devices.load_by_model);

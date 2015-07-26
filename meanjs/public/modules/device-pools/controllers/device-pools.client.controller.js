@@ -1,8 +1,8 @@
 'use strict';
 
 // Device pools controller
-angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$stateParams', '$location', 'Authentication', 'DevicePools', 'Users',
-	function($scope, $stateParams, $location, Authentication, DevicePools, Users) {
+angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'DevicePools', 'Users', 'Notification',
+	function($scope, $stateParams, $location, $http, Authentication, DevicePools, Users, Notification) {
 		$scope.authentication = Authentication;
 
 		$scope.selectDevicePool = function(index) {
@@ -73,6 +73,16 @@ angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$
 			$scope.devicePool = DevicePools.get({
 				devicePoolId: $stateParams.devicePoolId
 			});
+			$http.post('/devices/pool', {
+				devicePoolID: $stateParams.devicePoolId
+			}).
+      success(function(data, status, headers, config) {
+        $scope.devices = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
 		};
 	}
 ]);

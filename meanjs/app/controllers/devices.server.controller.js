@@ -23,6 +23,30 @@ var devicePopulate = [{
   select: '_id name'
 }];
 
+exports.write_serial_number = function(req, res) {
+  particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
+    .spread(function(device, particle_device) {
+      device.serialNumber = req.body.serialNumber;
+      device.save();
+      return particle_device;
+    })
+    .then(function(particle_device) {
+      return particle.execute_particle_command(particle_device, 'write_serial_number', req.body.serialNumber);
+    })
+    .then(function(result) {
+      result.msg = 'Serial number updated for ' + req.body.deviceID;
+      res.jsonp(result);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Particle reflash failed  for ' + req.body.deviceID,
+        message: error.message
+      });
+    })
+    .done();
+};
+
 exports.attach_particle = function(req, res) {
   particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
     .spread(function(device, particle_device) {
@@ -40,7 +64,7 @@ exports.attach_particle = function(req, res) {
     .fail(function(error) {
       console.error(error);
       return res.status(400).send({
-        msg: 'Particle unable to attach to ' + req.body.device.name,
+        msg: 'Particle unable to attach to device ' + req.body.deviceID,
         message: error.message
       });
     })
@@ -64,7 +88,7 @@ exports.detach_particle = function(req, res) {
     .fail(function(error) {
       console.error(error);
       return res.status(400).send({
-        msg: 'Particle unable to attach to ' + req.body.device.name,
+        msg: 'Particle unable to attach to device ' + req.body.deviceID,
         message: error.message
       });
     })

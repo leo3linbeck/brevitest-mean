@@ -7,6 +7,9 @@ module.exports = function(app) {
     app.use('/devices', users.hasAuthorization(['user']));
 
 	// Devices Routes
+	app.route('/devices/write_serial_number')
+		.post(devices.write_serial_number);
+
 	app.route('/devices/attach_particle')
 		.post(devices.attach_particle);
 

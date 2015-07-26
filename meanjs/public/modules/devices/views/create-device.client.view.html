@@ -4,30 +4,33 @@
   </div>
   <form class="form-horizontal" data-ng-submit="create()" novalidate>
     <fieldset>
-      <label class="control-label" for="name">Name</label>
-      <div class="controls input-group">
-        <input class="form-control" data-ng-model="name" id="name" placeholder="Enter device name here" required type="text"></input>
-        <span class="input-group-btn">
-          <button class="btn btn-default" ng-class="{disabled: !attached}" ng-click="flashFirmware()" type="button">Flash Latest Firmware</button>
-        </span>
-      </div>
-      <label class="control-label" for="serialNumber">Serial Number</label>
-      <div class="controls">
-        <input class="form-control" data-ng-model="serialNumber" id="serialNumber" placeholder="Enter device serial number here" type="text"></input>
-      </div>
       <label class="control-label" for="particleID">Particle ID</label>
       <div class="controls input-group">
         <input class="form-control" data-ng-model="particleID" id="particleID" placeholder="Enter Particle ID here" type="text"></input>
         <span class="input-group-btn">
-          <button class="btn btn-default" ng-click="attachParticle()" ng-hide="attached" type="button">Attach Particle to This Device</button>
-          <button class="btn btn-default" ng-click="detachParticle()" ng-show="attached" type="button">Detach Particle from This Device</button>
+          <button class="btn btn-default" ng-click="attachParticle()" ng-hide="device.attached" type="button">Attach Particle</button>
+          <button class="btn btn-default" ng-click="detachParticle()" ng-show="device.attached" type="button">Detach Particle</button>
+        </span>
+      </div>
+      <label class="control-label" for="name">Name</label>
+      <div class="controls input-group">
+        <input class="form-control" data-ng-model="name" id="name" placeholder="Enter device name here" required type="text"></input>
+        <span class="input-group-btn">
+          <button class="btn btn-default" ng-class="{disabled: !device.attached}" ng-click="flashFirmware()" type="button">Flash Firmware</button>
+        </span>
+      </div>
+      <label class="control-label" for="serialNumber">Serial Number</label>
+      <div class="controls input-group">
+        <input class="form-control" data-ng-model="serialNumber" id="serialNumber" placeholder="Enter device serial number here" type="text"></input>
+        <span class="input-group-btn">
+          <button class="btn btn-default" ng-class="{disabled: !device.attached}" ng-click="writeSerialNumber()" type="button">Write Serial Number</button>
         </span>
       </div>
       <label class="control-label" for="calibrationSteps">Calibration Steps</label>
       <div class="controls input-group">
         <input class="form-control" data-ng-model="calibrationSteps" id="calibrationSteps" placeholder="Enter number of steps to move device to zero mark" type="text"></input>
         <span class="input-group-btn">
-          <button class="btn btn-default" ng-class="{disabled: !attached}" ng-click="moveToAndSetCalibrationPoint()" type="button">Save and Move to Calibration Point</button>
+          <button class="btn btn-default" ng-class="{disabled: !device.attached}" ng-click="moveToAndSetCalibrationPoint()" type="button">Save and Move to Calibration Point</button>
         </span>
       </div>
       <br/>

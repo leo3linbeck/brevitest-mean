@@ -8,6 +8,21 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
       $location.path('/signin');
     }
 
+    $scope.writeSerialNumber = function() {
+      $http.post('/devices/write_serial_number', {
+        deviceID: $scope.device._id,
+        serialNumber: $scope.device.serialNumber
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success('Serial number updated on device');
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
     $scope.attachParticle = function() {
       $http.post('/devices/attach_particle', {
         deviceID: $scope.device._id

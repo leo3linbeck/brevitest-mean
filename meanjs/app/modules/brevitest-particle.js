@@ -129,8 +129,8 @@ var command =  {
   },
   'write_serial_number': {
     code: '30',
-    exec: function() {
-
+    exec: function(particle_device, serial_number) {
+      return particle_device.callFunction('runcommand', this.code + serial_number);
     }
   },
   'change_param': {
@@ -225,7 +225,7 @@ function getParticleList(user, forceReload) {
       })
       .then(function(devices) {
         console.log('Device list obtained');
-        particles = _.map(devices, function(d) {delete d._spark.devices; return d;});
+        particles = _.map(devices, function(d) {delete d._spark.devices; return d;}); // remove circular JSON reference
         return particles;
       });
   } else {
@@ -233,19 +233,19 @@ function getParticleList(user, forceReload) {
   }
 }
 
-function getParticle(user, particleID, forceReload) {
+function getParticleDevice(user, particleID, forceReload) {
   return getParticleList(user, forceReload)
-    .then(function(plist) {
-      var p = _.findWhere(plist, {
+    .then(function(particleList) {
+      var particleDevice = _.findWhere(particleList, {
         id: particleID
       });
-      if (!p) {
+      if (!particleDevice) {
         throw new Error('Particle ' + particleID + ' not found');
       }
-      if (!p.connected) {
-        throw new Error(p.name + ' is not online.');
+      if (!particleDevice.connected) {
+        throw new Error(particleDevice.name + ' is not online.');
       }
-      return p;
+      return particleDevice;
     });
 }
 
@@ -272,11 +272,11 @@ module.exports = {
   get_particle_device_from_uuid: function(user, uuid) {
     return new Q(Device.findById(uuid).exec())
       .then(function(device) {
-        return [device, getParticle(user, device.particleID)];
+        return [device, getParticleDevice(user, device.particleID)];
       });
   },
   get_particle_device: function(user, device) {
-    return getParticle(user, device.particleID);
+    return getParticleDevice(user, device.particleID);
   },
   get_register_contents: function() {
     return particle.getVariable('register');

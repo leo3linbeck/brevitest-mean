@@ -1,6 +1,8 @@
 <section data-ng-controller="DevicesController" data-ng-init="find()">
   <div class="page-header">
+    <button class="btn btn-lg btn-default pull-right glyphicon glyphicon-refresh" ng-click="refresh()" type="button"></button>
     <h1>Devices</h1>
+
   </div>
   <div class="list-group">
     <a class="list-group-item" data-ng-href="#!/devices/{{device._id}}" data-ng-repeat="device in devices">
@@ -10,7 +12,10 @@
         by
         <span data-ng-bind="device.user.displayName"></span>
       </small>
-      <h4 class="list-group-item-heading" data-ng-bind="device.name"></h4>
+
+      <h4 class="list-group-item-heading">
+        {{device.name}}<span class="badge pull-right" ng-class="{'btn btn-success': device.connected, 'btn btn-danger': !device.connected}"}>{{device.connected ? 'Online' : 'Offline'}}</span>
+      </h4>
       <h5 class="list-group-item-heading" data-ng-bind="device.particleID"></h5>
     </a>
   </div>

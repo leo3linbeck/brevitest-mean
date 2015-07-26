@@ -1,15 +1,59 @@
 'use strict';
 
 // Devices controller
-angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Devices', 'DeviceModels', 'Notification',
-  function($scope, $http, $stateParams, $location, $window, Authentication, Devices, DeviceModels, Notification) {
+angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Devices', 'DeviceModels', 'DevicePools', 'Notification',
+  function($scope, $http, $stateParams, $location, $window, Authentication, Devices, DeviceModels, DevicePools, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       $location.path('/signin');
     }
 
+    $scope.attachParticle = function() {
+      $http.post('/devices/attach_particle', {
+        deviceID: $scope.device._id
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success('Particle attached');
+        $scope.device = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.detachParticle = function() {
+      $http.post('/devices/detach_particle', {
+        deviceID: $scope.device._id
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success('Particle detached');
+        $scope.device = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
     $scope.loadData = function() {
       $scope.deviceModels = DeviceModels.query();
+      $scope.devicePools = DevicePools.query();
+    };
+
+    $scope.refresh = function() {
+      $http.get('/devices/refresh').
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success('Device list refreshed');
+        $scope.devices = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
     };
 
     $scope.moveToAndSetCalibrationPoint = function() {
@@ -28,22 +72,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
     };
 
     $scope.flashFirmware = function() {
-      $http.post('/devices/reflash', {
-        device: $scope.device
-      }).
-      success(function(data, status, headers, config) {
-        console.log(data);
-        Notification.success(data.result);
-        $scope.device.$save();
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        Notification.error(err.message);
-      });
-    };
-
-    $scope.attachParticle = function() {
-      $http.post('/devices/attach_particle', {
+      $http.post('/devices/flash_firmware', {
         device: $scope.device
       }).
       success(function(data, status, headers, config) {
@@ -66,6 +95,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
     };
 
     $scope.deviceModel = {};
+    $scope.devicePool = {};
 
     $scope.openedMfg = false;
     $scope.openedReg = false;
@@ -77,6 +107,10 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 
     $scope.selectDeviceModel = function(id) {
       $scope.deviceModel._id = id;
+    };
+
+    $scope.selectDevicePool = function(id) {
+      $scope.devicePool._id = id;
     };
 
     $scope.openDatepicker = function($event, dateField) {
@@ -149,6 +183,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
     $scope.update = function() {
       var device = $scope.device;
       device._deviceModel = $scope.deviceModel ? $scope.deviceModel._id : '';
+      device._devicePool = $scope.devicePool ? $scope.devicePool._id : '';
 
       device.$update(function() {
         $location.path('devices/' + device._id);
@@ -169,8 +204,10 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         deviceId: $stateParams.deviceId
       }, function() {
         $scope.deviceModels = $scope.deviceModels || DeviceModels.query();
+        $scope.devicePools = $scope.devicePools || DevicePools.query();
         $scope.setOnlineButtonText();
         $scope.deviceModel = $scope.device._deviceModel ? $scope.device._deviceModel : {};
+        $scope.devicePool = $scope.device._devicePool ? $scope.device._devicePool : {};
       });
     };
   }

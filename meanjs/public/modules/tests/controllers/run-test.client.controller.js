@@ -13,7 +13,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
 
     $scope.refresh = function() {
       console.log('Refreshing device list');
-      $http.get('/devices/refresh').
+      $http.get('/devices/refresh_pool').
       success(function(data, status, headers, config) {
         Notification.success('Device list refreshed');
         $scope.devices = data;

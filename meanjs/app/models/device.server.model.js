@@ -32,9 +32,11 @@ var DeviceSchema = new Schema({
 	registeredOn: {
 		type: Date
 	},
+	attached: {
+		type: Boolean
+	},
 	particleID: {
-		type: String,
-		required: 'Please fill Particle ID'
+		type: String
 	},
 	particleName: {
 		type: String

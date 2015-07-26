@@ -224,7 +224,7 @@ function getParticleList(user, forceReload) {
       })
       .then(function(devices) {
         console.log('Device list obtained');
-        particles = devices;
+        particles = _.pluck(devices, 'attributes');
         return particles;
       });
   } else {
@@ -234,15 +234,16 @@ function getParticleList(user, forceReload) {
 
 function getParticle(user, particleID, forceReload) {
   return getParticleList(user, forceReload)
-    .then(function() {
-      var p = _.findWhere(particles, {
+    .then(function(plist) {
+      var p = _.findWhere(plist, {
         id: particleID
       });
-
+      if (!p) {
+        throw new Error('Particle ' + particleID + ' not found');
+      }
       if (!p.connected) {
         throw new Error(p.name + ' is not online.');
       }
-
       return p;
     });
 }
@@ -268,11 +269,9 @@ module.exports = {
     return getParticleList(user, forceReload);
   },
   get_particle_device_from_uuid: function(user, uuid) {
-    return Q.fcall(function(id) {
-        return new Q(Device.findById(id).exec());
-      }, uuid)
+    return new Q(Device.findById(uuid).exec())
       .then(function(device) {
-        return getParticle(user, device.particleID);
+        return [device, getParticle(user, device.particleID)];
       });
   },
   get_particle_device: function(user, device) {

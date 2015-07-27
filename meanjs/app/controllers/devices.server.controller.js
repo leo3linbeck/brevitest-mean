@@ -176,17 +176,17 @@ exports.claim = function(req, res) {
   var releasePromise = new Q();
   if (req.body.currentDeviceID) {
     releasePromise = particle.get_particle_device_from_uuid(req.user, req.body.currentDeviceID)
-        .spread(function(device, particle_device) {
-          return [device, particle.execute_particle_command(particle_device, 'release_device', device)];
-        })
-        .spread(function(device, result) {
-          result.msg = device.name + ' released';
-          device.claimed = false;
-          device.save();
-        });
+      .spread(function(device, particle_device) {
+        return [device, particle.execute_particle_command(particle_device, 'release_device', device)];
+      })
+      .spread(function(device, result) {
+        result.msg = device.name + ' released';
+        device.claimed = false;
+        device.save();
+      });
   }
   releasePromise
-    .then(function(){
+    .then(function() {
       console.log('Getting particle device');
       return particle.get_particle_device_from_uuid(req.user, req.body.newDeviceID);
     })
@@ -196,33 +196,56 @@ exports.claim = function(req, res) {
     })
     .spread(function(device, particle_device, result) {
       console.log('Checking assay', result);
-      if (result.return_value === 9999) { // assay not found in cache; send to particle
-        var cartridgeID = particle.get_register_contents();
-        new Q(Cartridge.findById(cartridgeID).exec())
-          .then(function(cartridge) {
-            return Assay.findById(cartridge._assay).exec();
-          })
-          .then(function(assay) {
-            return particle.send_assay_to_particle(particle_device, 'start_send_assay', assay);
-          })
-          .fail(function(error) {
-            console.error(error);
-            throw new Error({
-              msg: 'Error loading assay into ' + device.name,
-              message: error.message
-            });
-          })
-          .done();
+      if (result.return_value < 0) { // assay not found in cache; send to particle
+        throw new Error('Unable to read cartridge. Please check device and retry');
+      } else {
+        return [device, particle_device, particle.get_register_contents(particle_device)];
       }
-      return [device, result];
     })
-    .spread(function(device, result) {
+    .spread(function(device, particle_device, cartridgeID) {
+      console.log('cartridgeID: ', cartridgeID);
+      return [device, particle_device, Cartridge.findById(cartridgeID).exec()];
+    })
+    .spread(function(device, particle_device, cartridge) {
+      console.log('Cartridge found', cartridge);
+      if (!cartridge || !cartridge._id) { // cartridge not found in database
+        throw new Error('Unable to find cartridge record');
+      } else {
+        return [device, particle_device, Assay.findById(cartridge._assay).exec()];
+      }
+    })
+    .spread(function(device, particle_device, assay) {
+      console.log('Assay found', assay);
+      if (!assay || !assay._id) { // assay not found in database
+        throw new Error('Unable to find assay record');
+      } else {
+        return [device, particle_device, assay, particle.execute_particle_command(particle_device, 'check_assay_cache', assay._id)];
+      }
+    })
+    .spread(function(device, particle_device, assay, result) {
+      console.log('Assay cache checked', result);
+      if (result.return_value === 999) { // assay not found in cache
+        return [device, particle_device, assay, particle.send_assay_to_particle(particle_device, assay), assay];
+      } else {
+        return [device, particle_device, assay, {return_value: 777}];
+      }
+    })
+    .spread(function(device, particle_device, assay, result) {
+      console.log('Assay loaded', result);
       result.msg = device.name + ' claimed';
       device.claimed = true;
       device.save();
-      return [device, result];
+      return [device, particle_device, assay, result];
     })
-    .spread(function(device, result) {
+    .spread(function(device, particle_device, assay, result) {
+      console.log('Device claimed', result);
+      return [device, particle_device, result, particle.execute_particle_request(particle_device, 'assay_record', assay._id)];
+    })
+    .spread(function(device, particle_device, result, requestResult) {
+      return [device, result, particle.get_register_contents(particle_device)];
+    })
+    .spread(function(device, result, assayString) {
+      console.log('Assay data retrieved', assayString);
       res.jsonp({
         device: device,
         result: result
@@ -240,7 +263,7 @@ exports.claim = function(req, res) {
 
 exports.release = function(req, res) {
   particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
-  .spread(function(device, particle_device) {
+    .spread(function(device, particle_device) {
       return [device, particle.execute_particle_command(particle_device, 'release_device', device)];
     })
     .spread(function(device, result) {
@@ -298,12 +321,17 @@ exports.load_by_model = function(req, res) {
 
 exports.available = function(req, res) {
   return new Q(Device.find({
-    $and: [
-      {_devicePool: req.user._devicePool},
-      {connected: true},
-      {attached: true},
-      {claimed: {$ne: true}}
-    ]
+      $and: [{
+        _devicePool: req.user._devicePool
+      }, {
+        connected: true
+      }, {
+        attached: true
+      }, {
+        claimed: {
+          $ne: true
+        }
+      }]
     }).exec())
     .then(function(devices) {
       res.jsonp(devices);

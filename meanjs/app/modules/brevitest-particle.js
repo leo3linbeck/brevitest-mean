@@ -59,8 +59,8 @@ var request = {
   },
   'assay_record': {
     code: '03',
-    exec: function() {
-
+    exec: function(particle_device, assayID) {
+      return particle_device.callFunction('requestdata', this.code + assayID);
     }
   },
   'all_params': {
@@ -112,17 +112,33 @@ var command =  {
   'send_next_packet': {
     code: '10',
     exec: function(particle_device, arg) {
+      console.log('send_next_packet', arg);
       return particle_device.callFunction('runcommand', this.code + arg);
     }
   },
   'start_send_assay': {
     code: '20',
     exec: function(particle_device, message_id, number_of_packets, message_size) {
-      return particle_device.callFunction('runcommand', this.code + '0005' + message_id + zeropad(number_of_packets, 2) + zeropad(message_size, 3));
+      var data = this.code + '0005' + message_id + zeropad(message_size, 3) + zeropad(number_of_packets, 2);
+      console.log('start_send_assay', data);
+      return particle_device.callFunction('runcommand', data);
     }
   },
   'start_send_test': {
     code: '21',
+    exec: function() {
+
+    }
+  },
+  'check_assay_cache': {
+    code: '22',
+    exec: function(particle_device, uuid) {
+      console.log('check_assay_cache', uuid);
+      return particle_device.callFunction('runcommand', this.code + uuid);
+    }
+  },
+  'check_test_cache': {
+    code: '23',
     exec: function() {
 
     }
@@ -253,12 +269,14 @@ function getParticleDevice(user, particleID, forceReload) {
 
 function convert_assay_to_string(assay) {
   var str = assay.id;
+  var bcodeStr = bObjectToCodeString(assay.BCODE);
 
-  str += assay.name + '\0';
-  str += zeropad(bt.calculate_duration(assay.BCODE), 6);
-  str += zeropad(assay.BCODE.length, 3);
+  str += zeropad(assay.name.length, 2);
+  str += assay.name;
+  str += zeropad(bt.calculate_duration(assay.BCODE), 5);
+  str += zeropad(bcodeStr.length, 3);
   str += '000'; // placeholder for BCODE version
-  str += bObjectToCodeString(assay.BCODE);
+  str += bcodeStr;
 
   return str;
 }
@@ -278,12 +296,15 @@ module.exports = {
   get_particle_device: function(user, device) {
     return getParticleDevice(user, device.particleID);
   },
-  get_register_contents: function() {
-    return particle.getVariable('register');
+  get_register_contents: function(particle_device) {
+    return particle_device.getVariable('register')
+      .then(function(result) {
+        return result.result;
+      });
   },
-  execute_particle_command: function(device, cmd, arg1, arg2, arg3) {
+  execute_particle_command: function(particle_device, cmd, arg1, arg2, arg3) {
     console.log('Executing particle command: ', cmd, command[cmd]);
-    return new Q(command[cmd].exec(device, arg1 || null, arg2 || null, arg3 || null))
+    return new Q(command[cmd].exec(particle_device, arg1 || null, arg2 || null, arg3 || null))
       .then(function(result) {
         console.log('Checking result: ', result);
         if (result.return_value < 0) {
@@ -292,28 +313,36 @@ module.exports = {
         return result;
       });
   },
-  execute_particle_request: function(device, req, arg1, arg2, arg3) {
-    return new Q(request[req].exec(device, arg1, arg2, arg3))
+  execute_particle_request: function(particle_device, req, arg1, arg2, arg3) {
+    return new Q(request[req].exec(particle_device, arg1, arg2, arg3))
       .then(function(result) {
         if (result.return_value < 0) {
           throw new Error('Error ' + result.return_value + ' detected in request ' + req + '(' + arg1 + ', ' + arg2 + ', ' + arg3 +')');
         }
-        return particle.getVariable('register');
+        return particle_device.getVariable('register');
+      })
+      .then(function(result) {
+        return result.result;
       });
   },
   send_assay_to_particle: function(particle_device, assay) {
     var str = convert_assay_to_string(assay);
+    console.log('str: ', str);
+    console.log('str.length: ', str.length);
     var i, payload, start;
     var args = [];
-    var message_id = assay.id.substring(0, 6);
+    var message_id = assay.id.substr(18);
+    console.log('message_id: ', message_id);
     var max_payload = 51; // max string = 63 - length(command code)[2] - length(packet_number)[2] - length(packet_length)[2] - length(message_id)[6]
     var packet_count = Math.ceil(str.length / max_payload);
+    console.log('packet_count: ', packet_count);
 
     for (i = 1; i <= packet_count; i += 1) {
       start = (i - 1) * max_payload;
       payload = str.substring(start, start + max_payload);
       args.push(zeropad(i, 2) + zeropad(payload.length, 2) + message_id + payload);
     }
+    console.log('args: ', args);
 
     return args.reduce(function(soFar, arg) {
       return soFar.then(function() {

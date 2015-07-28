@@ -272,7 +272,7 @@ function convert_assay_to_string(assay) {
   var bcodeStr = bObjectToCodeString(assay.BCODE);
 
   str += zeropad(assay.name.length, 2);
-  str += assay.name;
+  str += (assay.name + new Array(63).join(' ')).substring(0, 63);
   str += zeropad(bt.calculate_duration(assay.BCODE), 5);
   str += zeropad(bcodeStr.length, 3);
   str += '000'; // placeholder for BCODE version

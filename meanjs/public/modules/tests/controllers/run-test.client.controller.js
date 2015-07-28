@@ -47,6 +47,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
       }).
       success(function(data, status, headers, config) {
         $scope.activeDevice = indx;
+        $scope.devices[indx].claimed = true;
         $scope.cartridge = data.cartridge;
         $scope.assay = data.assay;
       }).

@@ -38,9 +38,15 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
     $scope.setupRun = function() {
       $scope.activeDevice = -1;
       $scope.loadDevices();
+      $scope.reference = '';
+      $scope.subject = '';
+      $scope.description = '';
+      $scope.cartridge = null;
+      $scope.assay = null;
     };
 
-    $scope.clickDevice = function(indx) {
+    $scope.claimDevice = function(indx) {
+      Notification.success('Setting up device, please wait...');
       $http.post('/devices/claim', {
         currentDeviceID: $scope.activeDevice === -1 ? null : $scope.devices[$scope.activeDevice]._id,
         newDeviceID: $scope.devices[indx]._id
@@ -58,31 +64,34 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
     };
 
     $scope.beginTest = function() {
-      if ($scope.activeDevice < 0) {
-        Notification.error('Please select a device for testing');
-        return;
+      var device;
+      if (!$scope.reference) {
+        Notification.error('You must enter a reference number');
       }
-      if (!$scope.devices[$scope.activeDevice]) {
-        Notification.error('Unknown device');
-        return;
+      else {
+        if ($scope.activeDevice !== -1) {
+          console.log('$scope.assay: ', $scope.assay);
+          device = $scope.devices[$scope.activeDevice];
+          $http.post('/tests/begin', {
+            reference: $scope.reference,
+            subject: $scope.subject,
+            description: $scope.description,
+            deviceID: device._id,
+            deviceName: device.name,
+            assayID: $scope.assay._id,
+            assayName: $scope.assay.name,
+            cartridgeID: $scope.cartridge._id
+          }).
+          success(function(data, status, headers, config) {
+            Notification.success('Test underway');
+            $scope.setupRun();
+          }).
+          error(function(err, status, headers, config) {
+            console.log(err);
+            Notification.error(err.message);
+          });
+        }
       }
-
-      var device = $scope.devices[$scope.activeDevice];
-      $http.post('/tests/begin', {
-        deviceID: device._id,
-        deviceName: device.name,
-        testReference: $scope.reference,
-        testSubject: $scope.subject,
-        testDescription: $scope.description
-      }).
-      success(function(data, status, headers, config) {
-        Notification.success('Test underway');
-        $scope.setupRun();
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        Notification.error(err.message);
-      });
     };
   }
 ]);

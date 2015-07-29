@@ -5,8 +5,8 @@ var c3 = window.c3;
 var d3 = window.d3;
 
 // Tests controller
-angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Sparks', 'Notification',
-  function($scope, $http, $location, Authentication, Tests, Sparks, Notification) {
+angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Notification',
+  function($scope, $http, $location, Authentication, Tests, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
 			$location.path('/signin');
@@ -141,7 +141,7 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
     };
 
     $scope.loadRawData = function(cartridgeID) {
-      $http.post('/sparks/record_by_cartridge_id', {
+      $http.post('/device/record_by_cartridge_id', {
         cartridgeID: cartridgeID
       }).
       success(function(data, status, headers, config) {

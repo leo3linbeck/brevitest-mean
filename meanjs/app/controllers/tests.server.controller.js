@@ -140,66 +140,83 @@ function createParticleSubscribeCallback(test, socket, user, analysis, standardC
 
 exports.begin = function(req, res) {
   var bcodeString, test;
-
-  particle.get_particle_device(req.user, req.body.device)
-    .then(function(particle_device) {
-      return [particle_device, particle.execute_particle_command(particle_device, 'claim_device', req.user.id)];
+  console.log('Beginning test', req.body);
+  particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
+    .spread(function(device, particle_device) {
+      console.log('Made it 1', particle_device);
+      return [device, particle_device, particle.execute_particle_command(particle_device, 'verify_qr_code', req.body.cartridgeID)];
     })
-    .spread(function(particle_device, result) {
-      if (result.return_value === 9999) {  // assay not found in cache; send to particle
-        result = particle.send_assay_to_particle(particle_device, 'start_send_assay', req.body.assay);
-        if (result.return_value < 0) {
-          throw new Error('Error transferring assay data');
-        }
-      }
-      return particle_device;
-    })
-    .then(function(particle_device){
-      req.body.device.claimed = true;
-      req.body.device.save();
-      return particle_device;
-    })
-    .then(function(particle_device){
-      return [particle_device, particle.verify_QR_code(particle_device, req.body.cartridgeID)];
-    })
-    .spread(function(particle_device, result) {
-      if (result.return_value < 0) {
-        throw new Error('Error validating cartridge, code = ' + result.return_value);
+    .spread(function(device, particle_device, result) {
+      if (result.return_value !== 0) {
+        throw new Error('Error verifying cartridge, code = ' + result.return_value);
       }
       test = new Test();
       test.user = req.user;
+      test.reference = req.body.reference;
+      test.subject = req.body.subject;
+      test.description = req.body.description;
       test._assay = req.body.assayID;
       test._device = req.body.deviceID;
       test._cartridge = req.body.cartridgeID;
-      test.name = req.body.name ? req.body.name : ('Assay ' + req.body.assayName + ' on device ' + req.body.deviceName + ' using cartridge ' + req.body.cartridgeID);
       test.status = 'Starting';
       test.percentComplete = 0;
-      test.startedOn = new Date();
       test.save();
-      return particle_device;
+      return [device, particle_device, test];
     })
-    .then(function(particle_device) {
-      return new Q(Cartridge.findOneAndUpdate({
-        _id: req.body.cartridgeID
-      }, {
+    .spread(function(device, particle_device, test) {
+      console.log('Test record created', test);
+      return [device, particle_device, test, particle.send_test_to_particle(particle_device, test)];
+    })
+    .spread(function(device, particle_device, test, result) {
+      if (result.return_value < 0) {
+        throw new Error('Error loading test data into device, code = ' + result.return_value);
+      }
+      console.log('Test loaded into device', result);
+      return [device, particle_device, test, particle.execute_particle_command(particle_device, 'run_test', test._id)];
+    })
+    .spread(function(device, particle_device, test, result) {
+      console.log('Test started', result);
+      if (result.return_value < 0) { // test failed to start
+        test.user = req.user;
+        test.status = 'Failed';
+        test.percentComplete = -1;
+        test.save();
+      }
+      return [device, particle_device, test, result, Assay.findById(req.body.assayID).exec()];
+    })
+    .spread(function(device, particle_device, test, result, assay) {
+      console.log('Test updated and assay fetched', test, assay);
+      if (result.return_value < 0) { // test failed to start
+        throw new Error('Unable to start test ' + test.reference);
+      }
+
+      var updateObj = {
         _test: test._id,
         _device: req.body.deviceID,
-        startedOn: test.startedOn,
-        bcodeString: req.body.bcodestring,
+        startedOn: new Date(),
+        bcodeString: particle.get_BCODE_string(assay.BCODE),
         _runBy: test.user
-      }).exec());
+      };
+      console.log('cartridgeID', req.body.cartridgeID);
+      return [device, particle_device, test, assay, Cartridge.findByIdAndUpdate(req.body.cartridgeID, updateObj, {new: true}).exec()];
     })
-    .then(function() {
-      particle.subscribe(req.body.cartridgeID, createParticleSubscribeCallback(test, req.app.get('socketio'), req.user, req.body.analysis, req.body.standardCurve));
+    .spread(function(device, particle_device, test, assay, cartridge) {
+      console.log('Cartridge updated', cartridge);
+      particle.start_monitor(particle_device, test._id, createParticleSubscribeCallback(test, req.app.get('socketio'), req.user, assay.analysis, assay.standardCurve));
 
       res.jsonp({
         message: 'Test started',
-        test: test
+        device: device,
+        test: test,
+        assay: assay,
+        cartridge: cartridge
       });
     })
-    .fail(function(err) {
+    .fail(function(error) {
+      console.error(error);
       return res.status(400).send({
-        message: err.message
+        msg: 'Error running Brevitest™ on device ' + req.body.deviceName,
+        message: error.message
       });
     })
     .done();
@@ -210,9 +227,9 @@ exports.cancel = function(req, res) {
 
   var now = new Date();
 
-  particle.get_particle_device(req.user, req.body.device)
-    .then(function(particle_device) {
-      return [particle_device, particle.execute_particle_command(particle_device, 'cancel_test', req.user.id)];
+  particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
+    .spread(function(device, particle_device) {
+      return [particle_device, particle.execute_particle_command(particle_device, 'cancel_test', req.body.testID)];
     })
     .then(function(register) {
       return new Q(Cartridge.findOneAndUpdate({
@@ -235,13 +252,13 @@ exports.cancel = function(req, res) {
     .then(function() {
       res.jsonp('Cancelled');
     })
-    .fail(
-      function(err) {
-        console.log('Cancel process failed', err);
-        return res.status(400).send({
-          message: err
-        });
-      })
+    .fail(function(error) {
+      console.log('Cancel process failed', error);
+      return res.status(400).send({
+        msg: 'Error cancelling test ' + req.body.testID + ' on device ' + req.body.device.name,
+        message: error.message
+      });
+    })
     .done();
 };
 

@@ -86,14 +86,16 @@ var request = {
 var command =  {
   'run_test': {
     code: '01',
-    exec: function() {
-
+    exec: function(particle_device, testID) {
+      console.log('Running test: ', particle_device, testID);
+      return particle_device.callFunction('runcommand', this.code + testID);
     }
   },
   'cancel_test': {
     code: '02',
-    exec: function() {
-
+    exec: function(particle_device, testID) {
+      console.log('Cancelling test: ', particle_device, testID);
+      return particle_device.callFunction('runcommand', this.code + testID);
     }
   },
   'claim_device': {
@@ -105,42 +107,38 @@ var command =  {
   },
   'release_device': {
     code: '04',
-    exec: function() {
-
+    exec: function(particle_device) {
+      console.log('Releasing device: ', particle_device);
+      return particle_device.callFunction('runcommand', this.code);
+    }
+  },
+  'send_first_packet': {
+    code: '10',
+    exec: function(particle_device, message_id, message_type, message_size, number_of_packets) {
+      var data = this.code + '0007' + message_id + zeropad(message_type, 2) + zeropad(message_size, 3) + zeropad(number_of_packets, 2);
+      console.log('send_first_packet', data);
+      return particle_device.callFunction('runcommand', data);
     }
   },
   'send_next_packet': {
-    code: '10',
+    code: '11',
     exec: function(particle_device, arg) {
       console.log('send_next_packet', arg);
       return particle_device.callFunction('runcommand', this.code + arg);
     }
   },
-  'start_send_assay': {
-    code: '20',
-    exec: function(particle_device, message_id, number_of_packets, message_size) {
-      var data = this.code + '0005' + message_id + zeropad(message_size, 3) + zeropad(number_of_packets, 2);
-      console.log('start_send_assay', data);
-      return particle_device.callFunction('runcommand', data);
-    }
-  },
-  'start_send_test': {
-    code: '21',
-    exec: function() {
-
-    }
-  },
   'check_assay_cache': {
-    code: '22',
+    code: '20',
     exec: function(particle_device, uuid) {
       console.log('check_assay_cache', uuid);
       return particle_device.callFunction('runcommand', this.code + uuid);
     }
   },
   'check_test_cache': {
-    code: '23',
-    exec: function() {
-
+    code: '21',
+    exec: function(particle_device, uuid) {
+      console.log('check_test_cache', uuid);
+      return particle_device.callFunction('runcommand', this.code + uuid);
     }
   },
   'write_serial_number': {
@@ -163,8 +161,8 @@ var command =  {
   },
   'get_firmware_version': {
     code: '33',
-    exec: function() {
-
+    exec: function(particle_device) {
+      return particle_device.callFunction('runcommand', this.code);
     }
   },
   'set_calibration_point': {
@@ -211,8 +209,9 @@ var command =  {
   },
   'verify_qr_code': {
     code: '56',
-    exec: function() {
-
+    exec: function(particle_device, uuid) {
+      console.log('verify_qr_code', uuid);
+      return particle_device.callFunction('runcommand', this.code + uuid);
     }
   }
 };
@@ -281,6 +280,25 @@ function convert_assay_to_string(assay) {
   return str;
 }
 
+function send_message_to_particle(particle_device, str, message_type, message_id, firstCommand) {
+  var i, payload, start;
+  var args = [];
+  var max_payload = 51; // max string = 63 - length(command code)[2] - length(packet_number)[2] - length(packet_length)[2] - length(message_id)[6]
+  var packet_count = Math.ceil(str.length / max_payload);
+
+  for (i = 1; i <= packet_count; i += 1) {
+    start = (i - 1) * max_payload;
+    payload = str.substring(start, start + max_payload);
+    args.push(zeropad(i, 2) + zeropad(payload.length, 2) + message_id + payload);
+  }
+
+  return args.reduce(function(soFar, arg) {
+    return soFar.then(function() {
+      return command.send_next_packet.exec(particle_device, arg);
+    });
+  }, new Q(command.send_first_packet.exec(particle_device, message_id, message_type, str.length, packet_count)));
+}
+
 // exported functions - all functions return a Q promise
 
 module.exports = {
@@ -303,7 +321,6 @@ module.exports = {
       });
   },
   execute_particle_command: function(particle_device, cmd, arg1, arg2, arg3) {
-    console.log('Executing particle command: ', cmd, command[cmd]);
     return new Q(command[cmd].exec(particle_device, arg1 || null, arg2 || null, arg3 || null))
       .then(function(result) {
         console.log('Checking result: ', result);
@@ -327,28 +344,21 @@ module.exports = {
   },
   send_assay_to_particle: function(particle_device, assay) {
     var str = convert_assay_to_string(assay);
-    console.log('str: ', str);
-    console.log('str.length: ', str.length);
-    var i, payload, start;
-    var args = [];
     var message_id = assay.id.substr(18);
+    return send_message_to_particle(particle_device, str, '01', message_id, 'start_send_assay');
+  },
+  send_test_to_particle: function(particle_device, test) {
+    var str = test.user + test._id + test._assay + test._cartridge;
+    console.log('str: ', str);
+    var message_id = test._id.toString().substr(18);
     console.log('message_id: ', message_id);
-    var max_payload = 51; // max string = 63 - length(command code)[2] - length(packet_number)[2] - length(packet_length)[2] - length(message_id)[6]
-    var packet_count = Math.ceil(str.length / max_payload);
-    console.log('packet_count: ', packet_count);
-
-    for (i = 1; i <= packet_count; i += 1) {
-      start = (i - 1) * max_payload;
-      payload = str.substring(start, start + max_payload);
-      args.push(zeropad(i, 2) + zeropad(payload.length, 2) + message_id + payload);
-    }
-    console.log('args: ', args);
-
-    return args.reduce(function(soFar, arg) {
-      return soFar.then(function() {
-        return command.send_next_packet.exec(particle_device, arg);
-      });
-    }, new Q(command.start_send_assay.exec(particle_device, message_id, packet_count, str.length)));
+    return send_message_to_particle(particle_device, str, '02', message_id, 'start_send_test');
+  },
+  get_BCODE_string: function(bcode_obj) {
+    return bObjectToCodeString(bcode_obj);
+  },
+  start_monitor: function(particle_device, subscribeID, callback) {
+    particle_device.subscribe(subscribeID, callback);
   },
   reflash: function(device) {
     var files = fs.readdirSync('app/firmware');

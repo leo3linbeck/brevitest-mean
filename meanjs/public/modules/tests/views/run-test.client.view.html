@@ -48,7 +48,7 @@
         </div>
         <div class="panel-body">
           <div class="list-group" ng-show="devices.length">
-            <a class="list-group-item {{activeDevice === $index ? 'active' : ''}}" href="" ng-repeat="device in devices" ng_click="clickDevice($index)">{{device.name}}</a>
+            <a class="list-group-item {{activeDevice === $index ? 'active' : ''}}" href="" ng-repeat="device in devices" ng_click="claimDevice($index)">{{device.name}}</a>
           </div>
           <div class="col-xs-12 panel panel-warning" ng-hide="devices.length">
             <div class="panel-heading">
@@ -62,7 +62,7 @@
       </div>
     </div>
     <div class="col-md-4">
-      <div class="panel panel-default">
+      <div class="panel panel-default" ng-show="activeDevice!=-1">
         <div class="panel-heading">
           <button class="btn btn-xs btn-default pull-right glyphicon glyphicon-refresh" ng-click="reloadCartridge()" type="button"></button>
           <h3 class="panel-title">Cartridge Information</h3>

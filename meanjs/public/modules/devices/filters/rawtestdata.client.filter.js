@@ -26,28 +26,24 @@ function string_to_datetime_string(str, delim) {
 	return dt.toLocaleDateString() + (delim ? delim :'<br/>') + dt.toLocaleTimeString();
 }
 
-function parse_sensor_reading(str) {
+function parse_sensor_reading(str, assayorcontrol, baselineortest) {
 	var data = str.split('\t');
-	var result = '<tr><td>' + (data[0] === 'A' ? 'Assay' : 'Control');
-	result += '<td>' + (parseInt(data[1], 10) ? 'Result' : 'Baseline');
-  result += '<td>' + string_to_datetime_string(data[2]);
-	result += '<td>' + parseInt(data[3], 10);
-	result += '<td>' + parseInt(data[4], 10);
-	result += '<td>' + parseInt(data[5], 10) + '</tr>';
+	var result = '<tr><td>' + assayorcontrol + '<td>' + baselineortest;
+  result += '<td>' + string_to_datetime_string(data[0]);
+	result += '<td>' + parseInt(data[1], 10);
+	result += '<td>' + parseInt(data[2], 10);
+	result += '<td>' + parseInt(data[3], 10) + '</tr>';
 	return result;
 }
 
 function parse_test_header(str) {
 	var data = str.split('\t');
 	var result = '<strong>TEST INFORMATION</strong><br/>';
-	result += 'Record number: ' + data[0] + '<br/>';
-	result += 'Test start time: ' + string_to_datetime_string(data[1], ' - ') + '<br/>';
-	result += 'Test finish time: ' + string_to_datetime_string(data[2], ' - ') + '<br/>';
+	result += 'Test start time: ' + string_to_datetime_string(data[0], ' - ') + '<br/>';
+	result += 'Test finish time: ' + string_to_datetime_string(data[1], ' - ') + '<br/>';
+	result += 'Test ID: ' + data[2] + '<br/>';
 	result += 'Cartridge ID: ' + data[3] + '<br/>';
-	result += 'BCODE version: ' + data[4] + '<br/>';
-	result += 'BCODE length: ' + data[5] + '<br/>';
-	result += 'Integration time: ' + int_time[parseInt(data[6], 10)] + '<br/>';
-	result += 'Gain: ' + gain[parseInt(data[7], 10)] + '<br/>';
+	result += 'Assay ID: ' + data[4] + '<br/>';
 	result += '<br/>';
 	return result;
 }
@@ -55,16 +51,17 @@ function parse_test_header(str) {
 function parse_test_params(str) {
 	var data = str.split('\t');
 	var result = '<strong>DEVICE PARAMETERS</strong><br/>';
-	result += 'step_delay_us: ' + data[0] + '<br/>';
-	result += 'stepper_wifi_ping_rate: ' + data[1] + '<br/>';
-	result += 'stepper_wake_delay_ms: ' + data[2] + '<br/>';
-	result += 'solenoid_surge_power: ' + data[3] + '<br/>';
-	result += 'solenoid_surge_period_ms: ' + data[4] + '<br/>';
+	result += 'reset_steps: ' + data[0] + '<br/>';
+	result += 'step_delay_us: ' + data[1] + '<br/>';
+	result += 'stepper_wifi_ping_rate: ' + data[2] + '<br/>';
+	result += 'stepper_wake_delay_ms: ' + data[3] + '<br/>';
+	result += 'solenoid_surge_power: ' + data[4] + '<br/>';
 	result += 'solenoid_sustain_power: ' + data[5] + '<br/>';
-	result += 'sensor_params: ' + parseInt(data[6], 16).toString() + '<br/>';
-	result += 'sensor_ms_between_samples: ' + data[7] + '<br/>';
-	result += 'sensor_led_power: ' + data[8] + '<br/>';
-	result += 'sensor_led_warmup_ms: ' + data[9] + '<br/>';
+	result += 'solenoid_surge_period_ms: ' + data[6] + '<br/>';
+	result += 'delay_between_sensor_readings_ms: ' + data[7] + '<br/>';
+	result += 'integration_time: ' + int_time[parseInt(data[8], 10)] + '<br/>';
+	result += 'gain: ' + gain[parseInt(data[9], 10)] + '<br/>';
+	result += 'calibration_steps: ' + data[10] + '<br/>';
 	result += '<br/>';
 	return result;
 }
@@ -78,9 +75,11 @@ function parse_test_data(test_str) {
 
 	result += '<br/><strong>SENSOR READINGS</strong><br/>';
 	result += '<div class="table-responsive"><table class="table table-striped">' + particleSensorHeader;
-	for (i = 2; i < 6; i += 1) {
-		result += parse_sensor_reading(data[i]);
-	}
+	result += parse_sensor_reading(data[2], 'Baseline', 'Assay');
+	result += parse_sensor_reading(data[3], 'Baseline', 'Control');
+	result += parse_sensor_reading(data[4], 'Test', 'Assay');
+	result += parse_sensor_reading(data[5], 'Test', 'Control');
+
 	result += '</tbody></table></div>';
 
 	return result;

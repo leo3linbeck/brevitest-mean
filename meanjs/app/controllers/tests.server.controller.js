@@ -29,112 +29,104 @@ var testPopulate = [{
   select: '_id name particleID'
 }, {
   path: '_cartridge',
-  select: '_id name result failed bcodeString rawData startedOn finishedOn'
+  select: '_id name value failed bcodeString rawData startedOn finishedOn'
 }];
 
 exports.run = function(req, res) {
   res.send();
 };
 
-function doUpdateTest(user, testID, cartridgeID, deviceID, analysis, standardCurve, percentComplete, status) {
-  var result = {};
-  result.percentComplete = percentComplete > 100 ? 100 : percentComplete;
-  result.status = percentComplete === 100 ? 'Complete' : (status ? status : 'Unknown');
+function parseCartridgeFromParticleData(register, test) {
+  var updateObj = {};
+  var data = register.split('\n');
+  var params = data[0].split('\t');
 
-  particle.get_particle_device_from_uuid(user, deviceID)
-    .then(function(particle_device) {
-      return particle.execute_particle_request(particle_device, 'get_test_record', testID);
+  updateObj.startedOn = Date(parseInt(params[0]));
+  updateObj.finishedOn = Date(parseInt(params[1]));
+  updateObj.failed = test.percentComplete < 100;
+  if (test.status !== 'Cancelled') {
+    updateObj.rawData = register;
+    updateObj.value = parseInt(data[4].split('\t')[3]) - parseInt(data[2].split('\t')[3]);
+  }
+  console.log('cartridge', updateObj);
+
+  return updateObj;
+}
+
+function parseTestFromParticleData(test, cartridge) {
+  var updateObj = {};
+  updateObj.percentComplete = test.percentComplete;
+  updateObj.status = test.status ? test.status : 'Unknown';
+
+  if (test.status === 'Cancelled') {
+    updateObj.reading = null;
+    updateObj.result = 'Cancelled';
+  }
+  else {
+    if (typeof cartridge.value === 'undefined') {
+      updateObj.reading = null;
+    }
+    else {
+      updateObj.reading = d3.scale.linear().domain(_.pluck(test.standardCurve, 'x')).range(_.pluck(test.standardCurve, 'y'))(cartridge.value);
+    }
+
+    if (updateObj.reading !== null && test.analysis) {
+      if (updateObj.reading > test.analysis.redMax || updateObj.reading < test.analysis.redMin) {
+        updateObj.result = 'Positive';
+      } else if (updateObj.reading > test.analysis.greenMax || updateObj.reading < test.analysis.greenMin) {
+        updateObj.result = 'Borderline';
+      } else {
+        updateObj.result = 'Negative';
+      }
+    }
+    else {
+      updateObj.result = 'Unknown';
+    }
+  }
+
+  return updateObj;
+}
+
+function finalizeTestRecord(user, test) {
+  return new Q(particle.get_particle_device_from_uuid(user, test._device))
+    .spread(function(device, particle_device) {
+      return particle.execute_particle_request(particle_device, 'test_record', test._id);
     })
     .then(function(register) {
-      var reading;
-
-      var data = register.result.split('\n');
-      var params = data[0].split('\t');
-      result.rawData = register.result;
-      result.startedOn = Date(parseInt(params[1]));
-      result.finishedOn = Date(parseInt(params[2]));
-      result.value = parseInt(data[4].split('\t')[5]) - parseInt(data[2].split('\t')[5]);
-      result.failed = result.percentComplete < 100;
-
-      return new Q(Cartridge.findOneAndUpdate({
-        _id: cartridgeID
-      }, {
-        rawData: register.result,
-        startedOn: result.startedOn,
-        finishedOn: result.finishedOn,
-        result: result.value,
-        failed: result.failed
-      }, {
-        new: true
-      }).exec());
+      var updateQuery = parseCartridgeFromParticleData(register, test);
+      return [Cartridge.findByIdAndUpdate(test._cartridge, updateQuery, {new: true}).exec()];
     })
-    .then(function(cartridge) {
-      try {
-        if (typeof result.value === 'undefined') {
-          result.reading = null;
-        }
-        else {
-          result.reading = d3.scale.linear().domain(_.pluck(standardCurve, 'x')).range(_.pluck(standardCurve, 'y'))(result.value);
-        }
-
-        if (result.status === 'Cancelled') {
-          result.result = 'Cancelled';
-        }
-        else if (result.reading !== null && analysis) {
-          if (result.reading > analysis.redMax || result.reading < analysis.redMin) {
-            result.result = 'Positive';
-          } else if (result.reading > analysis.greenMax || result.reading < analysis.greenMin) {
-            result.result = 'Borderline';
-          } else {
-            result.result = 'Negative';
-          }
-        }
-        else {
-          result.result = 'Unknown';
-        }
-      }
-      catch(e) {
-        console.log('Unable to calculate test results');
-        result.result = null;
-        result.reading = null;
-      }
-
-      return new Q(Test.findOneAndUpdate({
-        _id: testID
-      }, {
-        status: result.status,
-        percentComplete: result.percentComplete,
-        startedOn: result.startedOn,
-        finishedOn: result.finishedOn,
-        reading: result.reading,
-        result: result.result
-      }).exec());
-    })
-    .then(function() {
-      return result;
+    .spread(function(cartridge) {
+      console.log('cartridge record', cartridge);
+      var updateQuery = parseTestFromParticleData(test, cartridge);
+      return Test.findByIdAndUpdate(test._id, updateQuery, {new: true}).exec();
     });
 }
 
-function createParticleSubscribeCallback(test, socket, user, analysis, standardCurve) {
+function createParticleSubscribeCallback(user, test, socket) {
+  var test_finalized = false;
 
   return function particleSubscribeCallback(event) {
     var data = event.data.split('\n');
 
-    test.percentComplete = data[2] ? parseInt(data[2]) : 0;
-    if (test.percentComplete === 100) {
-      test.status = 'Complete';
-      doUpdateTest(user, test._id, test._cartridge, test._device, analysis, standardCurve, test.percentComplete, test.status)
-      .fail(function(err) {
-        console.log('doUpdateTest error', err);
-      })
-      .done();
-    } else {
-      test.status = data[0].length ? data[0] : test.status;
-    }
-
     socket.emit('test.update', event.data);
 
-    test.save();
+    test.percentComplete = data[2] ? parseInt(data[2]) : 0;
+    if (test.percentComplete === 100 && test.status !== 'Cancelled') {
+      test.status = 'Complete';
+      if (!test_finalized) {
+        test_finalized = true;
+        finalizeTestRecord(user, test)
+          .fail(function(err) {
+            console.log('finalizeTestRecord error', err, user, test);
+          })
+          .done();
+      }
+    }
+    else {
+      test.status = data[0].length ? data[0] : test.status;
+      test.save();
+    }
   };
 }
 
@@ -143,49 +135,46 @@ exports.begin = function(req, res) {
   console.log('Beginning test', req.body);
   particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
     .spread(function(device, particle_device) {
-      console.log('Made it 1', particle_device);
       return [device, particle_device, particle.execute_particle_command(particle_device, 'verify_qr_code', req.body.cartridgeID)];
     })
     .spread(function(device, particle_device, result) {
       if (result.return_value !== 0) {
         throw new Error('Error verifying cartridge, code = ' + result.return_value);
       }
+        return [device, particle_device, test, Assay.findById(req.body.assayID).exec()];
+    })
+    .spread(function(device, particle_device, test, assay) {
       test = new Test();
       test.user = req.user;
       test.reference = req.body.reference;
       test.subject = req.body.subject;
       test.description = req.body.description;
+      test.standardCurve = assay.standardCurve;
+      test.analysis = assay.analysis;
       test._assay = req.body.assayID;
       test._device = req.body.deviceID;
       test._cartridge = req.body.cartridgeID;
       test.status = 'Starting';
       test.percentComplete = 0;
       test.save();
-      return [device, particle_device, test];
+      return [device, particle_device, test, assay, particle.send_test_to_particle(particle_device, test)];
     })
-    .spread(function(device, particle_device, test) {
-      console.log('Test record created', test);
-      return [device, particle_device, test, particle.send_test_to_particle(particle_device, test)];
-    })
-    .spread(function(device, particle_device, test, result) {
+    .spread(function(device, particle_device, test, assay, result) {
       if (result.return_value < 0) {
         throw new Error('Error loading test data into device, code = ' + result.return_value);
       }
-      console.log('Test loaded into device', result);
-      return [device, particle_device, test, particle.execute_particle_command(particle_device, 'run_test', test._id)];
+      return [device, particle_device, test, assay, particle.execute_particle_command(particle_device, 'run_test', test._id)];
     })
-    .spread(function(device, particle_device, test, result) {
-      console.log('Test started', result);
+    .spread(function(device, particle_device, test, assay, result) {
       if (result.return_value < 0) { // test failed to start
         test.user = req.user;
         test.status = 'Failed';
         test.percentComplete = -1;
         test.save();
       }
-      return [device, particle_device, test, result, Assay.findById(req.body.assayID).exec()];
+      return [device, particle_device, test, assay, result];
     })
-    .spread(function(device, particle_device, test, result, assay) {
-      console.log('Test updated and assay fetched', test, assay);
+    .spread(function(device, particle_device, test, assay, result) {
       if (result.return_value < 0) { // test failed to start
         throw new Error('Unable to start test ' + test.reference);
       }
@@ -197,12 +186,10 @@ exports.begin = function(req, res) {
         bcodeString: particle.get_BCODE_string(assay.BCODE),
         _runBy: test.user
       };
-      console.log('cartridgeID', req.body.cartridgeID);
       return [device, particle_device, test, assay, Cartridge.findByIdAndUpdate(req.body.cartridgeID, updateObj, {new: true}).exec()];
     })
     .spread(function(device, particle_device, test, assay, cartridge) {
-      console.log('Cartridge updated', cartridge);
-      particle.start_monitor(particle_device, test._id, createParticleSubscribeCallback(test, req.app.get('socketio'), req.user, assay.analysis, assay.standardCurve));
+      particle.start_monitor(particle_device, test._id, createParticleSubscribeCallback(req.user, test, req.app.get('socketio')));
 
       res.jsonp({
         message: 'Test started',
@@ -224,38 +211,37 @@ exports.begin = function(req, res) {
 
 exports.cancel = function(req, res) {
   console.log('Cancelling test');
-
-  var now = new Date();
-
   particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
     .spread(function(device, particle_device) {
-      return [particle_device, particle.execute_particle_command(particle_device, 'cancel_test', req.body.testID)];
+      return particle.execute_particle_command(particle_device, 'cancel_test', req.body.testID);
     })
-    .then(function(register) {
-      return new Q(Cartridge.findOneAndUpdate({
-        _id: req.body.cartridgeID
-      }, {
-        finishedOn: now,
+    .then(function(result) {
+      if (result.return_value < 0) {
+        throw new Error('Unable to cancel test on device ' + req.body.deviceName);
+      }
+      var updateObj = {
+        finishedOn: new Date(),
         failed: true
-      }, {
-        new: true
-      }).exec());
+      };
+      return Cartridge.findByIdAndUpdate(req.body.cartridgeID, updateObj, {new: true}).exec();
     })
     .then(function(cartridge) {
-      return new Q(Test.findOneAndUpdate({
-        _id: req.body.testID
-      }, {
-        finishedOn: now,
+      var updateObj = {
         status: 'Cancelled'
-      }).exec());
+      };
+      return [cartridge, Test.findByIdAndUpdate(req.body.testID, updateObj, {new: true}).exec()];
     })
-    .then(function() {
-      res.jsonp('Cancelled');
+    .spread(function(cartridge, test) {
+      res.jsonp({
+        result: 'Cancelled',
+        cartridge: cartridge,
+        test: test
+      });
     })
     .fail(function(error) {
       console.log('Cancel process failed', error);
       return res.status(400).send({
-        msg: 'Error cancelling test ' + req.body.testID + ' on device ' + req.body.device.name,
+        msg: 'Error cancelling test ' + req.body.testID + ' on device ' + req.body.deviceName,
         message: error.message
       });
     })
@@ -263,21 +249,23 @@ exports.cancel = function(req, res) {
 };
 
 exports.update_one_test = function(req, res) {
-  doUpdateTest(req.user, req.body.testID, req.body.cartridgeID, req.body.deviceID, req.body.analysis, req.body.standardCurve, req.body.percentComplete, req.body.state)
-    .then(function(result) {
-      res.jsonp(result);
+  new Q(Test.findById(req.body.testID).exec())
+    .then(function(test) {
+      return finalizeTestRecord(req.user, test);
     })
-    .fail(
-      function(err) {
-        console.log('Record retrieval failed', err);
-        return res.status(400).send({
-          message: err
-        });
-      })
+    .then(function(test) {
+      res.jsonp(test);
+    })
+    .fail(function(error) {
+      console.log('Record retrieval failed', error);
+      return res.status(400).send({
+        message: error
+      });
+    })
     .done();
 };
 
-exports.status = function(req, res) {
+exports.recently_started = function(req, res) {
   new Q(Cartridge.find({
       startedOn: {
         $gt: new Date(new Date().valueOf() - 14400000) // last 4 hours
@@ -285,41 +273,22 @@ exports.status = function(req, res) {
     }).exec())
     .then(function(cartridges) {
       var ids = _.pluck(cartridges, '_id');
-      return new Q(Test.find({
+      return Test.find({
         _cartridge: {
           $in: ids
         }
-      }).sort('-created').populate(testPopulate).limit(20).exec());
+      }).sort('-created').populate(testPopulate).limit(20).exec();
     })
     .then(function(tests) {
       res.jsonp(tests);
     })
-    .fail(function(err) {
+    .fail(function(error) {
       console.log('Status update failed');
       return res.status(400).send({
-        message: err
+        message: error
       });
     })
     .done();
-};
-
-exports.recently_started = exports.status;
-exports.monitor = exports.status;
-
-exports.review = function(req, res) {
-  Test.find({
-    _cartridge: {
-      $exists: true
-    }
-  }).sort('-created').populate(testPopulate).limit(20).exec(function(err, tests) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.jsonp(tests);
-    }
-  });
 };
 
 /**

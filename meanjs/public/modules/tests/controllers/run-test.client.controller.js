@@ -70,7 +70,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
       }
       else {
         if ($scope.activeDevice !== -1) {
-          console.log('$scope.assay: ', $scope.assay);
           device = $scope.devices[$scope.activeDevice];
           $http.post('/tests/begin', {
             reference: $scope.reference,

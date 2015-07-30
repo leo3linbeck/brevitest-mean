@@ -14,14 +14,14 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 
     $scope.loadGraph = function(index) {
       var test = $scope.tests[index];
-      var a = test._assay.analysis;
-      var std = test._assay.standardCurve;
+      var a = test.analysis;
+      var std = test.standardCurve;
       var cuts = [a.redMin, a.greenMin, a.greenMax, a.redMax];
 
       var xs = _.pluck(std, 'x');
       var ys = _.pluck(std, 'y');
       var standardScale = d3.scale.linear().domain(xs).range(ys);
-      var resultY = standardScale(test._cartridge.result);
+      var resultY = standardScale(test._cartridge.value);
 
       xs.splice(0, 0, 'Standard Curve X');
       ys.splice(0, 0, 'Standard Curve');
@@ -40,7 +40,7 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
               'This Test': 'This Test X'
             },
             columns: [
-              xs, ['This Test X', test._cartridge.result],
+              xs, ['This Test X', test._cartridge.value],
               ys, ['This Test', resultY]
             ],
             type: 'spline',

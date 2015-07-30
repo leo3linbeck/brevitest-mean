@@ -6,6 +6,15 @@
 var mongoose = require('mongoose'),
 	Schema = mongoose.Schema;
 
+var StandardCurvePointSchema = new Schema({
+	x: {
+		type: Number
+	},
+	y: {
+		type: Number
+	}
+});
+
 /**
  * Test Schema
  */
@@ -28,6 +37,13 @@ var TestSchema = new Schema({
 	percentComplete: {
 		type: Number
 	},
+	analysis: {
+		redMax: {type: Number},
+		greenMax: {type: Number},
+		greenMin: {type: Number},
+		redMin: {type: Number}
+	},
+	standardCurve: [StandardCurvePointSchema],
 	reading: {
 		type: Number
 	},

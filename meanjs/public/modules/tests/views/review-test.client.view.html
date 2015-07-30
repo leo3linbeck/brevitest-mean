@@ -11,9 +11,7 @@
       </div>
     </div>
     <div class="col-xs-12">
-      <pagination boundary-links="true" class="pagination" first-text="&laquo;"
-        last-text="&raquo;" max-size="8" next-text="&rsaquo;" ng-change="pageChanged()" ng-model="currentPage"
-        previous-text="&lsaquo;" total-items="totalItems"></pagination>
+      <pagination boundary-links="true" class="pagination" first-text="&laquo;" last-text="&raquo;" max-size="8" next-text="&rsaquo;" ng-change="pageChanged()" ng-model="currentPage" previous-text="&lsaquo;" total-items="totalItems"></pagination>
     </div>
   </div>
   <div class="panel panel-warning col-xs-12" ng-hide="tests.length">
@@ -21,42 +19,41 @@
       No tests to review
     </div>
     <div class="panel-body">
-      If you have recently run a test, try refreshing this page. Also, make sure your
-      device is still connected to the network - new tests need to be downloaded from
-      the Brevitest™ analyzer.
+      If you have recently run a test, try refreshing this page. Also, make sure your device is still connected to the network - new tests need to be downloaded from the Brevitest™ analyzer.
     </div>
   </div>
   <div class="col-xs-12">
     <ul class="list-group">
-      <li class="list-group-item" href="" ng-repeat="test in tests"><b>Patient Number:
-        {{test._prescription.patientNumber}}</b>
+      <li class="list-group-item" href="" ng-repeat="test in tests">
+        <b>Reference:
+          {{test.reference}}</b>
         <p>
-          <small>Gender:
-            <strong>{{test._prescription.patientGender}}</strong>
-            <span style="margin-left: 1em"></span>DOB:
-            <strong>{{test._prescription.patientDateOfBirth | date: "mediumDate"}}</strong>
+          <small>
+            <span style="margin-left: 1em"></span>Subject:
+            <strong>{{test.subject}}</strong>
+            <br/>
+            <span style="margin-left: 1em"></span>Description:
+            <strong>{{test.description}}</strong>
           </small>
-          <button class="btn btn-lg pull-right"
-            ng-class="{'btn-danger': test.result === 'Positive', 'btn-warning': test.result
-            === 'Borderline', 'btn-success': test.result ===
-            'Negative'}" ng-show="test._cartridge.finishedOn && !test._cartridge.failed"
-            type="button">{{test.reading | number: 2}}
-            – {{test.result}}</button>
+          <button class="btn btn-lg pull-right" ng-class="{'btn-danger': test.result === 'Positive', 'btn-warning': test.result === 'Borderline', 'btn-success': test.result === 'Negative'}" ng-show="test._cartridge.finishedOn && !test._cartridge.failed" type="button">{{test.reading | number: 2}}
+            –
+            {{test.result}}</button>
         </p>
         <p>
-          <small>Run on {{test._cartridge.startedOn | date: "medium"}}</small>&nbsp;&nbsp;&nbsp;
-          <span class="btn btn-xs" disabled
-            ng-class="{'btn btn-default': !test._cartridge.failed, 'btn btn-danger':
-            test._cartridge.failed}">{{test.status==='Cancelled' ? 'Cancelled' : test._cartridge.failed ? 'Failure' : 'Success'}}</span>
-          <button class="btn btn-sm btn-info" ng-click="updateTest($index)"
-            ng-hide="test.result || test._cartridge.failed" type="button">Download</button>
+          <small>Run on
+            {{test._cartridge.startedOn | date: "medium"}}</small>&nbsp;&nbsp;&nbsp;
+          <span class="btn btn-xs" disabled ng-class="{'btn btn-default': !test._cartridge.failed, 'btn btn-danger': test._cartridge.failed}">{{test.status==='Cancelled' ? 'Cancelled' : test._cartridge.failed ? 'Failure' : 'Success'}}</span>
+          <button class="btn btn-sm btn-info" ng-click="updateTest($index)" ng-hide="test.result || test._cartridge.failed" type="button">Download</button>
         </p>
         <accordion close-others="true">
           <accordion-group heading="Details">
             <ul class="list-group">
-              <li class="list-group-item">Assay: {{test._assay.name}}</li>
-              <li class="list-group-item">Device: {{test._device.name}}</li>
-              <li class="list-group-item">Cartridge: {{test._cartridge.name}}</li>
+              <li class="list-group-item">Assay:
+                {{test._assay.name}}</li>
+              <li class="list-group-item">Device:
+                {{test._device.name}}</li>
+              <li class="list-group-item">Cartridge:
+                {{test._cartridge.name}}</li>
             </ul>
             <accordion close-others="true">
               <accordion-group heading="BCODE">

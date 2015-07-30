@@ -39,11 +39,13 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 
 			Socket.on('test.update', function(message) {
 				var data = message.split('\n');
-				$scope.tests.forEach(function(e, i) {
-					if (e._cartridge._id === data[1]) {
+				_.find($scope.tests, function(e) {
+					if (e._id === data[1]) {
 						e.percentComplete = parseInt(data[2]);
 						e.status = data[0].length ? data[0] : e.status;
+						return true;
 					}
+					return false;
 				});
 			});
 		};
@@ -54,7 +56,8 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			$http.post('/tests/cancel', {
 				testID: test._id,
 				cartridgeID: test._cartridge._id,
-				deviceID: test._device._id
+				deviceID: test._device._id,
+				deviceName: test._device.name
 			}).
 				success(function(data, status, headers, config) {
 					test.status = 'Cancelled';

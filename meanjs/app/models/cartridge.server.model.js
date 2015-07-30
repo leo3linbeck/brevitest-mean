@@ -16,7 +16,7 @@ var CartridgeSchema = new Schema({
 		required: 'Please fill Cartridge name',
 		trim: true
 	},
-	result: {
+	value: {
 		type: Number
 	},
 	rawData: {

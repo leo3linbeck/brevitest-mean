@@ -14,6 +14,17 @@
           <div class="controls">
             <input class="form-control" data-ng-model="devicePool.description" id="description" placeholder="Enter device pool description here" type="text"></input>
           </div>
+          <br/>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <b>Organization (select below)</b>
+            </div>
+            <div class="panel-body">
+              <div class="list-group">
+                <a active class="list-group-item {{$index === selectedOrganization ? 'active' : ''}}" href='' ng-repeat="org in organizations" ng_click="selectOrganization($index)">{{org.name}}</a>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <input class="btn btn-default" type="submit" value="Update"></input>

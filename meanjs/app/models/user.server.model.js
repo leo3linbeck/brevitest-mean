@@ -70,6 +70,10 @@ var UserSchema = new Schema({
 		type: Schema.ObjectId,
 		ref: 'DevicePool'
 	},
+	_organization: {
+		type: Schema.ObjectId,
+		ref: 'Organization'
+	},
 	providerData: {},
 	additionalProvidersData: {},
 	roles: {

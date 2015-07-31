@@ -1,9 +1,17 @@
 'use strict';
 
+var _ = window._;
+
 // Device pools controller
-angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'DevicePools', 'Users', 'Notification',
-	function($scope, $stateParams, $location, $http, Authentication, DevicePools, Users, Notification) {
+angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'DevicePools', 'Users', 'Organizations', 'Notification',
+	function($scope, $stateParams, $location, $http, Authentication, DevicePools, Users, Organizations, Notification) {
 		$scope.authentication = Authentication;
+
+		$scope.organizations = Organizations.query();
+		$scope.selectedOrganization = _;
+		$scope.selectOrganization = function(indx) {
+			$scope.selectedOrganization = indx;
+		};
 
 		$scope.selectDevicePool = function(index) {
 			$scope.authentication.user._devicePool = $scope.devicePools[index]._id;
@@ -20,7 +28,8 @@ angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$
 			// Create new Device pool object
 			var devicePool = new DevicePools ({
 				name: this.name,
-				description: this.description
+				description: this.description,
+				_organization: $scope.organizations[$scope.selectedOrganization]._id
 			});
 
 			// Redirect after save

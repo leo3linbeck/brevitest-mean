@@ -80,6 +80,18 @@ var request = {
     exec: function() {
 
     }
+  },
+  'assay_uuids': {
+    code: '07',
+    exec: function(particle_device) {
+      return particle_device.callFunction('requestdata', this.code);
+    }
+  },
+  'test_uuids': {
+    code: '08',
+    exec: function(particle_device) {
+      return particle_device.callFunction('requestdata', this.code);
+    }
   }
 };
 

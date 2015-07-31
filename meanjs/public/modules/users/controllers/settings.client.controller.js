@@ -1,13 +1,19 @@
 'use strict';
 
-angular.module('users').controller('SettingsController', ['$scope', '$http', '$location', 'Users', 'Authentication',
-	function($scope, $http, $location, Users, Authentication) {
+angular.module('users').controller('SettingsController', ['$scope', '$http', '$location', 'Users', 'Organizations', 'Authentication',
+	function($scope, $http, $location, Users, Organizations, Authentication) {
 		$scope.user = Authentication.user;
 
 		// If user is not signed in then redirect back home
 		if (!$scope.user) $location.path('/');
 
-		// Check if there are additional accounts 
+		$scope.organizations = Organizations.query();
+
+		$scope.selectOrganization = function(indx) {
+			$scope.user._organization = $scope.organizations[indx]._id;
+		};
+
+		// Check if there are additional accounts
 		$scope.hasConnectedAdditionalSocialAccounts = function(provider) {
 			for (var i in $scope.user.additionalProvidersData) {
 				return true;

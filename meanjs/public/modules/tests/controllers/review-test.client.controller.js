@@ -108,53 +108,5 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 						Notification.error(err.message);
 				  });
 		};
-
-    $scope.updateTest = function(index) {
-      var test = $scope.tests[index];
-      var body = {
-        testID: test._id,
-        cartridgeID: test._cartridge._id,
-        deviceID: test._device._id,
-        analysis: test._assay.analysis,
-        standardCurve: test._assay.standardCurve,
-        percentComplete: test.percentComplete,
-        state: test.status
-      };
-      $http.post('/tests/update_one_test', body).
-      success(function(data, status, headers, config) {
-        test.reading = data.reading;
-        test.result = data.result;
-        test.startedOn = Date(data.startedOn);
-        test.finishedOn = Date(data.finishedOn);
-        test.percentComplete = data.percentComplete;
-
-        test._cartridge.rawData = data.rawData;
-        test._cartridge.result = data.value;
-        test._cartridge.startedOn = Date(data.startedOn);
-        test._cartridge.finishedOn = Date(data.finishedOn);
-        test._cartridge.failed = data.failed;
-      }).
-      error(function(err, status, headers, config) {
-        Notification.error(err.message);
-      });
-      Notification.success('Test record updating');
-    };
-
-    $scope.loadRawData = function(cartridgeID) {
-      $http.post('/device/record_by_cartridge_id', {
-        cartridgeID: cartridgeID
-      }).
-      success(function(data, status, headers, config) {
-        $scope.tests.forEach(function(e) {
-          if (e._cartridge._id === cartridgeID) {
-            e._cartridge.rawData = JSON.parse(data);
-          }
-        });
-      }).
-      error(function(err, status, headers, config) {
-        Notification.error(err.message);
-      });
-      Notification.info('Loading data from device');
-    };
   }
 ]);

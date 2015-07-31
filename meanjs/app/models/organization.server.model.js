@@ -7,21 +7,14 @@ var mongoose = require('mongoose'),
 	Schema = mongoose.Schema;
 
 /**
- * Device pool Schema
+ * Organization Schema
  */
-var DevicePoolSchema = new Schema({
+var OrganizationSchema = new Schema({
 	name: {
 		type: String,
 		default: '',
-		required: 'Please fill Device pool name',
+		required: 'Please fill Organization name',
 		trim: true
-	},
-	description: {
-		type: String
-	},
-	_organization: {
-		type: Schema.ObjectId,
-		ref: 'Organization'
 	},
 	created: {
 		type: Date,
@@ -33,4 +26,4 @@ var DevicePoolSchema = new Schema({
 	}
 });
 
-mongoose.model('DevicePool', DevicePoolSchema);
+mongoose.model('Organization', OrganizationSchema);

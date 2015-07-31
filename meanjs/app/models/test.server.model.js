@@ -50,6 +50,9 @@ var TestSchema = new Schema({
 	result: {
 		type: String
 	},
+	loaded: {
+		type: Boolean
+	},
 	_assay: {
 		type: Schema.ObjectId,
 		ref: 'Assay'

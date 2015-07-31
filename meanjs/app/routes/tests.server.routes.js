@@ -21,9 +21,6 @@ module.exports = function(app) {
 	app.route('/tests/begin')
 		.post(tests.begin);
 
-	app.route('/tests/update_one_test')
-	  .all(tests.update_one_test);
-
 	app.route('/tests/run')
 		.all(tests.run);
 

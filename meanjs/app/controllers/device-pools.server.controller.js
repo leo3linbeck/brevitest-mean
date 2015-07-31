@@ -8,9 +8,17 @@ var mongoose = require('mongoose'),
 	DevicePool = mongoose.model('DevicePool'),
 	_ = require('lodash');
 
-	exports.select = function(req, res) {
-		res.jsonp(req.devicePool);
-	};
+var populateArray = [{
+  path: 'user',
+  select: 'displayName'
+}, {
+  path: '_organization',
+  select: '_id name'
+}];
+
+exports.select = function(req, res) {
+	res.jsonp(req.devicePool);
+};
 
 /**
  * Create a Device pool
@@ -77,7 +85,7 @@ exports.delete = function(req, res) {
  * List of Device pools
  */
 exports.list = function(req, res) {
-	DevicePool.find().sort('-created').populate('user', 'displayName').exec(function(err, devicePools) {
+	DevicePool.find().sort('-created').populate(populateArray).exec(function(err, devicePools) {
 		if (err) {
 			return res.status(400).send({
 				message: errorHandler.getErrorMessage(err)
@@ -92,7 +100,7 @@ exports.list = function(req, res) {
  * Device pool middleware
  */
 exports.devicePoolByID = function(req, res, next, id) {
-	DevicePool.findById(id).populate('user', 'displayName').exec(function(err, devicePool) {
+	DevicePool.findById(id).populate(populateArray).exec(function(err, devicePool) {
 		if (err) return next(err);
 		if (! devicePool) return next(new Error('Failed to load Device pool ' + id));
 		req.devicePool = devicePool ;

@@ -9,6 +9,7 @@ angular.module('core').run(['Menus',
 		Menus.addSubMenuItem('topbar', 'view', 'Devices', 'devices', '/devices');
 		Menus.addSubMenuItem('topbar', 'view', 'Device Pools', 'device-pools', '/device-pools');
 		Menus.addSubMenuItem('topbar', 'view', 'Device Models', 'device-models', '/device-models');
+		Menus.addSubMenuItem('topbar', 'view', 'Organizations', 'organizations', '/organizations');
 
 		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '', 'menu.isPublic', ['user']);
     Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create', '/assays/create', 'menu.isPublic');
@@ -16,6 +17,7 @@ angular.module('core').run(['Menus',
 		Menus.addSubMenuItem('topbar', 'new', 'Device Pool', 'device-pools/create', '/device-pools/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create', '/device-models/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Cartridge Labels', 'cartridges/labels', '/cartridges/labels');
+		Menus.addSubMenuItem('topbar', 'new', 'Organization', 'organizations/create', '/organizations/create');
 
 		Menus.addMenuItem('topbar', 'Device Pools', 'pools', 'dropdown', '', 'menu.isPublic', ['user']);
 		Menus.addSubMenuItem('topbar', 'pools', 'Select', 'device-pools/select', '/device-pools/select');

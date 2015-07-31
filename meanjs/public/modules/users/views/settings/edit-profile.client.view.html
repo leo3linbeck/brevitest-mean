@@ -19,6 +19,16 @@
 					<label for="username">Username</label>
 					<input type="text" id="username" name="username" class="form-control" data-ng-model="user.username" placeholder="Username">
 				</div>
+				<div class="panel panel-default">
+          <div class="panel-heading">
+            <b>Select Organization</b>
+          </div>
+          <div class="panel-body">
+            <div class="list-group">
+              <a active class="list-group-item {{organization._id === user._organization ? 'active' : ''}}" href='' ng-repeat="organization in organizations" ng_click="selectOrganization($index)">{{organization.name}}</a>
+            </div>
+          </div>
+        </div>
 				<div class="text-center form-group">
 					<button type="submit" class="btn btn-large btn-primary">Save Profile</button>
 				</div>

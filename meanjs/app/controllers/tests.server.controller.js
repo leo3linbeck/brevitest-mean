@@ -83,6 +83,7 @@ function parseTestFromParticleData(test, cartridge) {
       updateObj.result = 'Unknown';
     }
   }
+  updateObj.loaded = true;
 
   return updateObj;
 }
@@ -103,9 +104,28 @@ function finalizeTestRecord(user, test) {
     });
 }
 
-function createParticleSubscribeCallback(user, test, socket) {
-  var test_finalized = false;
+function verify_test_data_downloaded(user, uuidStr) {
+  // verify that test data has been downloaded from device
+  var uuids = uuidStr.split('\n');
+  var promise = new Q();
+  uuids.forEach(function(uuid) {
+    promise = promise.then(function() {
+      return Test.findById(uuid).exec();
+    })
+    .then(function(test) {
+      if (!test.loaded) {
+        return finalizeTestRecord(user, test);
+      }
+      else {
+        return null;
+      }
+    });
+  });
 
+  return promise;
+}
+
+function createParticleSubscribeCallback(user, test, socket) {
   return function particleSubscribeCallback(event) {
     var data = event.data.split('\n');
 
@@ -114,8 +134,7 @@ function createParticleSubscribeCallback(user, test, socket) {
     test.percentComplete = data[2] ? parseInt(data[2]) : 0;
     if (test.percentComplete === 100 && test.status !== 'Cancelled') {
       test.status = 'Complete';
-      if (!test_finalized) {
-        test_finalized = true;
+      if (!test.loaded) {
         finalizeTestRecord(user, test)
           .fail(function(err) {
             console.log('finalizeTestRecord error', err, user, test);
@@ -135,13 +154,20 @@ exports.begin = function(req, res) {
   console.log('Beginning test', req.body);
   particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
     .spread(function(device, particle_device) {
+      return [device, particle_device, particle.execute_particle_request(particle_device, 'test_uuids')];
+    })
+    .spread(function(device, particle_device, request) {
+      console.log('test uuids:', request);
+      return [device, particle_device, verify_test_data_downloaded(req.user, request)];
+    })
+    .spread(function(device, particle_device) {
       return [device, particle_device, particle.execute_particle_command(particle_device, 'verify_qr_code', req.body.cartridgeID)];
     })
     .spread(function(device, particle_device, result) {
       if (result.return_value !== 0) {
         throw new Error('Error verifying cartridge, code = ' + result.return_value);
       }
-        return [device, particle_device, test, Assay.findById(req.body.assayID).exec()];
+      return [device, particle_device, test, Assay.findById(req.body.assayID).exec()];
     })
     .spread(function(device, particle_device, test, assay) {
       test = new Test();
@@ -243,23 +269,6 @@ exports.cancel = function(req, res) {
       return res.status(400).send({
         msg: 'Error cancelling test ' + req.body.testID + ' on device ' + req.body.deviceName,
         message: error.message
-      });
-    })
-    .done();
-};
-
-exports.update_one_test = function(req, res) {
-  new Q(Test.findById(req.body.testID).exec())
-    .then(function(test) {
-      return finalizeTestRecord(req.user, test);
-    })
-    .then(function(test) {
-      res.jsonp(test);
-    })
-    .fail(function(error) {
-      console.log('Record retrieval failed', error);
-      return res.status(400).send({
-        message: error
       });
     })
     .done();

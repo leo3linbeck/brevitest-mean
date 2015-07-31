@@ -1,4 +1,4 @@
-<section data-ng-controller="DevicePoolsController">
+<section data-ng-controller="DevicePoolsController" data-ng-init="loadData()">
   <div class="page-header">
     <h1>New Device Pool</h1>
   </div>
@@ -14,13 +14,14 @@
           <div class="controls">
             <input class="form-control" data-ng-model="description" id="description" placeholder="Enter device pool description here" required type="text">
           </div>
+          <br/>
           <div class="panel panel-default">
             <div class="panel-heading">
               <b>Organization (select below)</b>
             </div>
             <div class="panel-body">
               <div class="list-group">
-                <a active class="list-group-item {{org._id === organization._id ? 'active' : ''}}" href='' ng-repeat="org in organizations" ng_click="selectOrganization($index)">{{org.name}}</a>
+                <a active class="list-group-item {{org._id === organization._id ? 'active' : ''}}" href='' ng-repeat="org in organizations" ng_click="selectOrganization('{{org._id}}')">{{org.name}}</a>
               </div>
             </div>
           </div>

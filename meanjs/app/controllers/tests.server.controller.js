@@ -101,6 +101,9 @@ function finalizeTestRecord(user, test) {
       console.log('cartridge record', cartridge);
       var updateQuery = parseTestFromParticleData(test, cartridge);
       return Test.findByIdAndUpdate(test._id, updateQuery, {new: true}).exec();
+    })
+    .then(function() {
+      return Device.findByIdAndUpdate(test._device, {claimed: false}).exec();
     });
 }
 
@@ -109,17 +112,19 @@ function verify_test_data_downloaded(user, uuidStr) {
   var uuids = uuidStr.split('\n');
   var promise = new Q();
   uuids.forEach(function(uuid) {
-    promise = promise.then(function() {
-      return Test.findById(uuid).exec();
-    })
-    .then(function(test) {
-      if (!test.loaded) {
-        return finalizeTestRecord(user, test);
-      }
-      else {
-        return null;
-      }
-    });
+    if (uuid) {
+      promise = promise.then(function() {
+        return Test.findById(uuid).exec();
+      })
+      .then(function(test) {
+        if (test && !test.loaded) {
+          return finalizeTestRecord(user, test);
+        }
+        else {
+          return null;
+        }
+      });
+    }
   });
 
   return promise;
@@ -236,7 +241,7 @@ exports.begin = function(req, res) {
 };
 
 exports.cancel = function(req, res) {
-  console.log('Cancelling test');
+  console.log('Cancelling test', req.body);
   particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
     .spread(function(device, particle_device) {
       return particle.execute_particle_command(particle_device, 'cancel_test', req.body.testID);
@@ -258,9 +263,16 @@ exports.cancel = function(req, res) {
       return [cartridge, Test.findByIdAndUpdate(req.body.testID, updateObj, {new: true}).exec()];
     })
     .spread(function(cartridge, test) {
+      var updateObj = {
+        claimed: false
+      };
+      return [cartridge, test, Device.findByIdAndUpdate(req.body.deviceID, updateObj, {new: true}).exec()];
+    })
+    .spread(function(cartridge, test, device) {
       res.jsonp({
         result: 'Cancelled',
         cartridge: cartridge,
+        device: device,
         test: test
       });
     })

@@ -96,7 +96,7 @@ exports.detach_particle = function(req, res) {
 };
 
 exports.refresh_pool = function(req, res) {
-  Device.find().sort('-created').populate(devicePopulate).exec(function(err, devices) {
+  Device.find({_devicePool: req.user._devicePool}).sort('-created').populate(devicePopulate).exec(function(err, devices) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -111,18 +111,6 @@ exports.pool = function(req, res) {
   Device.find({
     _devicePool: req.body.devicePoolID
   }).sort('-created').populate(devicePopulate).exec(function(err, devices) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.jsonp(devices);
-    }
-  });
-};
-
-exports.refresh = function(req, res) {
-  Device.find().sort('-created').populate(devicePopulate).exec(function(err, devices) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -415,17 +403,7 @@ exports.delete = function(req, res) {
 /**
  * List of Devices
  */
-exports.list = function(req, res) {
-  Device.find().sort('-created').populate(devicePopulate).exec(function(err, devices) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.jsonp(devices);
-    }
-  });
-};
+exports.list = exports.refresh_pool;
 
 /**
  * Device middleware

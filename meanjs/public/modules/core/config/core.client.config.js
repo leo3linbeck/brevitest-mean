@@ -19,11 +19,8 @@ angular.module('core').run(['Menus',
 		Menus.addSubMenuItem('topbar', 'new', 'Cartridge Labels', 'cartridges/labels', '/cartridges/labels');
 		Menus.addSubMenuItem('topbar', 'new', 'Organization', 'organizations/create', '/organizations/create');
 
-		Menus.addMenuItem('topbar', 'Device Pools', 'pools', 'dropdown', '', 'menu.isPublic', ['user']);
-		Menus.addSubMenuItem('topbar', 'pools', 'Select', 'device-pools/select', '/device-pools/select');
-
-        Menus.addMenuItem('topbar', 'Manage Users', 'superusers', 'dropdown', '/superusers(/create)?', 'menu.isPublic', ['superuser']);
-        Menus.addSubMenuItem('topbar', 'superusers', 'List Users', 'superusers');
+    Menus.addMenuItem('topbar', 'Manage Users', 'superusers', 'dropdown', '/superusers(/create)?', 'menu.isPublic', ['superuser']);
+    Menus.addSubMenuItem('topbar', 'superusers', 'List Users', 'superusers');
 
 		Menus.addMenuItem('topbar', 'Analyze Firmware ', 'firmware-tests', 'dropdown', '/firmware-tests(/create)?', 'menu.isPublic', ['superuser']);
 		Menus.addSubMenuItem('topbar', 'firmware-tests', 'List Firmware tests', 'firmware-tests');

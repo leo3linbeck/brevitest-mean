@@ -8,7 +8,6 @@ angular.module('users').controller('SettingsController', ['$scope', '$http', '$l
 		if (!$scope.user) $location.path('/');
 
 		$scope.organizations = Organizations.query();
-
 		$scope.selectOrganization = function(indx) {
 			$scope.user._organization = $scope.organizations[indx]._id;
 		};

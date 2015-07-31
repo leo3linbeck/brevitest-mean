@@ -85,7 +85,7 @@ exports.delete = function(req, res) {
  * List of Device pools
  */
 exports.list = function(req, res) {
-	DevicePool.find().sort('-created').populate(populateArray).exec(function(err, devicePools) {
+	DevicePool.find({_organization: req.user._organization}).sort('-created').populate(populateArray).exec(function(err, devicePools) {
 		if (err) {
 			return res.status(400).send({
 				message: errorHandler.getErrorMessage(err)

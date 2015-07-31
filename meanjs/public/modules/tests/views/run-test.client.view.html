@@ -43,7 +43,7 @@
     <div class="col-md-4">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <button class="btn btn-xs btn-default pull-right glyphicon glyphicon-refresh" ng-click="refresh()" type="button"></button>
+          <button class="btn btn-xs btn-default pull-right glyphicon glyphicon-refresh" ng-click="loadDevices()" type="button"></button>
           <h3 class="panel-title">Available Devices</h3>
         </div>
         <div class="panel-body">
@@ -55,7 +55,8 @@
               No available devices found in your pool
             </div>
             <div class="panel-body">
-              The device you wish to use may not be online, or may be in use on another test. Check to make sure it is plugged in, connected to the network, and not being used.
+              The device you wish to use may not be in your device pool, or may be offline or in use on another test.
+              Check to make sure you have <a href="/#!/device-pools/select">selected the correct device pool</a>, the device is plugged in, connected to the network, and not in use.
             </div>
           </div>
         </div>

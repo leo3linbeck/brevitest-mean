@@ -2,17 +2,18 @@
   <div class="page-header">
     <h1>Select Device Pool</h1>
   </div>
-  <div class="list-group">
-    <a class="list-group-item" data-ng-repeat="devicePool in devicePools">
-      <small class="list-group-item-text">
-        Posted on
-        <span data-ng-bind="devicePool.created | date:'medium'"></span>
-        by
-        <span data-ng-bind="devicePool.user.displayName"></span>
-      </small>
-      <h4 ng-click="selectDevicePool($index)" class="list-group-item-heading"><i ng-show="authentication.user._devicePool==devicePool._id" class="glyphicon glyphicon-ok">&nbsp;</i>{{devicePool.name}}</h4>
-    </a>
-  </div>
+  <accordion close-others="true">
+    <accordion-group data-ng-repeat="devicePool in devicePools">
+      <accordion-heading>
+        <span ng-click="selectDevicePool($index)">{{devicePool.name}}</span>&nbsp;&nbsp;<span class="btn-xs btn-success" ng-show="authentication.user._devicePool==devicePool._id">Selected</span>
+      </accordion-heading>
+      <accordion-body>
+        <ul class="list-group">
+          <li class="list-group-item" ng-repeat="device in devices">{{device.name}}</li>
+        </ul>
+      </accordion-body>
+    </accordion-group>
+  </accordion>
   <div class="alert alert-warning text-center" data-ng-hide="!devicePools.$resolved || devicePools.length">
     No Device pools yet, why don't you
     <a href="/#!/device-pools/create">create one</a>?

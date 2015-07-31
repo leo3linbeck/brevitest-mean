@@ -59,7 +59,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
     };
 
     $scope.refresh = function() {
-      $http.get('/devices/refresh').
+      $http.get('/devices/refresh_pool').
       success(function(data, status, headers, config) {
         console.log(data);
         Notification.success('Device list refreshed');
@@ -153,6 +153,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         manufacturedOn: this.manufacturedOn,
         registeredOn: this.registeredOn,
         _deviceModel: this.deviceModel._id,
+        _devicePool: this.devicePool._id,
         particleID: this.particleID
       });
 
@@ -169,6 +170,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         $scope.manufacturedOn = '';
         $scope.registeredOn = '';
         $scope.deviceModel = {};
+        $scope.devicePool = {};
       }, function(errorResponse) {
         //$scope.error = errorResponse.data.message;
         Notification.error(errorResponse.data.message);

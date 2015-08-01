@@ -38,9 +38,22 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       });
     };
 
+    $scope.loadUnusedCartridges = function() {
+      $http.post('/assays/load_unused_cartridges', {
+        assayID: $scope.assay._id
+      }).
+      success(function(data, status, headers, config) {
+        $scope.cartridges = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
     $scope.make10Cartridges = function() {
       console.log('Making 10 cartridges');
-      $http.post('/assays/make10cartridges', {
+      $http.post('/assays/make_10_cartridges', {
         assay: $scope.assay
       }).
       success(function(data, status, headers, config) {
@@ -540,7 +553,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 
       // Redirect after save
       assay.$save(function(response) {
-        $location.path('assays/' + response._id);
+        $location.path('assays');
 
         // Clear form fields
         $scope.name = '';
@@ -593,7 +606,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       assay.standardCurve = $scope.standardCurve;
 
       assay.$update(function() {
-        $location.path('assays/' + assay._id);
+        $location.path('assays');
       }, function(errorResponse) {
           //$scope.error = errorResponse.data.message;
           Notification.error(errorResponse.data.message);

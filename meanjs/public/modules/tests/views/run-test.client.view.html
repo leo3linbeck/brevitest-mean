@@ -22,17 +22,17 @@
           <form class="col-xs-12 form-horizontal">
             <fieldset>
               <div class="form-group">
-                <label class="control-label" for="reference">Reference</label>
+                <label class="control-label" for="reference">Reference Code</label>
                 <div class="controls">
-                  <input class="form-control" data-ng-model="reference" id="reference" placeholder="Enter test reference here (required)" required type="text"></input>
+                  <input class="form-control" data-ng-model="reference" id="reference" placeholder="Enter test reference code here (required)" required type="text"></input>
                 </div>
-                <label class="control-label" for="subject">Subject ID</label>
+                <label class="control-label" for="subject">Subject Code</label>
                 <div class="controls">
-                  <input class="form-control" data-ng-model="subject" id="subject" placeholder="Enter test subject ID here" required type="text"></input>
+                  <input class="form-control" data-ng-model="subject" id="subject" placeholder="Enter test subject code here" required type="text"></input>
                 </div>
                 <label class="control-label" for="description">Description</label>
                 <div class="controls">
-                  <input class="form-control" data-ng-model="description" id="description" placeholder="Enter test description here" type="text"></input>
+                  <textarea class="form-control" data-ng-model="description" id="description" placeholder="Enter test description here" rows="4" type="text"></textarea>
                 </div>
               </div>
             </fieldset>
@@ -55,8 +55,8 @@
               No available devices found in your pool
             </div>
             <div class="panel-body">
-              The device you wish to use may not be in your device pool, or may be offline or in use on another test.
-              Check to make sure you have <a href="/#!/device-pools/select">selected the correct device pool</a>, the device is plugged in, connected to the network, and not in use.
+              The device you wish to use may not be in your device pool, or may be offline or in use on another test. Check to make sure you have
+              <a href="/#!/device-pools/select">selected the correct device pool</a>, the device is plugged in, connected to the network, and not in use.
             </div>
           </div>
         </div>

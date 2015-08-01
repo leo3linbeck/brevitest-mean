@@ -21,7 +21,7 @@
       </div>
       <label class="control-label" for="serialNumber">Serial Number</label>
       <div class="controls input-group">
-        <input class="form-control" data-ng-model="device.serialNumber" id="serialNumber" placeholder="Enter device serial number here" type="text"></input>
+        <input class="form-control text-uppercase" data-ng-model="device.serialNumber" id="serialNumber" placeholder="Enter device serial number here" type="text"></input>
         <span class="input-group-btn">
           <button class="btn btn-default" ng-class="{disabled: !device.attached}" ng-click="writeSerialNumber()" type="button">Write Serial Number</button>
         </span>

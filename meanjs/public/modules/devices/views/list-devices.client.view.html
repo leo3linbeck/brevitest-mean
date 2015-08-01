@@ -2,10 +2,11 @@
   <div class="page-header">
     <button class="btn btn-lg btn-default pull-right glyphicon glyphicon-refresh" ng-click="refresh()" type="button"></button>
     <h1>Devices</h1>
-
+    <h4 ng-show="devices.length">Pool: <a href="#!/device-pools/{{devices[0]._devicePool._id }}">{{devices[0]._devicePool.name}}</a></h4>
+    <h4 ng-show="!devices.length">Choose a device pool from the user menu</h4>
   </div>
   <div class="list-group">
-    <a class="list-group-item" data-ng-href="#!/devices/{{device._id}}" data-ng-repeat="device in devices">
+    <a class="list-group-item" data-ng-href="#!/devices/{{device._id}}/edit" data-ng-repeat="device in devices">
       <small class="list-group-item-text">
         Posted on
         <span data-ng-bind="device.created | date:'medium'"></span>
@@ -16,7 +17,7 @@
       <h4 class="list-group-item-heading">
         {{device.name}}<span class="badge pull-right" ng-class="{'btn btn-success': device.connected, 'btn btn-danger': !device.connected}"}>{{device.connected ? 'Online' : 'Offline'}}</span>
       </h4>
-      <h5 class="list-group-item-heading" data-ng-bind="device.particleID"></h5>
+      <p class="list-group-item-heading">{{device._deviceModel.name}} (SN: {{device.serialNumber}})</p>
     </a>
   </div>
   <div class="alert alert-warning text-center" data-ng-hide="!devices.$resolved || devices.length">

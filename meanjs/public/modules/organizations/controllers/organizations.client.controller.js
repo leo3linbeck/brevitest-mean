@@ -14,7 +14,7 @@ angular.module('organizations').controller('OrganizationsController', ['$scope',
 
 			// Redirect after save
 			organization.$save(function(response) {
-				$location.path('organizations/' + response._id);
+				$location.path('organizations');
 
 				// Clear form fields
 				$scope.name = '';
@@ -25,7 +25,7 @@ angular.module('organizations').controller('OrganizationsController', ['$scope',
 
 		// Remove existing Organization
 		$scope.remove = function(organization) {
-			if ( organization ) { 
+			if ( organization ) {
 				organization.$remove();
 
 				for (var i in $scope.organizations) {
@@ -45,7 +45,7 @@ angular.module('organizations').controller('OrganizationsController', ['$scope',
 			var organization = $scope.organization;
 
 			organization.$update(function() {
-				$location.path('organizations/' + organization._id);
+				$location.path('organizations');
 			}, function(errorResponse) {
 				$scope.error = errorResponse.data.message;
 			});
@@ -58,7 +58,7 @@ angular.module('organizations').controller('OrganizationsController', ['$scope',
 
 		// Find existing Organization
 		$scope.findOne = function() {
-			$scope.organization = Organizations.get({ 
+			$scope.organization = Organizations.get({
 				organizationId: $stateParams.organizationId
 			});
 		};

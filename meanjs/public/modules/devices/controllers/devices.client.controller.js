@@ -159,7 +159,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 
       // Redirect after save
       device.$save(function(response) {
-        $location.path('devices/' + response._id);
+        $location.path('devices');
 
         // Clear form fields
         $scope.name = '';
@@ -203,7 +203,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
       device._devicePool = $scope.devicePool ? $scope.devicePool._id : '';
 
       device.$update(function() {
-        $location.path('devices/' + device._id);
+        $location.path('devices');
       }, function(errorResponse) {
         //$scope.error = errorResponse.data.message;
         Notification.error(errorResponse.data.message);

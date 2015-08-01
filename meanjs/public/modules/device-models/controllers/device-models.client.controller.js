@@ -34,7 +34,7 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
 
       // Redirect after save
       deviceModel.$save(function(response) {
-        $location.path('device-models/' + response._id);
+        $location.path('device-models');
 
         // Clear form fields
         $scope.name = '';
@@ -70,7 +70,7 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
       var deviceModel = $scope.deviceModel;
 
       deviceModel.$update(function() {
-        $location.path('device-models/' + deviceModel._id);
+        $location.path('device-models');
       }, function(errorResponse) {
           //$scope.error = errorResponse.data.message;
           Notification.error(errorResponse.data.message);

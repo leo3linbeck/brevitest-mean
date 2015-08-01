@@ -8,7 +8,7 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 			$location.path('/signin');
 		}
 
-		$scope.showResultsOnOpen = true;
+		$scope.showOnOpen = true;
 
 		// Create new Cartridge
 		$scope.create = function() {

@@ -49,7 +49,7 @@ angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$
 
       // Redirect after save
       devicePool.$save(function(response) {
-        $location.path('device-pools/' + response._id);
+        $location.path('device-pools');
 
         // Clear form fields
         $scope.name = '';
@@ -83,7 +83,7 @@ angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$
       devicePool._organization = $scope.organization ? $scope.organization._id : '';
 
       devicePool.$update(function() {
-        $location.path('device-pools/' + devicePool._id);
+        $location.path('device-pools');
       }, function(errorResponse) {
         $scope.error = errorResponse.data.message;
       });

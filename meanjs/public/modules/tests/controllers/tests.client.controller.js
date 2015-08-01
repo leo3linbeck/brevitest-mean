@@ -21,7 +21,7 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
 
       // Redirect after save
       test.$save(function(response) {
-        $location.path('tests/' + response._id);
+        $location.path('tests');
 
         // Clear form fields
         $scope.reference = '';
@@ -56,7 +56,7 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
       var test = $scope.test;
 
       test.$update(function() {
-        $location.path('tests/' + test._id);
+        $location.path('tests');
       }, function(errorResponse) {
         $scope.error = errorResponse.data.message;
       });

@@ -3,7 +3,7 @@
     <h1>Manufacturers</h1>
   </div>
   <div class="list-group">
-    <a data-ng-repeat="manufacturer in manufacturers" data-ng-href="#!/manufacturers/{{manufacturer._id}}" class="list-group-item">
+    <a data-ng-repeat="manufacturer in manufacturers" data-ng-href="#!/manufacturers/{{manufacturer._id}}/edit" class="list-group-item">
       <small class="list-group-item-text">
         Posted on
         <span data-ng-bind="manufacturer.created | date:'medium'"></span>

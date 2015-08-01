@@ -8,16 +8,23 @@ module.exports = function(app) {
 
 	// Assays Routes
 	app.route('/assays')
-		.get(users.hasAuthorization(['admin', 'superuser']), assays.list)
-		.post(users.requiresLogin, users.hasAuthorization(['admin', 'superuser']), assays.create);
+		.get(assays.list)
+		.post(assays.create);
+		// .get(users.hasAuthorization(['admin', 'superuser']), assays.list)
+		// .post(users.requiresLogin, users.hasAuthorization(['admin', 'superuser']), assays.create);
 
-	app.route('/assays/make10cartridges')
-		.post(assays.make10cartridges);
+	app.route('/assays/make_10_cartridges')
+		.post(assays.make_10_cartridges);
+
+	app.route('/assays/load_unused_cartridges')
+		.post(assays.load_unused_cartridges);
 
 	app.route('/assays/:assayId')
 		.get(assays.read)
-		.put(assays.hasAuthorization, assays.update)
-		.delete(assays.hasAuthorization, assays.delete);
+		.put(assays.update)
+		.delete(assays.delete);
+		// .put(assays.hasAuthorization, assays.update)
+		// .delete(assays.hasAuthorization, assays.delete);
 
 	// Finish by binding the Assay middleware
 	app.param('assayId', assays.assayByID);

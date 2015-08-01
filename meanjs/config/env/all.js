@@ -39,6 +39,7 @@ module.exports = {
 				'public/lib/qrcode-generator/js/qrcode.js',
 				'public/lib/qrcode-generator/js/qrcode_UTF8.js',
 				'public/lib/angular-qrcode/qrcode.js',
+				'public/lib/ng-csv/build/ng-csv.min.js',
 				'public/lib/underscore/underscore-min.js',
                 'public/lib/sweetalert/dist/sweetalert.min.js',
                 'public/lib/angular-sweetalert/SweetAlert.js'

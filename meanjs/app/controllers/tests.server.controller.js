@@ -386,6 +386,30 @@ exports.delete = function(req, res) {
 /**
  * List of Tests
  */
+exports.exportable = function(req, res) {
+ Test.find({status: 'Complete'}).limit(20).sort('-created').populate([{
+   path: 'user',
+   select: 'displayName'
+ }, {
+   path: '_assay',
+   select: '_id name '
+ }, {
+   path: '_device',
+   select: '_id name particleID'
+ }, {
+   path: '_cartridge',
+   select: '_id name value failed startedOn finishedOn'
+ }]).exec(function(err, tests) {
+   if (err) {
+     return res.status(400).send({
+       message: errorHandler.getErrorMessage(err)
+     });
+   } else {
+     res.jsonp(tests);
+   }
+ });
+};
+
 exports.list = function(req, res) {
   Test.find().limit(20).sort('-created').populate('user', 'displayName').exec(function(err, tests) {
     if (err) {

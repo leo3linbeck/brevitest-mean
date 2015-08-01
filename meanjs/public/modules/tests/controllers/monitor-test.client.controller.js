@@ -31,23 +31,21 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			$http.get('/tests/recently_started').
 				success(function(data, status, headers, config) {
 					$scope.tests = data;
-			  }).
+					Socket.on('test.update', function(message) {
+						var data = message.split('\n');
+						_.find($scope.tests, function(e) {
+							if (e._id === data[1]) {
+								e.percentComplete = parseInt(data[2]);
+								e.status = data[0].length ? data[0] : e.status;
+								return true;
+							}
+							return false;
+						});
+					});
+		  }).
 			  error(function(err, status, headers, config) {
 					Notification.error(err.message);
 			  });
-
-
-			Socket.on('test.update', function(message) {
-				var data = message.split('\n');
-				_.find($scope.tests, function(e) {
-					if (e._id === data[1]) {
-						e.percentComplete = parseInt(data[2]);
-						e.status = data[0].length ? data[0] : e.status;
-						return true;
-					}
-					return false;
-				});
-			});
 		};
 
 		$scope.cancelTest = function(index) {

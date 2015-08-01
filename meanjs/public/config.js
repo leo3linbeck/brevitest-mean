@@ -16,7 +16,8 @@ var ApplicationConfiguration = (function() {
 		'ui.utils',
 		'ui-notification',
 		'btford.socket-io',
-		'monospaced.qrcode'
+		'monospaced.qrcode',
+		'ngCsv'
 	];
 
 	// Add a new vertical module

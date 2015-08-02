@@ -1,9 +1,13 @@
 <section data-ng-controller="DevicesController" data-ng-init="find()">
   <div class="page-header">
-    <button class="btn btn-lg btn-default pull-right glyphicon glyphicon-refresh" ng-click="refresh()" type="button"></button>
+    <button class="btn btn-md btn-default pull-right glyphicon glyphicon-refresh" ng-click="refresh()" type="button"></button>
     <h1>Devices</h1>
-    <h4 ng-show="devices.length">Pool: <a href="#!/device-pools/{{devices[0]._devicePool._id }}">{{devices[0]._devicePool.name}}</a></h4>
-    <h4 ng-show="!devices.length">Choose a device pool from the user menu</h4>
+    <div class="btn-group" role="group" aria-label="...">
+      <button type="button" ng-disabled="!unassigned ? 'disabled' : ''" ng-click="refresh()" class="btn btn-default">Pool</button>
+      <button type="button" ng-disabled="unassigned ? 'disabled' : ''" ng-click="loadUnassigned()" class="btn btn-default">Unassigned</button>
+    </div>
+    <h4 ng-show="devices.length && !unassigned">Pool: <a href="#!/device-pools/{{devices[0]._devicePool._id }}">{{devices[0]._devicePool.name}}</a></h4>
+    <h4 ng-show="!devices.length && !unassigned">Choose a device pool from the user menu</h4>
   </div>
   <div class="list-group">
     <a class="list-group-item" data-ng-href="#!/devices/{{device._id}}/edit" data-ng-repeat="device in devices">

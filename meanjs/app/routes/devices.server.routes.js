@@ -22,6 +22,9 @@ module.exports = function(app) {
 	app.route('/devices/available')
 		.get(devices.available);
 
+	app.route('/devices/unassigned')
+		.get(devices.unassigned);
+
 	app.route('/devices/flash_firmware')
 		.post(devices.flash_firmware);
 

@@ -336,6 +336,23 @@ exports.available = function(req, res) {
     .done();
 };
 
+exports.unassigned = function(req, res) {
+  return new Q(Device.find({
+      _devicePool: {$exists: false}
+    }).exec())
+    .then(function(devices) {
+      res.jsonp(devices);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Error loading unassigned devices',
+        message: error.message
+      });
+    })
+    .done();
+};
+
 /**
  * Create a Device
  */

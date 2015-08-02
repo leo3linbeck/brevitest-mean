@@ -8,6 +8,20 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
       $location.path('/signin');
     }
 
+    $scope.unassigned = false;
+    $scope.loadUnassigned = function() {
+      $scope.unassigned = true;
+      $http.get('/devices/unassigned').
+      success(function(data, status, headers, config) {
+        console.log(data);
+        $scope.devices = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
     $scope.writeSerialNumber = function() {
       $http.post('/devices/write_serial_number', {
         deviceID: $scope.device._id,
@@ -59,10 +73,10 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
     };
 
     $scope.refresh = function() {
+      $scope.unassigned = false;
       $http.post('/devices/pool').
       success(function(data, status, headers, config) {
         console.log(data);
-        Notification.success('Device list refreshed');
         $scope.devices = data;
       }).
       error(function(err, status, headers, config) {

@@ -48,6 +48,7 @@
           <h3 class="panel-title">Available Devices</h3>
         </div>
         <div class="panel-body">
+          <h5 class="text-center" ng-show="devices.length">Pool: <a ng-href="/#!/device-pools/{{devices[0]._devicePool._id}}">{{devices[0]._devicePool.name}}</a></h5>
           <div class="list-group" ng-show="devices.length">
             <a class="list-group-item {{activeDevice === $index ? 'active' : ''}}" href="" ng-repeat="device in devices" ng_click="claimDevice($index)">{{device.name}}</a>
           </div>

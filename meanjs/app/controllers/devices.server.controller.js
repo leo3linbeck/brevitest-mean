@@ -237,7 +237,7 @@ function available_devices_promise(user) {
           $ne: true
         }
       }]
-    }).exec());
+    }).populate(devicePopulate).exec());
 }
 
 function claimed_devices_promise(user) {

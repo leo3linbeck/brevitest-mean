@@ -19,9 +19,6 @@ module.exports = function(app) {
 	app.route('/devices/pool')
 		.post(devices.pool);
 
-	app.route('/devices/refresh_pool')
-		.get(devices.refresh_pool);
-
 	app.route('/devices/available')
 		.get(devices.available);
 

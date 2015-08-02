@@ -119,9 +119,9 @@ var command =  {
   },
   'release_device': {
     code: '04',
-    exec: function(particle_device) {
-      console.log('Releasing device: ', particle_device);
-      return particle_device.callFunction('runcommand', this.code);
+    exec: function(particle_device, userID) {
+      console.log('Releasing device: ', particle_device, userID);
+      return particle_device.callFunction('runcommand', this.code + userID);
     }
   },
   'send_first_packet': {

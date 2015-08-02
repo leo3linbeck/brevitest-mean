@@ -95,21 +95,10 @@ exports.detach_particle = function(req, res) {
     .done();
 };
 
-exports.refresh_pool = function(req, res) {
-  Device.find({_devicePool: req.user._devicePool}).sort('-created').populate(devicePopulate).exec(function(err, devices) {
-    if (err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
-    } else {
-      res.jsonp(devices);
-    }
-  });
-};
-
 exports.pool = function(req, res) {
+  var devicePoolID = req.body.devicePoolID || req.user._devicePool;
   Device.find({
-    _devicePool: req.body.devicePoolID
+    _devicePool: devicePoolID
   }).sort('-created').populate(devicePopulate).exec(function(err, devices) {
     if (err) {
       return res.status(400).send({
@@ -165,7 +154,7 @@ exports.claim = function(req, res) {
   if (req.body.currentDeviceID) {
     releasePromise = particle.get_particle_device_from_uuid(req.user, req.body.currentDeviceID)
       .spread(function(device, particle_device) {
-        return [device, particle.execute_particle_command(particle_device, 'release_device', device)];
+        return [device, particle.execute_particle_command(particle_device, 'release_device', req.user.id)];
       })
       .spread(function(device, result) {
         result.msg = device.name + ' released';
@@ -180,7 +169,7 @@ exports.claim = function(req, res) {
     })
     .spread(function(device, particle_device) {
       console.log('Claiming device');
-      return [device, particle_device, particle.execute_particle_command(particle_device, 'claim_device', req.user._id)];
+      return [device, particle_device, particle.execute_particle_command(particle_device, 'claim_device', req.user.id)];
     })
     .spread(function(device, particle_device, result) {
       console.log('Checking assay', result);
@@ -244,22 +233,63 @@ exports.claim = function(req, res) {
     .done();
 };
 
-exports.release = function(req, res) {
-  particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
+function available_devices_promise(user) {
+  return new Q(Device.find({
+      $and: [{
+        _devicePool: user._devicePool
+      }, {
+        connected: true
+      }, {
+        attached: true
+      }, {
+        claimed: {
+          $ne: true
+        }
+      }]
+    }).exec());
+}
+
+function claimed_devices_promise(user) {
+  return new Q(Device.find({
+      $and: [{
+        _devicePool: user._devicePool
+      }, {
+        connected: true
+      }, {
+        attached: true
+      }, {
+        claimed: true
+      }]
+    }).exec());
+}
+
+function release_one_device_promise(user, deviceID) {
+  console.log('release_one_device_promise', user.displayName, deviceID);
+  return particle.get_particle_device_from_uuid(user, deviceID)
     .spread(function(device, particle_device) {
-      return [device, particle.execute_particle_command(particle_device, 'release_device', device)];
+      return [device, particle.execute_particle_command(particle_device, 'release_device', user.id)];
     })
     .spread(function(device, result) {
-      result.msg = device.name + ' released';
-      device.claimed = false;
-      device.save();
-      return [device, result];
-    })
-    .spread(function(device, result) {
-      res.jsonp({
-        device: device,
-        result: result
+      return Device.findByIdAndUpdate(device._id, {claimed: !result.return_value}).exec();
+    });
+}
+
+exports.release = function(req, res) {
+  claimed_devices_promise(req.user)
+    .then(function(devices) {
+      return devices.map(function(device) {
+        return release_one_device_promise(req.user, device._id);
       });
+    })
+    .then(function(promises) {
+      return Q.allSettled(promises);
+    })
+    .then(function() {
+      return available_devices_promise(req.user);
+    })
+    .then(function(devices) {
+      console.log('post release available devices', devices);
+      res.jsonp(devices);
     })
     .fail(function(error) {
       console.error(error);
@@ -303,19 +333,7 @@ exports.load_by_model = function(req, res) {
 };
 
 exports.available = function(req, res) {
-  return new Q(Device.find({
-      $and: [{
-        _devicePool: req.user._devicePool
-      }, {
-        connected: true
-      }, {
-        attached: true
-      }, {
-        claimed: {
-          $ne: true
-        }
-      }]
-    }).exec())
+  available_devices_promise(req.user)
     .then(function(devices) {
       res.jsonp(devices);
     })
@@ -403,7 +421,18 @@ exports.delete = function(req, res) {
 /**
  * List of Devices
  */
-exports.list = exports.refresh_pool;
+exports.list = function(req, res) {
+  Device.find({_devicePool: req.user._devicePool}).sort('-created').populate(devicePopulate).exec(function(err, devices) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      res.jsonp(devices);
+    }
+  });
+};
+
 
 /**
  * Device middleware

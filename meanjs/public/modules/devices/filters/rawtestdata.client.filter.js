@@ -53,7 +53,7 @@ function parse_test_params(str) {
 	var result = '<strong>DEVICE PARAMETERS</strong><br/>';
 	result += 'reset_steps: ' + data[0] + '<br/>';
 	result += 'step_delay_us: ' + data[1] + '<br/>';
-	result += 'stepper_wifi_ping_rate: ' + data[2] + '<br/>';
+	result += 'publish_interval_during_move: ' + data[2] + '<br/>';
 	result += 'stepper_wake_delay_ms: ' + data[3] + '<br/>';
 	result += 'solenoid_surge_power: ' + data[4] + '<br/>';
 	result += 'solenoid_sustain_power: ' + data[5] + '<br/>';

@@ -59,7 +59,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
     };
 
     $scope.refresh = function() {
-      $http.get('/devices/refresh_pool').
+      $http.post('/devices/pool').
       success(function(data, status, headers, config) {
         console.log(data);
         Notification.success('Device list refreshed');

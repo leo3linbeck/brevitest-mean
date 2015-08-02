@@ -95,15 +95,14 @@ function finalizeTestRecord(user, test) {
     })
     .then(function(register) {
       var updateQuery = parseCartridgeFromParticleData(register, test);
-      return [Cartridge.findByIdAndUpdate(test._cartridge, updateQuery, {new: true}).exec()];
+      return Cartridge.findByIdAndUpdate(test._cartridge, updateQuery, {new: true}).exec();
     })
-    .spread(function(cartridge) {
-      console.log('cartridge record', cartridge);
+    .then(function(cartridge) {
       var updateQuery = parseTestFromParticleData(test, cartridge);
       return Test.findByIdAndUpdate(test._id, updateQuery, {new: true}).exec();
     })
-    .then(function() {
-      return Device.findByIdAndUpdate(test._device, {claimed: false}).exec();
+    .then(function(updatedTest) {
+      return [updatedTest, Device.findByIdAndUpdate(test._device, {claimed: false}).exec()];
     });
 }
 
@@ -138,9 +137,13 @@ function createParticleSubscribeCallback(user, test, socket) {
 
     test.percentComplete = data[2] ? parseInt(data[2]) : 0;
     if (test.percentComplete === 100 && test.status !== 'Cancelled') {
+      console.log('Test complete', test.loaded);
       test.status = 'Complete';
       if (!test.loaded) {
         finalizeTestRecord(user, test)
+          .spread(function(updatedTest, device) {
+            test = updatedTest;
+          })
           .fail(function(err) {
             console.log('finalizeTestRecord error', err, user, test);
           })

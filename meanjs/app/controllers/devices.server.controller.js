@@ -149,7 +149,6 @@ exports.move_to_and_set_calibration_point = function(req, res) {
 };
 
 exports.claim = function(req, res) {
-  console.log(req.body);
   var releasePromise = new Q();
   if (req.body.currentDeviceID) {
     releasePromise = particle.get_particle_device_from_uuid(req.user, req.body.currentDeviceID)
@@ -164,15 +163,12 @@ exports.claim = function(req, res) {
   }
   releasePromise
     .then(function() {
-      console.log('Getting particle device');
       return particle.get_particle_device_from_uuid(req.user, req.body.newDeviceID);
     })
     .spread(function(device, particle_device) {
-      console.log('Claiming device');
       return [device, particle_device, particle.execute_particle_command(particle_device, 'claim_device', req.user.id)];
     })
     .spread(function(device, particle_device, result) {
-      console.log('Checking assay', result);
       if (result.return_value < 0) { // assay not found in cache; send to particle
         throw new Error('Unable to read cartridge. Please check device and retry');
       } else {
@@ -180,11 +176,9 @@ exports.claim = function(req, res) {
       }
     })
     .spread(function(device, particle_device, cartridgeID) {
-      console.log('cartridgeID: ', cartridgeID);
       return [device, particle_device, Cartridge.findById(cartridgeID).exec()];
     })
     .spread(function(device, particle_device, cartridge) {
-      console.log('Cartridge found', cartridge);
       if (!cartridge || !cartridge._id) { // cartridge not found in database
         throw new Error('Unable to find cartridge record');
       } else {
@@ -192,7 +186,6 @@ exports.claim = function(req, res) {
       }
     })
     .spread(function(device, particle_device, cartridge, assay) {
-      console.log('Assay found', assay);
       if (!assay || !assay._id) { // assay not found in database
         throw new Error('Unable to find assay record');
       } else {
@@ -200,7 +193,6 @@ exports.claim = function(req, res) {
       }
     })
     .spread(function(device, particle_device, cartridge, assay, result) {
-      console.log('Assay cache checked', result);
       if (result.return_value === 999) { // assay not found in cache
         return [device, particle_device, cartridge, assay, particle.send_assay_to_particle(particle_device, assay), assay];
       } else {
@@ -208,7 +200,6 @@ exports.claim = function(req, res) {
       }
     })
     .spread(function(device, particle_device, cartridge, assay, result) {
-      console.log('Assay loaded', result);
       result.msg = device.name + ' claimed';
       device.claimed = true;
       device.save();
@@ -264,7 +255,6 @@ function claimed_devices_promise(user) {
 }
 
 function release_one_device_promise(user, deviceID) {
-  console.log('release_one_device_promise', user.displayName, deviceID);
   return particle.get_particle_device_from_uuid(user, deviceID)
     .spread(function(device, particle_device) {
       return [device, particle.execute_particle_command(particle_device, 'release_device', user.id)];
@@ -288,7 +278,6 @@ exports.release = function(req, res) {
       return available_devices_promise(req.user);
     })
     .then(function(devices) {
-      console.log('post release available devices', devices);
       res.jsonp(devices);
     })
     .fail(function(error) {

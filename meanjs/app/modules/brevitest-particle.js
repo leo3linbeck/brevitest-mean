@@ -99,28 +99,28 @@ var command =  {
   'run_test': {
     code: '01',
     exec: function(particle_device, testID) {
-      console.log('Running test: ', particle_device, testID);
+      console.log('Running test: ', testID);
       return particle_device.callFunction('runcommand', this.code + testID);
     }
   },
   'cancel_test': {
     code: '02',
     exec: function(particle_device, testID) {
-      console.log('Cancelling test: ', particle_device, testID);
+      console.log('Cancelling test: ', testID);
       return particle_device.callFunction('runcommand', this.code + testID);
     }
   },
   'claim_device': {
     code: '03',
     exec: function(particle_device, userID) {
-      console.log('Claiming device: ', particle_device, userID);
+      console.log('Claiming device: ', userID);
       return particle_device.callFunction('runcommand', this.code + userID);
     }
   },
   'release_device': {
     code: '04',
     exec: function(particle_device, userID) {
-      console.log('Releasing device: ', particle_device, userID);
+      console.log('Releasing device: ', userID);
       return particle_device.callFunction('runcommand', this.code + userID);
     }
   },
@@ -335,7 +335,7 @@ module.exports = {
   execute_particle_command: function(particle_device, cmd, arg1, arg2, arg3) {
     return new Q(command[cmd].exec(particle_device, arg1 || null, arg2 || null, arg3 || null))
       .then(function(result) {
-        console.log('Checking result: ', result);
+        console.log('Checking result: ', result.return_value);
         if (result.return_value < 0) {
           throw new Error('Error ' + result.return_value + ' detected in command ' + cmd + '(' + arg1 + ', ' + arg2 + ', ' + arg3 +')');
         }
@@ -361,9 +361,7 @@ module.exports = {
   },
   send_test_to_particle: function(particle_device, test) {
     var str = test.user + test._id + test._assay + test._cartridge;
-    console.log('str: ', str);
     var message_id = test._id.toString().substr(18);
-    console.log('message_id: ', message_id);
     return send_message_to_particle(particle_device, str, '02', message_id, 'start_send_test');
   },
   get_BCODE_string: function(bcode_obj) {

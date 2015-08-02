@@ -4,12 +4,19 @@ var _ = window._;
 var $ = window.$;
 
 // Tests controller
-angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', '$modal', '$window','Authentication', 'Tests', 'Notification',
-  function($scope, $http, $location, $modal, $window, Authentication, Tests, Notification) {
+angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', '$modal', '$window','Authentication', 'Tests', 'Notification', 'Socket',
+  function($scope, $http, $location, $modal, $window, Authentication, Tests, Notification, Socket) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       $location.path('/signin');
     }
+
+    Socket.on('test.update', function(message) {
+      var data = message.split('\n');
+        if (data[0] === 'Test complete' || data[2] === '-1') {
+          $scope.loadDevices();
+        }
+      });
 
     $scope.setupRun = function() {
       $scope.loadDevices();
@@ -88,6 +95,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
       }
       else {
         if ($scope.activeDevice !== -1) {
+          Notification.success('Starting test, please wait...');
           device = $scope.devices[$scope.activeDevice];
           $http.post('/tests/begin', {
             reference: $scope.reference,
@@ -100,7 +108,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
             cartridgeID: $scope.cartridge._id
           }).
           success(function(data, status, headers, config) {
-            Notification.success('Test underway');
             $scope.setupRun();
           }).
           error(function(err, status, headers, config) {

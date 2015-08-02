@@ -26,9 +26,11 @@
   <div class="list-group col-xs-12">
     <a class="list-group-item" ng-repeat="test in tests">
       <h4 class="list-group-item-heading">{{test._device.name}}
-        <span class="btn btn-xs btn-default" disabled ng-show="test.percentComplete===100">Finished</span>
-        <span class="btn btn-xs btn-danger" disabled ng-show="test.status==='Cancelled'">Cancelled</span>
-        <span class="btn btn-xs btn-primary" disabled ng-show="test.status!=='Cancelled' && test.percentComplete!==100">In progress</span>
+        <span class="btn btn-xs" ng-class="test.status === 'Cancelled' ? 'btn-danger' : test.percentComplete < 100 ? 'btn-primary' : 'btn-default'" disabled>
+          {{test.status === 'Cancelled' ? 'Cancelled' : test.percentComplete < 100 ? 'In progress' : 'Finished'}}
+        </span>
+        <!-- <span class="btn btn-xs btn-primary" disabled ng-show="test.percentComplete!==100">In progress</span>
+        <span class="btn btn-xs btn-danger" disabled ng-show="test.status==='Cancelled'">Cancelled</span> -->
       </h4>
       <p class="list-group-item-text">
         <small>Started on {{test._cartridge.startedOn | date: "medium"}}</small><br/>

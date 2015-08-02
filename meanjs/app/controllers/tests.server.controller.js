@@ -48,7 +48,6 @@ function parseCartridgeFromParticleData(register, test) {
     updateObj.rawData = register;
     updateObj.value = parseInt(data[4].split('\t')[3]) - parseInt(data[2].split('\t')[3]);
   }
-  console.log('cartridge', updateObj);
 
   return updateObj;
 }
@@ -159,13 +158,11 @@ function createParticleSubscribeCallback(user, test, socket) {
 
 exports.begin = function(req, res) {
   var bcodeString, test;
-  console.log('Beginning test', req.body);
   particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
     .spread(function(device, particle_device) {
       return [device, particle_device, particle.execute_particle_request(particle_device, 'test_uuids')];
     })
     .spread(function(device, particle_device, request) {
-      console.log('test uuids:', request);
       return [device, particle_device, verify_test_data_downloaded(req.user, request)];
     })
     .spread(function(device, particle_device) {
@@ -244,7 +241,6 @@ exports.begin = function(req, res) {
 };
 
 exports.cancel = function(req, res) {
-  console.log('Cancelling test', req.body);
   particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
     .spread(function(device, particle_device) {
       return particle.execute_particle_command(particle_device, 'cancel_test', req.body.testID);

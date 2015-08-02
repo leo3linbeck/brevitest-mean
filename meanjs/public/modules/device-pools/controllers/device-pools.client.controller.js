@@ -79,7 +79,7 @@ angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$
 
     // Update existing Device pool
     $scope.update = function() {
-      var devicePool = $scope.devicePool;
+      var devicePool = new DevicePools($scope.devicePool);
       devicePool._organization = $scope.organization ? $scope.organization._id : '';
 
       devicePool.$update(function() {

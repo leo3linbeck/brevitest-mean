@@ -19,7 +19,7 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 
 			// Redirect after save
 			cartridge.$save(function(response) {
-				$location.path('cartridges/' + response._id);
+				$location.path('cartridges');
 
 				// Clear form fields
 				$scope.name = '';
@@ -50,10 +50,10 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 
 		// Update existing Cartridge
 		$scope.update = function() {
-			var cartridge = $scope.cartridge;
+			var cartridge = new Cartridges($scope.cartridge);
 
 			cartridge.$update(function() {
-				$location.path('cartridges/' + cartridge._id);
+				$location.path('cartridges');
 			}, function(errorResponse) {
 				//$scope.error = errorResponse.data.message;
                 Notification.error(errorResponse.data.message);

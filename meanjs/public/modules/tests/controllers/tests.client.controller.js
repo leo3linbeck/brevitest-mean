@@ -53,7 +53,7 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
 
     // Update existing Test
     $scope.update = function() {
-      var test = $scope.test;
+      var test = new Tests($scope.test);
 
       test.$update(function() {
         $location.path('tests');

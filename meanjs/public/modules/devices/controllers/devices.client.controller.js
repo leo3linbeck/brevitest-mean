@@ -91,7 +91,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
       }).
       success(function(data, status, headers, config) {
         console.log(data);
-        Notification.success(data.result);
+        Notification.success(data.msg);
         $scope.device.$save();
       }).
       error(function(err, status, headers, config) {
@@ -105,8 +105,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         device: $scope.device
       }).
       success(function(data, status, headers, config) {
-        console.log(data);
-        Notification.success(data.result);
+        console.log(data.msg);
+        Notification.success('Firmware flash underway...');
         $scope.device.$save();
       }).
       error(function(err, status, headers, config) {
@@ -212,7 +212,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 
     // Update existing Device
     $scope.update = function() {
-      var device = $scope.device;
+      var device = new Devices($scope.device);
       device._deviceModel = $scope.deviceModel ? $scope.deviceModel._id : '';
       device._devicePool = $scope.devicePool ? $scope.devicePool._id : '';
 

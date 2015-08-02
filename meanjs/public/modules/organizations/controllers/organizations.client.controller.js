@@ -42,7 +42,7 @@ angular.module('organizations').controller('OrganizationsController', ['$scope',
 
 		// Update existing Organization
 		$scope.update = function() {
-			var organization = $scope.organization;
+			var organization = new Organizations($scope.organization);
 
 			organization.$update(function() {
 				$location.path('organizations');

@@ -67,7 +67,7 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
 
     // Update existing Device model
     $scope.update = function() {
-      var deviceModel = $scope.deviceModel;
+      var deviceModel = new DeviceModels($scope.deviceModel);
 
       deviceModel.$update(function() {
         $location.path('device-models');

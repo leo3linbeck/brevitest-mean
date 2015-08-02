@@ -599,7 +599,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 
     // Update existing Assay
     $scope.update = function() {
-      var assay = $scope.assay;
+      var assay = new Assays($scope.assay);
 
       assay.BCODE = $scope.BCODE;
       assay.analysis = $scope.analysis;

@@ -62,7 +62,7 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
 
     // Update existing Manufacturer
     $scope.update = function() {
-      var manufacturer = $scope.manufacturer;
+      var manufacturer = new Manufacturers($scope.manufacturer);
 
       manufacturer.addresses = $scope.addresses;
       manufacturer.$update(function() {

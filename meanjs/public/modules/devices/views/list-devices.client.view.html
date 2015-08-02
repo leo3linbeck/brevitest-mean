@@ -3,7 +3,7 @@
     <button class="btn btn-md btn-default pull-right glyphicon glyphicon-refresh" ng-click="refresh()" type="button"></button>
     <h1>Devices</h1>
     <div class="btn-group" role="group" aria-label="...">
-      <button type="button" ng-disabled="!unassigned ? 'disabled' : ''" ng-click="refresh()" class="btn btn-default">Pool</button>
+      <button type="button" ng-disabled="!unassigned ? 'disabled' : ''" ng-click="refresh()" class="btn btn-default">Pooled</button>
       <button type="button" ng-disabled="unassigned ? 'disabled' : ''" ng-click="loadUnassigned()" class="btn btn-default">Unassigned</button>
     </div>
     <h4 ng-show="devices.length && !unassigned">Pool: <a href="#!/device-pools/{{devices[0]._devicePool._id }}">{{devices[0]._devicePool.name}}</a></h4>

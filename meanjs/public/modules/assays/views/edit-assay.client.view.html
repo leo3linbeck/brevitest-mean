@@ -35,7 +35,7 @@
               <div class="controls input-group">
                 <input class="form-control" data-ng-model="cartridgeInventory" id="cartridgeInventory" readonly></input>
                 <span class="input-group-btn">
-                  <button class="btn btn-default" ng-click="make10Cartridges()" type="button">Make 10 New Cartridges</button>
+                  <button class="btn btn-default" ng-disabled="assay.usableLife ? '' : 'disabled'" ng-click="make10Cartridges()" type="button">Make 10 New Cartridges</button>
                 </span>
               </div>
               <br/>

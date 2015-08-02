@@ -5,10 +5,10 @@
     </div>
     <div class="col-xs-12">
       <div class="btn-group" role="group">
-        <a class="btn btn-default" href="/#!/tests/run">Run</a>
-        <a class="btn btn-default" href="/#!/tests/monitor">Monitor</a>
-        <a class="btn btn-default" href="/#!/tests/review">Review</a>
-        <a class="btn btn-default" disabled href="/#!/tests/export">Export</a>
+        <a class="btn btn-sm btn-default" href="/#!/tests/run">Run</a>
+        <a class="btn btn-sm btn-default" href="/#!/tests/monitor">Monitor</a>
+        <a class="btn btn-sm btn-default" href="/#!/tests/review">Review</a>
+        <a class="btn btn-sm btn-default" disabled href="/#!/tests/export">Export</a>
       </div>
       <br/><br/>
     </div>
@@ -20,12 +20,13 @@
           {{selection.length ? selection.length : 'None'}}</h5>
       </div>
       <div class="panel-body">
-        <button class="btn btn-default" ng-click="selectAll()">Select All</button>
-        <button class="btn btn-default" ng-click="deselectAll()">Deselect All</button>
-        <button class="btn btn-primary pull-right" ng-disabled="!selection.length" ng-csv="getTestData()" csv-header="getTestHeaders()" quote-strings filename="BrevitestData">Export</button>
+        <button class="btn btn-sm btn-default" ng-click="selectAll()">Select All</button>
+        <button class="btn btn-sm btn-default" ng-click="deselectAll()">Deselect All</button>
+        <button class="btn btn-sm btn-primary pull-right" ng-disabled="!selection.length" ng-csv="getTestData()" csv-header="getTestHeaders()" quote-strings filename="BrevitestData">Export</button>
         <br/>
       </div>
     </div>
+    <h5 class="text-center"><em>Click to select Brevitests™ to export:</em></h5>
     <div class="panel panel-warning col-xs-12" ng-hide="tests.length">
       <div class="panel-heading">
         No tests found

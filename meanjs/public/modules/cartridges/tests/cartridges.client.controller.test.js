@@ -119,7 +119,7 @@
 			expect(scope.name).toEqual('');
 
 			// Test URL redirection after the Cartridge was created
-			expect($location.path()).toBe('/cartridges/' + sampleCartridgeResponse._id);
+			expect($location.path()).toBe('/cartridges');
 		}));
 
 		it('$scope.update() should update a valid Cartridge', inject(function(Cartridges) {
@@ -140,7 +140,7 @@
 			$httpBackend.flush();
 
 			// Test URL location to new object
-			expect($location.path()).toBe('/cartridges/' + sampleCartridgePutData._id);
+			expect($location.path()).toBe('/cartridges');
 		}));
 
 		it('$scope.remove() should send a DELETE request with a valid cartridgeId and remove the Cartridge from the scope', inject(function(Cartridges) {

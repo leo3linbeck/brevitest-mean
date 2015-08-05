@@ -56,7 +56,9 @@
 		it('$scope.find() should create an array with at least one Test object fetched from XHR', inject(function(Tests) {
 			// Create sample Test using the Tests service
 			var sampleTest = new Tests({
-				name: 'New Test'
+                reference: 'reference',
+                subject: 'test subject',
+                description: 'test description'
 			});
 
 			// Create a sample Tests array that includes the new Test
@@ -76,7 +78,9 @@
 		it('$scope.findOne() should create an array with one Test object fetched from XHR using a testId URL parameter', inject(function(Tests) {
 			// Define a sample Test object
 			var sampleTest = new Tests({
-				name: 'New Test'
+                reference: 'reference',
+                subject: 'test subject',
+                description: 'test description'
 			});
 
 			// Set the URL parameter
@@ -96,17 +100,23 @@
 		it('$scope.create() with valid form data should send a POST request with the form input values and then locate to new object URL', inject(function(Tests) {
 			// Create a sample Test object
 			var sampleTestPostData = new Tests({
-				name: 'New Test'
+                reference: 'test reference',
+                subject: 'test subject',
+                description: 'test description'
 			});
 
 			// Create a sample Test response
 			var sampleTestResponse = new Tests({
 				_id: '525cf20451979dea2c000001',
-				name: 'New Test'
+                reference: 'reference',
+                subject: 'test subject',
+                description: 'test description'
 			});
 
 			// Fixture mock form input values
-			scope.name = 'New Test';
+            scope.reference = 'test reference';
+            scope.subject = 'test subject';
+            scope.description = 'test description';
 
 			// Set POST response
 			$httpBackend.expectPOST('tests', sampleTestPostData).respond(sampleTestResponse);
@@ -116,17 +126,21 @@
 			$httpBackend.flush();
 
 			// Test form inputs are reset
-			expect(scope.name).toEqual('');
+			expect(scope.reference).toEqual('');
+            expect(scope.subject).toEqual('');
+            expect(scope.description).toEqual('');
 
 			// Test URL redirection after the Test was created
-			expect($location.path()).toBe('/tests/' + sampleTestResponse._id);
+			expect($location.path()).toBe('/tests');
 		}));
 
 		it('$scope.update() should update a valid Test', inject(function(Tests) {
 			// Define a sample Test put data
 			var sampleTestPutData = new Tests({
 				_id: '525cf20451979dea2c000001',
-				name: 'New Test'
+                reference: 'reference',
+                subject: 'test subject',
+                description: 'test description'
 			});
 
 			// Mock Test in scope
@@ -140,7 +154,7 @@
 			$httpBackend.flush();
 
 			// Test URL location to new object
-			expect($location.path()).toBe('/tests/' + sampleTestPutData._id);
+			expect($location.path()).toBe('/tests');
 		}));
 
 		it('$scope.remove() should send a DELETE request with a valid testId and remove the Test from the scope', inject(function(Tests) {

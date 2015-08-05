@@ -116,7 +116,7 @@
 			expect(scope.name).toEqual('');
 
 			// Test URL redirection after the Organization was created
-			expect($location.path()).toBe('/organizations/' + sampleOrganizationResponse._id);
+			expect($location.path()).toBe('/organizations');
 		}));
 
 		it('$scope.update() should update a valid Organization', inject(function(Organizations) {
@@ -137,7 +137,7 @@
 			$httpBackend.flush();
 
 			// Test URL location to new object
-			expect($location.path()).toBe('/organizations/' + sampleOrganizationPutData._id);
+			expect($location.path()).toBe('/organizations');
 		}));
 
 		it('$scope.remove() should send a DELETE request with a valid organizationId and remove the Organization from the scope', inject(function(Organizations) {

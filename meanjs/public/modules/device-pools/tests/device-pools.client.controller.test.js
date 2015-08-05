@@ -116,7 +116,7 @@
 			expect(scope.name).toEqual('');
 
 			// Test URL redirection after the Device pool was created
-			expect($location.path()).toBe('/device-pools/' + sampleDevicePoolResponse._id);
+			expect($location.path()).toBe('/device-pools');
 		}));
 
 		it('$scope.update() should update a valid Device pool', inject(function(DevicePools) {
@@ -137,7 +137,7 @@
 			$httpBackend.flush();
 
 			// Test URL location to new object
-			expect($location.path()).toBe('/device-pools/' + sampleDevicePoolPutData._id);
+			expect($location.path()).toBe('/device-pools');
 		}));
 
 		it('$scope.remove() should send a DELETE request with a valid devicePoolId and remove the Device pool from the scope', inject(function(DevicePools) {

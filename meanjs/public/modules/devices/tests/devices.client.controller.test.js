@@ -122,7 +122,7 @@
 			expect(scope.name).toEqual('');
 
 			// Test URL redirection after the Device was created
-			expect($location.path()).toBe('/devices/' + sampleDeviceResponse._id);
+			expect($location.path()).toBe('/devices');
 		}));
 
 		it('$scope.update() should update a valid Device', inject(function(Devices) {
@@ -143,7 +143,7 @@
 			$httpBackend.flush();
 
 			// Test URL location to new object
-			expect($location.path()).toBe('/devices/' + sampleDevicePutData._id);
+			expect($location.path()).toBe('/devices');
 		}));
 
 		it('$scope.remove() should send a DELETE request with a valid deviceId and remove the Device from the scope', inject(function(Devices) {

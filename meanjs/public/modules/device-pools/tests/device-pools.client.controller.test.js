@@ -76,17 +76,36 @@
 				name: 'New Device pool'
 			});
 
-			// Set the URL parameter
-			$stateParams.devicePoolId = '525a8422f6d0f87f0e407a33';
+            // Set the URL parameter
+            $stateParams.devicePoolId = '525a8422f6d0f87f0e407a33';
+            
+            var sampleDevicePoolPostData = {
+                devicePoolID: $stateParams.devicePoolId
+            };
+
+            var sampleDevicePoolPostResponse = {
+                name: 'Mr. Anderson',
+                serialNumber: 'abc123',
+                calibrationSteps: '42',
+                status: 'AOK',
+                manufacturedOn: 'July 4, 1776',
+                registeredOn: 'January 1, 1492 ',
+                _deviceModel: 'Jaguar',
+                _devicePool: 'pool',
+                particleID: 'quark'
+            };
 
 			// Set GET response
 			$httpBackend.expectGET(/device-pools\/([0-9a-fA-F]{24})$/).respond(sampleDevicePool);
+			$httpBackend.expectGET('organizations').respond();
+			$httpBackend.expectPOST('/devices/pool', sampleDevicePoolPostData).respond(sampleDevicePoolPostResponse);
 
 			// Run controller functionality
 			scope.findOne();
 			$httpBackend.flush();
 
 			// Test scope value
+            expect(scope.devices).toEqual(sampleDevicePoolPostResponse);
 			expect(scope.devicePool).toEqualData(sampleDevicePool);
 		}));
 

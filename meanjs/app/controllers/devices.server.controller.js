@@ -5,49 +5,312 @@
  */
 var mongoose = require('mongoose'),
   errorHandler = require('./errors.server.controller'),
-  Cartridge = mongoose.model('Cartridge'),
   Device = mongoose.model('Device'),
-  sparkcore = require('spark'),
+  Cartridge = mongoose.model('Cartridge'),
+  Assay = mongoose.model('Assay'),
   Q = require('q'),
   _ = require('lodash');
 
-  var brevitestCommand = require('../../app/modules/brevitest-command');
-  var brevitestSpark = require('../../app/modules/brevitest-particle');
+var particle = require('../../app/modules/brevitest-particle');
+var devicePopulate = [{
+  path: 'user',
+  select: 'displayName'
+}, {
+  path: '_devicePool',
+  select: '_id name'
+}, {
+  path: '_deviceModel',
+  select: '_id name'
+}];
 
-function errorCallback(err) {
-  return err;
-}
-
-exports.move_to_and_set_calibration_point = function(req, res) {
-  brevitestSpark.get_spark_device_from_device(req.user, req.body.device)
-    .then(function(sparkDevice) {
-      return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.calibrate + req.body.device.calibrationSteps));
+exports.write_serial_number = function(req, res) {
+  particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
+    .spread(function(device, particle_device) {
+      device.serialNumber = req.body.serialNumber;
+      device.save();
+      return particle_device;
+    })
+    .then(function(particle_device) {
+      return particle.execute_particle_command(particle_device, 'write_serial_number', req.body.serialNumber);
     })
     .then(function(result) {
-      if (result.return_value !== 1) {
-        throw new Error('Calibration failed, error code ' + result.return_value);
-      }
-      res.jsonp({
-        result: req.body.device.name + ' moved to calibration point'
-      });
+      result.msg = 'Serial number updated for ' + req.body.deviceID;
+      res.jsonp(result);
     })
     .fail(function(error) {
       console.error(error);
       return res.status(400).send({
+        msg: 'Particle reflash failed  for ' + req.body.deviceID,
         message: error.message
       });
     })
     .done();
 };
 
+exports.attach_particle = function(req, res) {
+  particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
+    .spread(function(device, particle_device) {
+      device.particleName = particle_device.name;
+      device.lastHeard = particle_device.lastHeard;
+      device.lastIpAddress = particle_device.lastIpAddress;
+      device.connected = particle_device.connected;
+      device.attached = true;
+      device.save();
+      return device;
+    })
+    .then(function(device) {
+      res.jsonp(device);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Particle unable to attach to device ' + req.body.deviceID,
+        message: error.message
+      });
+    })
+    .done();
+};
+
+exports.detach_particle = function(req, res) {
+  return new Q(Device.findById(req.body.deviceID).exec())
+    .then(function(device) {
+      device.particleName = '';
+      device.lastHeard = '';
+      device.lastIpAddress = '';
+      device.connected = false;
+      device.attached = false;
+      device.save();
+      return device;
+    })
+    .then(function(device) {
+      res.jsonp(device);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Particle unable to attach to device ' + req.body.deviceID,
+        message: error.message
+      });
+    })
+    .done();
+};
+
+exports.pool = function(req, res) {
+  var devicePoolID = req.body.devicePoolID || req.user._devicePool;
+  Device.find({
+    _devicePool: devicePoolID
+  }).sort('-created').populate(devicePopulate).exec(function(err, devices) {
+    if (err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
+    } else {
+      res.jsonp(devices);
+    }
+  });
+};
+
+exports.flash_firmware = function(req, res) {
+  particle.get_particle_device(req.user, req.body.device)
+    .then(function(particle_device) {
+      return particle.reflash(particle_device);
+    })
+    .then(function(result) {
+      result.msg = 'Particle firmware reflashed for ' + req.body.device.name;
+      res.jsonp(result);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Particle reflash failed  for ' + req.body.device.name,
+        message: error.message
+      });
+    })
+    .done();
+};
+
+exports.move_to_and_set_calibration_point = function(req, res) {
+  particle.get_particle_device(req.user, req.body.device)
+    .then(function(particle_device) {
+      return particle.execute_particle_command(particle_device, 'set_calibration_point', req.body.device.calibrationSteps);
+    })
+    .then(function(result) {
+      result.msg = req.body.device.name + ' moved to calibration point';
+      res.jsonp(result);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Calibration failed for ' + req.body.device.name,
+        message: error.message
+      });
+    })
+    .done();
+};
+
+exports.claim = function(req, res) {
+  var releasePromise = new Q();
+  if (req.body.currentDeviceID) {
+    releasePromise = particle.get_particle_device_from_uuid(req.user, req.body.currentDeviceID)
+      .spread(function(device, particle_device) {
+        return [device, particle.execute_particle_command(particle_device, 'release_device', req.user.id)];
+      })
+      .spread(function(device, result) {
+        result.msg = device.name + ' released';
+        device.claimed = false;
+        device.save();
+      });
+  }
+  releasePromise
+    .then(function() {
+      return particle.get_particle_device_from_uuid(req.user, req.body.newDeviceID);
+    })
+    .spread(function(device, particle_device) {
+      return [device, particle_device, particle.execute_particle_command(particle_device, 'claim_device', req.user.id)];
+    })
+    .spread(function(device, particle_device, result) {
+      if (result.return_value < 0) { // assay not found in cache; send to particle
+        throw new Error('Unable to read cartridge. Please check device and retry');
+      } else {
+        return [device, particle_device, particle.get_register_contents(particle_device)];
+      }
+    })
+    .spread(function(device, particle_device, cartridgeID) {
+      return [device, particle_device, Cartridge.findById(cartridgeID).exec()];
+    })
+    .spread(function(device, particle_device, cartridge) {
+      if (!cartridge || !cartridge._id) { // cartridge not found in database
+        throw new Error('Unable to find cartridge record');
+      } else {
+        return [device, particle_device, cartridge, Assay.findById(cartridge._assay).exec()];
+      }
+    })
+    .spread(function(device, particle_device, cartridge, assay) {
+      if (!assay || !assay._id) { // assay not found in database
+        throw new Error('Unable to find assay record');
+      } else {
+        return [device, particle_device, cartridge, assay, particle.execute_particle_command(particle_device, 'check_assay_cache', assay._id)];
+      }
+    })
+    .spread(function(device, particle_device, cartridge, assay, result) {
+      if (result.return_value === 999) { // assay not found in cache
+        return [device, particle_device, cartridge, assay, particle.send_assay_to_particle(particle_device, assay), assay];
+      } else {
+        return [device, particle_device, cartridge, assay, {return_value: 777}];
+      }
+    })
+    .spread(function(device, particle_device, cartridge, assay, result) {
+      result.msg = device.name + ' claimed';
+      device.claimed = true;
+      device.save();
+      return [device, cartridge, assay, result];
+    })
+    .spread(function(device, cartridge, assay, result) {
+      console.log('Device claimed');
+      res.jsonp({
+        device: device,
+        cartridge: cartridge,
+        assay: assay,
+        result: result
+      });
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Error claiming device ' + req.body.newDeviceID,
+        message: error.message
+      });
+    })
+    .done();
+};
+
+function available_devices_promise(user) {
+  return new Q(Device.find({
+      $and: [{
+        _devicePool: user._devicePool
+      }, {
+        connected: true
+      }, {
+        attached: true
+      }, {
+        claimed: {
+          $ne: true
+        }
+      }]
+    }).populate(devicePopulate).exec());
+}
+
+function claimed_devices_promise(user) {
+  return new Q(Device.find({
+      $and: [{
+        _devicePool: user._devicePool
+      }, {
+        connected: true
+      }, {
+        attached: true
+      }, {
+        claimed: true
+      }]
+    }).exec());
+}
+
+function release_one_device_promise(user, deviceID) {
+  return particle.get_particle_device_from_uuid(user, deviceID)
+    .spread(function(device, particle_device) {
+      return [device, particle.execute_particle_command(particle_device, 'release_device', user.id)];
+    })
+    .spread(function(device, result) {
+      return Device.findByIdAndUpdate(device._id, {claimed: !result.return_value}).exec();
+    });
+}
+
+exports.release = function(req, res) {
+  claimed_devices_promise(req.user)
+    .then(function(devices) {
+      return devices.map(function(device) {
+        return release_one_device_promise(req.user, device._id);
+      });
+    })
+    .then(function(promises) {
+      return Q.allSettled(promises);
+    })
+    .then(function() {
+      return available_devices_promise(req.user);
+    })
+    .then(function(devices) {
+      res.jsonp(devices);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Error releasing device ' + req.body.device.name,
+        message: error.message
+      });
+    })
+    .done();
+};
+
+exports.get_test_data = function(req, res) {
+  particle.get_particle_device(req.user, req.body.device)
+    .then(function(particle_device) {
+      return particle_device.execute_particle_request(particle_device, 'test_record', req.body.testID);
+    })
+    .then(function(register) {
+      res.jsonp(register.result);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Error reading test record ' + req.body.testID + ' on device ' + req.body.device.name,
+        message: error.message
+      });
+    })
+    .done();
+};
 exports.load_by_model = function(req, res) {
-  Device.find({_deviceModel: req.body.deviceModelID}).sort('-created').populate([{
-    path: 'user',
-    select: 'displayName'
-  }, {
-    path: '_spark',
-    select: '_id name sparkID connected'
-  }]).exec(function(err, devices) {
+  Device.find({
+    _deviceModel: req.body.deviceModelID
+  }).sort('-created').populate(devicePopulate).exec(function(err, devices) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -59,52 +322,31 @@ exports.load_by_model = function(req, res) {
 };
 
 exports.available = function(req, res) {
-  Q.fcall(function() {
-      return Cartridge.find({
-        $and: [{
-          startedOn: {$exists: true}
-        }, {
-          finishedOn: {$exists: false}
-        }]
-      }).exec();
-    })
-    .then(function(activeCartridges) {
-      var activeDevices = _.pluck(activeCartridges, '_device');
-      return new Q(Device.find({
-        _id: {$nin: activeDevices}
-      }).sort('name').populate([{
-        path: '_deviceModel',
-        select: '_id name'
-      }, {
-        path: '_spark',
-        select: '_id name sparkID connected'
-      }]).exec());
-    })
-    .then(function(availableDevices) {
-      res.jsonp(_.filter(availableDevices, function(e) {return e._spark.connected;}));
-    })
-    .fail(function(err) {
-      console.log('Error searching for active devices', err);
-    })
-    .done();
-};
-
-exports.initialize = function(req, res) {
-  brevitestSpark.get_spark_device_from_device(req.user, req.body.device)
-    .then(function(sparkDevice) {
-      return new Q(sparkDevice.callFunction('runcommand', brevitestCommand.initialize_device));
-    })
-    .then(function(result) {
-      if (result.return_value !== 1) {
-        throw new Error('Initialization failed to start');
-      }
-      res.jsonp({
-        result: 'Initialization successfully started'
-      });
+  available_devices_promise(req.user)
+    .then(function(devices) {
+      res.jsonp(devices);
     })
     .fail(function(error) {
       console.error(error);
       return res.status(400).send({
+        msg: 'Error loading device pool ' + req.user._devicePool,
+        message: error.message
+      });
+    })
+    .done();
+};
+
+exports.unassigned = function(req, res) {
+  return new Q(Device.find({
+      _devicePool: {$exists: false}
+    }).exec())
+    .then(function(devices) {
+      res.jsonp(devices);
+    })
+    .fail(function(error) {
+      console.error(error);
+      return res.status(400).send({
+        msg: 'Error loading unassigned devices',
         message: error.message
       });
     })
@@ -135,13 +377,7 @@ exports.create = function(req, res) {
 exports.read = function(req, res) {
   var device = req.device;
 
-  device.populate([{
-    path: '_deviceModel',
-    select: '_id name'
-  }, {
-    path: '_spark',
-    select: '_id name sparkID connected'
-  }], function(err) {
+  device.populate(devicePopulate, function(err) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -192,13 +428,7 @@ exports.delete = function(req, res) {
  * List of Devices
  */
 exports.list = function(req, res) {
-  Device.find().sort('-created').populate([{
-    path: 'user',
-    select: 'displayName'
-  }, {
-    path: '_spark',
-    select: '_id name sparkID connected'
-  }]).exec(function(err, devices) {
+  Device.find({_devicePool: req.user._devicePool}).sort('-created').populate(devicePopulate).exec(function(err, devices) {
     if (err) {
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
@@ -209,20 +439,12 @@ exports.list = function(req, res) {
   });
 };
 
+
 /**
  * Device middleware
  */
 exports.deviceByID = function(req, res, next, id) {
-  Device.findById(id).populate([{
-    path: 'user',
-    select: 'displayName'
-  }, {
-    path: '_spark',
-    select: '_id name sparkID'
-  }, {
-    path: '_deviceModel',
-    select: '_id name'
-  }]).exec(function(err, device) {
+  Device.findById(id).populate(devicePopulate).exec(function(err, device) {
     if (err) return next(err);
     if (!device) return next(new Error('Failed to load Device ' + id));
     req.device = device;

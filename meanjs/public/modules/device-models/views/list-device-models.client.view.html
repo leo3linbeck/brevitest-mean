@@ -3,7 +3,7 @@
         <h1>Device models</h1>
     </div>
     <div class="list-group">
-        <a data-ng-repeat="deviceModel in deviceModels" data-ng-href="#!/device-models/{{deviceModel._id}}" class="list-group-item">
+        <a data-ng-repeat="deviceModel in deviceModels" data-ng-href="#!/device-models/{{deviceModel._id}}/edit" class="list-group-item">
 			<small class="list-group-item-text">
 				Posted on
 				<span data-ng-bind="deviceModel.created | date:'medium'"></span>

@@ -101,7 +101,7 @@ function get_BCODE_duration(a) {
     duration = calculate_BCODE_time(a);
   }
 
-  return (duration / 1000);
+  return (Math.round(duration / 1000));
 }
 
 module.exports = {

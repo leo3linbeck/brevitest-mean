@@ -10,13 +10,14 @@ var ApplicationConfiguration = (function() {
 		'ngAnimate',
 		'ngTouch',
 		'ngSanitize',
-        'oitozero.ngSweetAlert',
+    'oitozero.ngSweetAlert',
 		'ui.router',
 		'ui.bootstrap',
 		'ui.utils',
 		'ui-notification',
 		'btford.socket-io',
-		'monospaced.qrcode'
+		'monospaced.qrcode',
+		'ngCsv'
 	];
 
 	// Add a new vertical module
@@ -76,6 +77,10 @@ ApplicationConfiguration.registerModule('device-models');
 'use strict';
 
 // Use applicaion configuration module to register a new module
+ApplicationConfiguration.registerModule('device-pools');
+'use strict';
+
+// Use applicaion configuration module to register a new module
 ApplicationConfiguration.registerModule('devices');
 'use strict';
 
@@ -84,19 +89,11 @@ ApplicationConfiguration.registerModule('firmware-tests');
 'use strict';
 
 // Use applicaion configuration module to register a new module
-ApplicationConfiguration.registerModule('healthcare-providers');
-'use strict';
-
-// Use applicaion configuration module to register a new module
 ApplicationConfiguration.registerModule('manufacturers');
 'use strict';
 
 // Use applicaion configuration module to register a new module
-ApplicationConfiguration.registerModule('prescriptions');
-'use strict';
-
-// Use applicaion configuration module to register a new module
-ApplicationConfiguration.registerModule('sparks');
+ApplicationConfiguration.registerModule('organizations');
 'use strict';
 
 // Use applicaion configuration module to register a new module
@@ -174,9 +171,22 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       });
     };
 
+    $scope.loadUnusedCartridges = function() {
+      $http.post('/assays/load_unused_cartridges', {
+        assayID: $scope.assay._id
+      }).
+      success(function(data, status, headers, config) {
+        $scope.cartridges = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
     $scope.make10Cartridges = function() {
       console.log('Making 10 cartridges');
-      $http.post('/assays/make10cartridges', {
+      $http.post('/assays/make_10_cartridges', {
         assay: $scope.assay
       }).
       success(function(data, status, headers, config) {
@@ -676,7 +686,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 
       // Redirect after save
       assay.$save(function(response) {
-        $location.path('assays/' + response._id);
+        $location.path('assays');
 
         // Clear form fields
         $scope.name = '';
@@ -729,7 +739,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
       assay.standardCurve = $scope.standardCurve;
 
       assay.$update(function() {
-        $location.path('assays/' + assay._id);
+        $location.path('assays');
       }, function(errorResponse) {
           //$scope.error = errorResponse.data.message;
           Notification.error(errorResponse.data.message);
@@ -880,7 +890,7 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 			$location.path('/signin');
 		}
 
-		$scope.showResultsOnOpen = true;
+		$scope.showOnOpen = true;
 
 		// Create new Cartridge
 		$scope.create = function() {
@@ -983,14 +993,6 @@ angular.module('cartridges').controller('CartridgeLabelsController', ['$scope', 
 		}
 
 		$scope.showResultsOnOpen = true;
-
-		$scope.getQRCode = function(indx) {
-			var id = $scope.cartridges[indx]._id;
-			var qr = qrcode(2, 'Q');  // jshint ignore:line
-			qr.addData(id);
-			qr.make();
-			console.log('qr', qr);
-		};
 
 		$scope.selectedCartridges = {};
 		$scope.numberOfSelectedCartridges = 0;
@@ -1099,21 +1101,22 @@ angular.module('core').run(['Menus',
 	function(Menus) {
 		// Set top bar menu items
 		Menus.addMenuItem('topbar', 'View', 'view', 'dropdown', '', 'menu.isPublic', ['user']);
-		Menus.addSubMenuItem('topbar', 'view', 'Assays', 'assays', '/assays', 'menu.isPublic', ['admin', 'superuser']);
+		Menus.addSubMenuItem('topbar', 'view', 'Assays', 'assays', '/assays', 'menu.isPublic');
 		Menus.addSubMenuItem('topbar', 'view', 'Devices', 'devices', '/devices');
+		Menus.addSubMenuItem('topbar', 'view', 'Device Pools', 'device-pools', '/device-pools');
 		Menus.addSubMenuItem('topbar', 'view', 'Device Models', 'device-models', '/device-models');
-		Menus.addSubMenuItem('topbar', 'view', 'Prescriptions', 'prescriptions', '/prescriptions');
-		Menus.addSubMenuItem('topbar', 'view', 'Sparks', 'sparks', '/sparks');
+		Menus.addSubMenuItem('topbar', 'view', 'Organizations', 'organizations', '/organizations');
 
 		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '', 'menu.isPublic', ['user']);
-        Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create', '/assays/create', 'menu.isPublic', ['admin', 'superuser']);
+    Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create', '/assays/create', 'menu.isPublic');
 		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create', '/devices/create');
+		Menus.addSubMenuItem('topbar', 'new', 'Device Pool', 'device-pools/create', '/device-pools/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create', '/device-models/create');
-		Menus.addSubMenuItem('topbar', 'new', 'Prescription', 'prescriptions/create', '/prescriptions/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Cartridge Labels', 'cartridges/labels', '/cartridges/labels');
+		Menus.addSubMenuItem('topbar', 'new', 'Organization', 'organizations/create', '/organizations/create');
 
-        Menus.addMenuItem('topbar', 'Manage Users', 'superusers', 'dropdown', '/superusers(/create)?', 'menu.isPublic', ['superuser']);
-        Menus.addSubMenuItem('topbar', 'superusers', 'List Users', 'superusers');
+    Menus.addMenuItem('topbar', 'Manage Users', 'superusers', 'dropdown', '/superusers(/create)?', 'menu.isPublic', ['superuser']);
+    Menus.addSubMenuItem('topbar', 'superusers', 'List Users', 'superusers');
 
 		Menus.addMenuItem('topbar', 'Analyze Firmware ', 'firmware-tests', 'dropdown', '/firmware-tests(/create)?', 'menu.isPublic', ['superuser']);
 		Menus.addSubMenuItem('topbar', 'firmware-tests', 'List Firmware tests', 'firmware-tests');
@@ -1423,7 +1426,7 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
 
       // Redirect after save
       deviceModel.$save(function(response) {
-        $location.path('device-models/' + response._id);
+        $location.path('device-models');
 
         // Clear form fields
         $scope.name = '';
@@ -1459,7 +1462,7 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
       var deviceModel = $scope.deviceModel;
 
       deviceModel.$update(function() {
-        $location.path('device-models/' + deviceModel._id);
+        $location.path('device-models');
       }, function(errorResponse) {
           //$scope.error = errorResponse.data.message;
           Notification.error(errorResponse.data.message);
@@ -1496,6 +1499,167 @@ angular.module('device-models').factory('DeviceModels', ['$resource',
 'use strict';
 
 //Setting up route
+angular.module('device-pools').config(['$stateProvider',
+	function($stateProvider) {
+		// Device pools state routing
+		$stateProvider.
+		state('listDevicePools', {
+			url: '/device-pools',
+			templateUrl: 'modules/device-pools/views/list-device-pools.client.view.html'
+		}).
+		state('createDevicePool', {
+			url: '/device-pools/create',
+			templateUrl: 'modules/device-pools/views/create-device-pool.client.view.html'
+		}).
+		state('selectDevicePool', {
+			url: '/device-pools/select',
+			templateUrl: 'modules/device-pools/views/select-device-pool.client.view.html'
+		}).
+		state('viewDevicePool', {
+			url: '/device-pools/:devicePoolId',
+			templateUrl: 'modules/device-pools/views/view-device-pool.client.view.html'
+		}).
+		state('editDevicePool', {
+			url: '/device-pools/:devicePoolId/edit',
+			templateUrl: 'modules/device-pools/views/edit-device-pool.client.view.html'
+		});
+	}
+]);
+
+'use strict';
+
+var _ = window._;
+
+// Device pools controller
+angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'DevicePools', 'Users', 'Organizations', 'Notification',
+  function($scope, $stateParams, $location, $http, Authentication, DevicePools, Users, Organizations, Notification) {
+    $scope.authentication = Authentication;
+
+		$scope.loadData = function() {
+			$scope.organizations = Organizations.query();
+		};
+
+    $scope.organization = {};
+    $scope.selectOrganization = function(id) {
+      $scope.organization._id = id;
+    };
+
+    $scope.selectDevicePool = function(index) {
+      if ($scope.authentication.user._devicePool !== $scope.devicePools[index]._id) {
+        $scope.authentication.user._devicePool = $scope.devicePools[index]._id;
+        var user = new Users($scope.authentication.user);
+        user.$update(function(response) {
+          $scope.authentication.user = response;
+        }, function(response) {
+          $scope.error = response.data.message;
+        });
+      }
+      $http.post('/devices/pool', {
+        devicePoolID: $scope.devicePools[index]._id
+      }).
+      success(function(data, status, headers, config) {
+        $scope.devices = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    // Create new Device pool
+    $scope.create = function() {
+      // Create new Device pool object
+      var devicePool = new DevicePools({
+        name: this.name,
+        description: this.description,
+        _organization: this.organization._id
+      });
+
+      // Redirect after save
+      devicePool.$save(function(response) {
+        $location.path('device-pools');
+
+        // Clear form fields
+        $scope.name = '';
+        $scope.description = '';
+        $scope._organization = {};
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
+
+    // Remove existing Device pool
+    $scope.remove = function(devicePool) {
+      if (devicePool) {
+        devicePool.$remove();
+
+        for (var i in $scope.devicePools) {
+          if ($scope.devicePools[i] === devicePool) {
+            $scope.devicePools.splice(i, 1);
+          }
+        }
+      } else {
+        $scope.devicePool.$remove(function() {
+          $location.path('device-pools');
+        });
+      }
+    };
+
+    // Update existing Device pool
+    $scope.update = function() {
+      var devicePool = $scope.devicePool;
+      devicePool._organization = $scope.organization ? $scope.organization._id : '';
+
+      devicePool.$update(function() {
+        $location.path('device-pools');
+      }, function(errorResponse) {
+        $scope.error = errorResponse.data.message;
+      });
+    };
+
+    // Find a list of Device pools
+    $scope.find = function() {
+      $scope.devicePools = DevicePools.query();
+    };
+
+    // Find existing Device pool
+    $scope.findOne = function() {
+      $scope.devicePool = DevicePools.get({
+        devicePoolId: $stateParams.devicePoolId
+      }, function() {
+        $scope.organizations = $scope.organizations || Organizations.query();
+				$scope.organization = $scope.devicePool._organization || {};
+        $http.post('/devices/pool', {
+          devicePoolID: $stateParams.devicePoolId
+        }).
+        success(function(data, status, headers, config) {
+          $scope.devices = data;
+        }).
+        error(function(err, status, headers, config) {
+          console.log(err);
+          Notification.error(err.message);
+        });
+      });
+    };
+  }
+]);
+
+'use strict';
+
+//Device pools service used to communicate Device pools REST endpoints
+angular.module('device-pools').factory('DevicePools', ['$resource',
+	function($resource) {
+		return $resource('device-pools/:devicePoolId', { devicePoolId: '@_id'
+		}, {
+			update: {
+				method: 'PUT'
+			}
+		});
+	}
+]);
+'use strict';
+
+//Setting up route
 angular.module('devices').config(['$stateProvider',
 	function($stateProvider) {
 		// Devices state routing
@@ -1521,20 +1685,107 @@ angular.module('devices').config(['$stateProvider',
 'use strict';
 
 // Devices controller
-angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Devices', 'DeviceModels', 'Sparks', 'Notification',
-  function($scope, $http, $stateParams, $location, $window, Authentication, Devices, DeviceModels, Sparks, Notification) {
+angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Devices', 'DeviceModels', 'DevicePools', 'Notification',
+  function($scope, $http, $stateParams, $location, $window, Authentication, Devices, DeviceModels, DevicePools, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       $location.path('/signin');
     }
 
+    $scope.unassigned = false;
+    $scope.loadUnassigned = function() {
+      $scope.unassigned = true;
+      $http.get('/devices/unassigned').
+      success(function(data, status, headers, config) {
+        console.log(data);
+        $scope.devices = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.writeSerialNumber = function() {
+      $http.post('/devices/write_serial_number', {
+        deviceID: $scope.device._id,
+        serialNumber: $scope.device.serialNumber
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success('Serial number updated on device');
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.attachParticle = function() {
+      $http.post('/devices/attach_particle', {
+        deviceID: $scope.device._id
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success('Particle attached');
+        $scope.device = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.detachParticle = function() {
+      $http.post('/devices/detach_particle', {
+        deviceID: $scope.device._id
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success('Particle detached');
+        $scope.device = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
     $scope.loadData = function() {
       $scope.deviceModels = DeviceModels.query();
-      $scope.sparks = Sparks.query();
+      $scope.devicePools = DevicePools.query();
+    };
+
+    $scope.refresh = function() {
+      $scope.unassigned = false;
+      $http.post('/devices/pool').
+      success(function(data, status, headers, config) {
+        console.log(data);
+        $scope.devices = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
     };
 
     $scope.moveToAndSetCalibrationPoint = function() {
       $http.post('/devices/move_to_and_set_calibration_point', {
+        device: $scope.device
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success(data.result);
+        $scope.device.$save();
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.flashFirmware = function() {
+      $http.post('/devices/flash_firmware', {
         device: $scope.device
       }).
       success(function(data, status, headers, config) {
@@ -1557,7 +1808,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
     };
 
     $scope.deviceModel = {};
-    $scope.spark = {};
+    $scope.devicePool = {};
 
     $scope.openedMfg = false;
     $scope.openedReg = false;
@@ -1571,8 +1822,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
       $scope.deviceModel._id = id;
     };
 
-    $scope.selectSpark = function(id) {
-      $scope.spark._id = id;
+    $scope.selectDevicePool = function(id) {
+      $scope.devicePool._id = id;
     };
 
     $scope.openDatepicker = function($event, dateField) {
@@ -1600,22 +1851,24 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         manufacturedOn: this.manufacturedOn,
         registeredOn: this.registeredOn,
         _deviceModel: this.deviceModel._id,
-        _spark: this.spark._id
+        _devicePool: this.devicePool._id,
+        particleID: this.particleID
       });
 
       // Redirect after save
       device.$save(function(response) {
-        $location.path('devices/' + response._id);
+        $location.path('devices');
 
         // Clear form fields
         $scope.name = '';
+        $scope.particleID = '';
         $scope.serialNumber = '';
         $scope.calibrationSteps = '';
         $scope.status = '';
         $scope.manufacturedOn = '';
         $scope.registeredOn = '';
         $scope.deviceModel = {};
-        $scope.spark = {};
+        $scope.devicePool = {};
       }, function(errorResponse) {
         //$scope.error = errorResponse.data.message;
         Notification.error(errorResponse.data.message);
@@ -1645,10 +1898,10 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
     $scope.update = function() {
       var device = $scope.device;
       device._deviceModel = $scope.deviceModel ? $scope.deviceModel._id : '';
-      device._spark = $scope.spark ? $scope.spark._id : '';
+      device._devicePool = $scope.devicePool ? $scope.devicePool._id : '';
 
       device.$update(function() {
-        $location.path('devices/' + device._id);
+        $location.path('devices');
       }, function(errorResponse) {
         //$scope.error = errorResponse.data.message;
         Notification.error(errorResponse.data.message);
@@ -1666,14 +1919,117 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         deviceId: $stateParams.deviceId
       }, function() {
         $scope.deviceModels = $scope.deviceModels || DeviceModels.query();
-        $scope.sparks = $scope.sparks || Sparks.query();
-        $scope.online = $scope.device._spark.connected;
+        $scope.devicePools = $scope.devicePools || DevicePools.query();
         $scope.setOnlineButtonText();
         $scope.deviceModel = $scope.device._deviceModel ? $scope.device._deviceModel : {};
-        $scope.spark = $scope.device._spark ? $scope.device._spark : {};
+        $scope.devicePool = $scope.device._devicePool ? $scope.device._devicePool : {};
       });
     };
   }
+]);
+
+'use strict';
+
+var particleSensorHeader = '<thead><tr><th>Sensor</th><th>Type</th><th>Reading Date<br/>Reading Time</th><th>Red</th><th>Green</th><th>Blue</th></tr></thead><tbody>';
+
+var int_time = {
+	0: '700ms',
+	192: '154ms',
+	213: '101ms',
+	235: '50ms',
+	246: '24ms',
+	255: '2.4ms'
+};
+var gain = {
+	0: '1X',
+	1: '4X',
+	2: '16X',
+	3: '64X'
+};
+
+function string_to_datetime(str) {
+	return new Date(parseInt(str) * 1000);
+}
+
+function string_to_datetime_string(str, delim) {
+	var dt = string_to_datetime(str);
+	return dt.toLocaleDateString() + (delim ? delim :'<br/>') + dt.toLocaleTimeString();
+}
+
+function parse_sensor_reading(str, assayorcontrol, baselineortest) {
+	var data = str.split('\t');
+	var result = '<tr><td>' + assayorcontrol + '<td>' + baselineortest;
+  result += '<td>' + string_to_datetime_string(data[0]);
+	result += '<td>' + parseInt(data[1], 10);
+	result += '<td>' + parseInt(data[2], 10);
+	result += '<td>' + parseInt(data[3], 10) + '</tr>';
+	return result;
+}
+
+function parse_test_header(str) {
+	var data = str.split('\t');
+	var result = '<strong>TEST INFORMATION</strong><br/>';
+	result += 'Test start time: ' + string_to_datetime_string(data[0], ' - ') + '<br/>';
+	result += 'Test finish time: ' + string_to_datetime_string(data[1], ' - ') + '<br/>';
+	result += 'Test ID: ' + data[2] + '<br/>';
+	result += 'Cartridge ID: ' + data[3] + '<br/>';
+	result += 'Assay ID: ' + data[4] + '<br/>';
+	result += '<br/>';
+	return result;
+}
+
+function parse_test_params(str) {
+	var data = str.split('\t');
+	var result = '<strong>DEVICE PARAMETERS</strong><br/>';
+	result += 'reset_steps: ' + data[0] + '<br/>';
+	result += 'step_delay_us: ' + data[1] + '<br/>';
+	result += 'publish_interval_during_move: ' + data[2] + '<br/>';
+	result += 'stepper_wake_delay_ms: ' + data[3] + '<br/>';
+	result += 'solenoid_surge_power: ' + data[4] + '<br/>';
+	result += 'solenoid_sustain_power: ' + data[5] + '<br/>';
+	result += 'solenoid_surge_period_ms: ' + data[6] + '<br/>';
+	result += 'delay_between_sensor_readings_ms: ' + data[7] + '<br/>';
+	result += 'integration_time: ' + int_time[parseInt(data[8], 10)] + '<br/>';
+	result += 'gain: ' + gain[parseInt(data[9], 10)] + '<br/>';
+	result += 'calibration_steps: ' + data[10] + '<br/>';
+	result += '<br/>';
+	return result;
+}
+
+function parse_test_data(test_str) {
+	var attr, i, i2, num_samples;
+	var data = test_str.split('\n');
+	var result = parse_test_header(data[0]);
+
+	result += parse_test_params(data[1]);
+
+	result += '<br/><strong>SENSOR READINGS</strong><br/>';
+	result += '<div class="table-responsive"><table class="table table-striped">' + particleSensorHeader;
+	result += parse_sensor_reading(data[2], 'Baseline', 'Assay');
+	result += parse_sensor_reading(data[3], 'Baseline', 'Control');
+	result += parse_sensor_reading(data[4], 'Test', 'Assay');
+	result += parse_sensor_reading(data[5], 'Test', 'Control');
+
+	result += '</tbody></table></div>';
+
+	return result;
+}
+
+angular.module('devices').filter('rawtestdata', [
+	function() {
+		return function(input) {
+      // rawtestdata directive logic
+      // ...
+      var out;
+
+			if (angular.isString(input)) {
+				input = input || '';
+				out = parse_test_data(input);
+      }
+
+      return out;
+    };
+	}
 ]);
 
 'use strict';
@@ -1797,134 +2153,6 @@ angular.module('firmware-tests').factory('FirmwareTests', ['$resource',
 'use strict';
 
 //Setting up route
-angular.module('healthcare-providers').config(['$stateProvider',
-	function($stateProvider) {
-		// Healthcare providers state routing
-		$stateProvider.
-		state('listHealthcareProviders', {
-			url: '/healthcare-providers',
-			templateUrl: 'modules/healthcare-providers/views/list-healthcare-providers.client.view.html'
-		}).
-		state('createHealthcareProvider', {
-			url: '/healthcare-providers/create',
-			templateUrl: 'modules/healthcare-providers/views/create-healthcare-provider.client.view.html'
-		}).
-		state('viewHealthcareProvider', {
-			url: '/healthcare-providers/:healthcareProviderId',
-			templateUrl: 'modules/healthcare-providers/views/view-healthcare-provider.client.view.html'
-		}).
-		state('editHealthcareProvider', {
-			url: '/healthcare-providers/:healthcareProviderId/edit',
-			templateUrl: 'modules/healthcare-providers/views/edit-healthcare-provider.client.view.html'
-		});
-	}
-]);
-'use strict';
-
-// Healthcare providers controller
-angular.module('healthcare-providers').controller('HealthcareProvidersController', ['$scope', '$stateParams', '$location', '$window', 'Authentication', 'HealthcareProviders',
-  function($scope, $stateParams, $location, $window, Authentication, HealthcareProviders) {
-    $scope.authentication = Authentication;
-    if (!$scope.authentication || $scope.authentication.user === '') {
-      $location.path('/signin');
-    }
-
-    $scope.addresses = [];
-    $scope.addressTypes = ['Main', 'Business', 'Clinic', 'Other'];
-    $scope.addressTypes.forEach(function(a) {
-      $scope.addresses.push({
-        location: a,
-        street1: '',
-        street2: '',
-        city: '',
-        state: '',
-        zipcode: ''
-      });
-    });
-
-    // Create new Healthcare provider
-    $scope.create = function() {
-      // Create new Healthcare provider object
-      var healthcareProvider = new HealthcareProviders({
-        name: this.name,
-        addresses: this.addresses
-      });
-
-      // Redirect after save
-      healthcareProvider.$save(function(response) {
-        $location.path('healthcare-providers/' + response._id);
-
-        // Clear form fields
-        $scope.name = '';
-        $scope.addresses = [];
-      }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
-      });
-    };
-
-    // Remove existing Healthcare provider
-    $scope.remove = function(healthcareProvider) {
-      if ($window.confirm('Are you sure you want to delete this record?')) {
-        if (healthcareProvider) {
-          healthcareProvider.$remove();
-
-          for (var i in $scope.healthcareProviders) {
-            if ($scope.healthcareProviders[i] === healthcareProvider) {
-              $scope.healthcareProviders.splice(i, 1);
-            }
-          }
-        } else {
-          $scope.healthcareProvider.$remove(function() {
-            $location.path('healthcare-providers');
-          });
-        }
-      }
-    };
-
-    // Update existing Healthcare provider
-    $scope.update = function() {
-      var healthcareProvider = $scope.healthcareProvider;
-
-      healthcareProvider.addresses = $scope.addresses;
-      healthcareProvider.$update(function() {
-        $location.path('healthcare-providers/' + healthcareProvider._id);
-      }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
-      });
-    };
-
-    // Find a list of Healthcare providers
-    $scope.find = function() {
-      $scope.healthcareProviders = HealthcareProviders.query();
-    };
-
-    // Find existing Healthcare provider
-    $scope.findOne = function() {
-      $scope.healthcareProvider = HealthcareProviders.get({
-        healthcareProviderId: $stateParams.healthcareProviderId
-      }, function() {
-        $scope.addresses = $scope.healthcareProvider.addresses.length ? $scope.healthcareProvider.addresses : $scope.addresses;
-      });
-    };
-  }
-]);
-
-'use strict';
-
-//Healthcare providers service used to communicate Healthcare providers REST endpoints
-angular.module('healthcare-providers').factory('HealthcareProviders', ['$resource',
-	function($resource) {
-		return $resource('healthcare-providers/:healthcareProviderId', { healthcareProviderId: '@_id'
-		}, {
-			update: {
-				method: 'PUT'
-			}
-		});
-	}
-]);
-'use strict';
-
-//Setting up route
 angular.module('manufacturers').config(['$stateProvider',
 	function($stateProvider) {
 		// Manufacturers state routing
@@ -1980,7 +2208,7 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
 
       // Redirect after save
       manufacturer.$save(function(response) {
-        $location.path('manufacturers/' + response._id);
+        $location.path('manufacturers');
 
         // Clear form fields
         $scope.name = '';
@@ -2015,7 +2243,7 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
 
       manufacturer.addresses = $scope.addresses;
       manufacturer.$update(function() {
-        $location.path('manufacturers/' + manufacturer._id);
+        $location.path('manufacturers');
       }, function(errorResponse) {
         $scope.error = errorResponse.data.message;
       });
@@ -2053,554 +2281,101 @@ angular.module('manufacturers').factory('Manufacturers', ['$resource',
 'use strict';
 
 //Setting up route
-angular.module('prescriptions').config(['$stateProvider',
+angular.module('organizations').config(['$stateProvider',
 	function($stateProvider) {
-		// Prescriptions state routing
+		// Organizations state routing
 		$stateProvider.
-		state('listPrescriptions', {
-			url: '/prescriptions',
-			templateUrl: 'modules/prescriptions/views/list-prescriptions.client.view.html'
+		state('listOrganizations', {
+			url: '/organizations',
+			templateUrl: 'modules/organizations/views/list-organizations.client.view.html'
 		}).
-		state('createPrescription', {
-			url: '/prescriptions/create',
-			templateUrl: 'modules/prescriptions/views/create-prescription.client.view.html'
+		state('createOrganization', {
+			url: '/organizations/create',
+			templateUrl: 'modules/organizations/views/create-organization.client.view.html'
 		}).
-		state('viewPrescription', {
-			url: '/prescriptions/:prescriptionId',
-			templateUrl: 'modules/prescriptions/views/view-prescription.client.view.html'
+		state('viewOrganization', {
+			url: '/organizations/:organizationId',
+			templateUrl: 'modules/organizations/views/view-organization.client.view.html'
 		}).
-		state('editPrescription', {
-			url: '/prescriptions/:prescriptionId/edit',
-			templateUrl: 'modules/prescriptions/views/edit-prescription.client.view.html'
+		state('editOrganization', {
+			url: '/organizations/:organizationId/edit',
+			templateUrl: 'modules/organizations/views/edit-organization.client.view.html'
 		});
 	}
 ]);
-
 'use strict';
 
-var _ = window._;
+// Organizations controller
+angular.module('organizations').controller('OrganizationsController', ['$scope', '$stateParams', '$location', 'Authentication', 'Organizations',
+	function($scope, $stateParams, $location, Authentication, Organizations) {
+		$scope.authentication = Authentication;
 
-// Prescriptions controller
-angular.module('prescriptions').controller('PrescriptionsController', ['$scope', '$stateParams', '$location', '$window', 'Authentication', 'Prescriptions', 'Assays', 'Notification',
-  function($scope, $stateParams, $location, $window, Authentication, Prescriptions, Assays, Notification) {
-    $scope.authentication = Authentication;
-    if (!$scope.authentication || $scope.authentication.user === '') {
-      $location.path('/signin');
-    }
+		// Create new Organization
+		$scope.create = function() {
+			// Create new Organization object
+			var organization = new Organizations ({
+				name: this.name
+			});
 
-    $scope.openedPres = false;
-    $scope.openedDOB = false;
+			// Redirect after save
+			organization.$save(function(response) {
+				$location.path('organizations');
 
-    $scope.prescriptionAssays = [];
-    $scope.assays = Assays.query();
-    $scope.prescribedOn = new Date();
+				// Clear form fields
+				$scope.name = '';
+			}, function(errorResponse) {
+				$scope.error = errorResponse.data.message;
+			});
+		};
 
-    $scope.openDatepicker = function($event, dateField) {
-      $event.preventDefault();
-      $event.stopPropagation();
+		// Remove existing Organization
+		$scope.remove = function(organization) {
+			if ( organization ) {
+				organization.$remove();
 
-      switch (dateField) {
-        case 'pres':
-          $scope.openedPres = !$scope.openedPres;
-          break;
-        case 'dob':
-          $scope.openedDOB = !$scope.openedDOB;
-          break;
-      }
-    };
-
-    function assaySort(a, b) {
-      if (a.name > b.name) {
-        return 1;
-      }
-      if (a.name < b.name) {
-        return -1;
-      }
-      return 0;
-    }
-
-    $scope.prescribeAssay = function(id) {
-      var indx = _.findIndex($scope.prescriptionAssays, function(e) {
-        return (e._id === id);
-      });
-      if (indx === -1) {
-        indx = _.findIndex($scope.assays, function(e) {
-          return (e._id === id);
-        });
-        $scope.prescriptionAssays.push($scope.assays[indx]);
-        $scope.assays.splice(indx, 1);
-        $scope.prescriptionAssays.sort(assaySort);
-        $scope.assays.sort(assaySort);
-      }
-    };
-
-    $scope.removePrescribedAssay = function(id) {
-      var indx = _.findIndex($scope.prescriptionAssays, function(e) {
-        return (e._id === id);
-      });
-      $scope.assays.push($scope.prescriptionAssays[indx]);
-      $scope.prescriptionAssays.splice(indx, 1);
-      $scope.prescriptionAssays.sort(assaySort);
-      $scope.assays.sort(assaySort);
-    };
-
-    // Create new Prescription
-    $scope.create = function() {
-      // Create new Prescription object
-      var prescription = new Prescriptions({ // prescriptions is new resource object
-        name: this.name,
-        prescribedOn: this.prescribedOn,
-        comments: this.comments,
-        patientNumber: this.patientNumber,
-        patientGender: this.patientGender,
-        patientDateOfBirth: this.patientDateOfBirth,
-        _assays: _.pluck(this.prescriptionAssays, '_id')
-      });
-
-      // Redirect after save
-      prescription.$save(function(response) {
-        $location.path('/prescriptions');
-          /*global swal */
-          swal({title:'Success!', text: 'Prescription ' + response.name +  ' has been created', type: 'success', confirmButtonColor: '#5cb85c'});
-      }, function(errorResponse) {
-        Notification.error(errorResponse.data.message);
-      });
-    };
-
-    // Remove existing Prescription
-    //$scope.remove = function(prescription) {
-    //    console.log(prescription);
-    //    console.log($scope.prescription);
-    //  if ($window.confirm('Are you sure you want to delete this record?')) {
-    //    if (prescription) {
-    //      prescription.$remove();
-    //      for (var i in $scope.prescriptions) {
-    //        if ($scope.prescriptions[i] === prescription) {
-    //          $scope.prescriptions.splice(i, 1);
-    //        }
-    //      }
-    //    } else {
-    //      $scope.prescription.$remove(function() {
-    //        $location.path('prescriptions');
-    //      });
-    //    }
-    //  }
-    //};
-
-      $scope.apiCall = function (callFunc, callParams, useSwal, swalParams) {
-          useSwal = typeof useSwal !== 'undefined' ? useSwal : true; // if useAlerts is NOT undefined set it equal to the value passed, otherwise false
-          if (useSwal) {
-              /*global swal */
-              swal({title: swalParams.title, text: swalParams.text, type: swalParams.type, showCancelButton: swalParams.showCancelButton, confirmButtonColor: swalParams.confirmButtonColor, confirmButtonText: swalParams.confirmButtonText, cancelButtonText: swalParams.cancelButtonText, closeOnConfirm: swalParams.closeOnConfirm, closeOnCancel: swalParams.closeOnCancel}, function (confirmed) {
-                  if (!confirmed)
-                      return;
-
-                  callFunc(callParams);
-              });
-          } else
-              callFunc(callParams);
-      };
-
-      $scope.remove = function(prescription) {
-          if (prescription) {
-              prescription.$remove();
-              for (var i in $scope.prescriptions) {
-                  if ($scope.prescriptions[i] === prescription) {
-                      $scope.prescriptions.splice(i, 1);
-                  }
-              }
-          } else {
-              $scope.prescription.$remove(function(response) {
-                  $location.path('prescriptions');
-                  if (response.error) {
-                      swal({title:'Oops!', text: 'You don\'t have permission to delete this prescription', type: 'error', timer:0});
-                      Notification.error(response.error);
-                  }
-                  else {
-                      swal({title: 'Success!', text: 'Prescription has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
-                  }
-              });
-          }
-      };
-
-      //$scope.remove = function(prescription) {
-      //    /*global swal */
-      //    swal({
-      //        title: 'Are you sure?',
-      //        text: 'Your will not be able to recover this prescription!',
-      //        type: 'error',
-      //        showCancelButton: true,
-      //        confirmButtonColor: '#d9534f',
-      //        confirmButtonText: 'Yes, delete it!',
-      //        cancelButtonText: 'No, cancel it!',
-      //        closeOnConfirm: false,
-      //        closeOnCancel: true,
-      //        allowOutsideClick: true
-      //    }, function (confirmed) {
-      //        if (confirmed) {
-      //            if (prescription) {
-      //                prescription.$remove();
-      //                for (var i in $scope.prescriptions) {
-      //                    if ($scope.prescriptions[i] === prescription) {
-      //                        $scope.prescriptions.splice(i, 1);
-      //                    }
-      //                }
-      //            } else {
-      //                $scope.prescription.$remove(function(response) {
-      //                    $location.path('prescriptions');
-      //                    if (response.error) {
-      //                        swal({title:'Oops!', text: 'You don\'t have permission to delete this prescription', type: 'error', timer:0});
-      //                        Notification.error(response.error);
-      //                    }
-      //                    else {
-      //                        swal({title: 'Success!', text: 'Prescription has been deleted!', type: 'success', confirmButtonColor: '#5cb85c'});
-      //                    }
-      //                });
-      //            }
-      //        }
-      //    });
-      //};
-
-    // Update existing Prescription
-    $scope.update = function() {
-      var prescription = $scope.prescription;
-      prescription._assays = _.pluck($scope.prescriptionAssays, '_id');
-      console.log(prescription);
-      prescription.$update(function() {
-        $location.path('/prescriptions/' + prescription._id);
-        console.log(prescription);
-      }, function(errorResponse) {
-        //$scope.error = errorResponse.data.message;
-        Notification.error(errorResponse.data.message);
-      });
-    };
-
-    // Find a list of Prescriptions
-    $scope.find = function() {
-      $scope.prescriptions = Prescriptions.query();
-    };
-
-    // Find existing Prescription
-    $scope.findOne = function() {
-      $scope.prescription = Prescriptions.get({
-        prescriptionId: $stateParams.prescriptionId
-      }, function() {
-        if ($scope.prescription._assays && $scope.prescription._assays.length) {
-          $scope.prescription._assays.forEach(function(e) {
-            $scope.prescribeAssay(e._id);
-          });
-        }
-      });
-    };
-  }
-]);
-
-'use strict';
-
-//Prescriptions service used to communicate Prescriptions REST endpoints
-angular.module('prescriptions').factory('Prescriptions', ['$resource',
-	function($resource) {
-		return $resource('prescriptions/:prescriptionId', { prescriptionId: '@_id'
-		}, {
-			update: {
-				method: 'PUT'
+				for (var i in $scope.organizations) {
+					if ($scope.organizations [i] === organization) {
+						$scope.organizations.splice(i, 1);
+					}
+				}
+			} else {
+				$scope.organization.$remove(function() {
+					$location.path('organizations');
+				});
 			}
-		});
+		};
+
+		// Update existing Organization
+		$scope.update = function() {
+			var organization = $scope.organization;
+
+			organization.$update(function() {
+				$location.path('organizations');
+			}, function(errorResponse) {
+				$scope.error = errorResponse.data.message;
+			});
+		};
+
+		// Find a list of Organizations
+		$scope.find = function() {
+			$scope.organizations = Organizations.query();
+		};
+
+		// Find existing Organization
+		$scope.findOne = function() {
+			$scope.organization = Organizations.get({
+				organizationId: $stateParams.organizationId
+			});
+		};
 	}
 ]);
 
 'use strict';
 
-//Setting up route
-angular.module('sparks').config(['$stateProvider',
-	function($stateProvider) {
-		// Sparks state routing
-		$stateProvider.
-		state('listSparks', {
-			url: '/sparks',
-			templateUrl: 'modules/sparks/views/list-sparks.client.view.html'
-		}).
-		state('createSpark', {
-			url: '/sparks/create',
-			templateUrl: 'modules/sparks/views/create-spark.client.view.html'
-		}).
-		state('viewSpark', {
-			url: '/sparks/:sparkId',
-			templateUrl: 'modules/sparks/views/view-spark.client.view.html'
-		}).
-		state('editSpark', {
-			url: '/sparks/:sparkId/edit',
-			templateUrl: 'modules/sparks/views/edit-spark.client.view.html'
-		});
-	}
-]);
-
-'use strict';
-
-// Sparks controller
-angular.module('sparks').controller('SparksController', ['$scope', '$http', '$stateParams', '$location', '$timeout', '$window', 'Authentication', 'Sparks', 'Notification',
-  function($scope, $http, $stateParams, $location, $timeout, $window, Authentication, Sparks, Notification) {
-    $scope.authentication = Authentication;
-    if (!$scope.authentication || $scope.authentication.user === '') {
-      $location.path('/signin');
-    }
-
-    $scope.eraseArchivedData = function() {
-      $http.post('/sparks/erase_archived_data', {
-        spark: $scope.spark
-      }).
-      success(function(data, status, headers, config) {
-        console.log(data);
-        if (data.return_value === 1) {
-          Notification.success('Archive erased');
-        }
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        $scope.deviceInitialized = false;
-        Notification.error(err.message);
-      });
-    };
-
-    $scope.getNumberOfRecords = function() {
-      $http.post('/sparks/archive_size', {
-        spark: $scope.spark
-      }).
-      success(function(data, status, headers, config) {
-        console.log(data);
-        if (data.return_value !== -1) {
-          Notification.success('Archive contains ' + data.return_value + ' records');
-        }
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        $scope.deviceInitialized = false;
-        Notification.error(err.message);
-      });
-    };
-
-    $scope.getFirstRecord = function() {
-      $http.post('/sparks/record_by_index', {
-        spark: $scope.spark,
-        index: 0
-      }).
-      success(function(data, status, headers, config) {
-        console.log(data);
-        $scope.rawData = JSON.parse(data);
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        $scope.deviceInitialized = false;
-        Notification.error(err.message);
-      });
-    };
-
-    $scope.reflash = function() {
-      $http.post('/sparks/reflash', {
-        spark: $scope.spark
-      }).
-      success(function(data, status, headers, config) {
-        Notification.success('Firmware flashed successfully');
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        Notification.error(err.message);
-      });
-    };
-
-    // Create new Spark
-    $scope.create = function() { // Create new Spark object
-      var spark = new Sparks({
-        name: this.name,
-        sparkID: this.sparkID
-      });
-
-      // Redirect after save
-      spark.$save(
-        function(response) {
-          $location.path('sparks/' + response._id);
-
-          // Clear form fields
-          $scope.name = '';
-          $scope.sparkID = '';
-        },
-        function(errorResponse) {
-          $scope.error = errorResponse.data.message;
-        });
-    };
-
-    // Remove existing Spark
-    $scope.remove = function(spark) {
-      if ($window.confirm('Are you sure you want to delete this record?')) {
-        if (spark) {
-          spark.$remove();
-
-          for (var i in $scope.sparks) {
-            if ($scope.sparks[i] === spark) {
-              $scope.sparks.splice(i, 1);
-            }
-          }
-        } else {
-          $scope.spark.$remove(function() {
-            $location.path('sparks');
-          });
-        }
-      }
-    };
-
-    // Update existing Spark
-    $scope.update = function() {
-      var spark = $scope.spark;
-
-      spark.$update(
-        function() {
-          $location.path('sparks/' + spark._id);
-        },
-        function(errorResponse) {
-          $scope.error = errorResponse.data.message;
-        });
-    };
-
-    // Refresh a list of Sparks
-    $scope.refresh = function() {
-      console.log('Refreshing device list');
-      $http.get('/sparks/refresh').
-      success(function(data, status, headers, config) {
-        $scope.sparks = data;
-        Notification.success('Spark list refreshed');
-        // addAlert($scope.alerts, 'success', 'Spark list refreshed');
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err, status, headers(), config);
-        Notification.error(err.message);
-      });
-    };
-
-    // Find a list of Sparks
-    $scope.find = function() {
-      $scope.sparks = Sparks.query();
-    };
-
-    // Find existing Spark
-    $scope.findOne = function() {
-      $scope.spark = Sparks.get({
-        sparkId: $stateParams.sparkId
-      });
-    };
-  }
-]);
-
-'use strict';
-
-var sparkSensorHeader = '<thead><tr><th>Sensor</th><th>Type</th><th>Reading Date<br/>Reading Time</th><th>Red</th><th>Green</th><th>Blue</th></tr></thead><tbody>';
-
-var int_time = {
-	0: '700ms',
-	192: '154ms',
-	213: '101ms',
-	235: '50ms',
-	246: '24ms',
-	255: '2.4ms'
-};
-var gain = {
-	0: '1X',
-	1: '4X',
-	2: '16X',
-	3: '64X'
-};
-
-function string_to_datetime(str) {
-	return new Date(parseInt(str) * 1000);
-}
-
-function string_to_datetime_string(str, delim) {
-	var dt = string_to_datetime(str);
-	return dt.toLocaleDateString() + (delim ? delim :'<br/>') + dt.toLocaleTimeString();
-}
-
-function parse_sensor_reading(str) {
-	var data = str.split('\t');
-	var result = '<tr><td>' + (data[0] === 'A' ? 'Assay' : 'Control');
-	result += '<td>' + (parseInt(data[1], 10) ? 'Result' : 'Baseline');
-  result += '<td>' + string_to_datetime_string(data[2]);
-	result += '<td>' + parseInt(data[3], 10);
-	result += '<td>' + parseInt(data[4], 10);
-	result += '<td>' + parseInt(data[5], 10) + '</tr>';
-	return result;
-}
-
-function parse_test_header(str) {
-	var data = str.split('\t');
-	var result = '<strong>TEST INFORMATION</strong><br/>';
-	result += 'Record number: ' + data[0] + '<br/>';
-	result += 'Test start time: ' + string_to_datetime_string(data[1], ' - ') + '<br/>';
-	result += 'Test finish time: ' + string_to_datetime_string(data[2], ' - ') + '<br/>';
-	result += 'Cartridge ID: ' + data[3] + '<br/>';
-	result += 'BCODE version: ' + data[4] + '<br/>';
-	result += 'BCODE length: ' + data[5] + '<br/>';
-	result += 'Integration time: ' + int_time[parseInt(data[6], 10)] + '<br/>';
-	result += 'Gain: ' + gain[parseInt(data[7], 10)] + '<br/>';
-	result += '<br/>';
-	return result;
-}
-
-function parse_test_params(str) {
-	var data = str.split('\t');
-	var result = '<strong>DEVICE PARAMETERS</strong><br/>';
-	result += 'step_delay_us: ' + data[0] + '<br/>';
-	result += 'stepper_wifi_ping_rate: ' + data[1] + '<br/>';
-	result += 'stepper_wake_delay_ms: ' + data[2] + '<br/>';
-	result += 'solenoid_surge_power: ' + data[3] + '<br/>';
-	result += 'solenoid_surge_period_ms: ' + data[4] + '<br/>';
-	result += 'solenoid_sustain_power: ' + data[5] + '<br/>';
-	result += 'sensor_params: ' + parseInt(data[6], 16).toString() + '<br/>';
-	result += 'sensor_ms_between_samples: ' + data[7] + '<br/>';
-	result += 'sensor_led_power: ' + data[8] + '<br/>';
-	result += 'sensor_led_warmup_ms: ' + data[9] + '<br/>';
-	result += '<br/>';
-	return result;
-}
-
-function parse_test_data(test_str) {
-	var attr, i, i2, num_samples;
-	var data = test_str.split('\n');
-	var result = parse_test_header(data[0]);
-
-	result += parse_test_params(data[1]);
-
-	result += '<br/><strong>SENSOR READINGS</strong><br/>';
-	result += '<div class="table-responsive"><table class="table table-striped">' + sparkSensorHeader;
-	for (i = 2; i < 6; i += 1) {
-		result += parse_sensor_reading(data[i]);
-	}
-	result += '</tbody></table></div>';
-
-	return result;
-}
-
-angular.module('sparks').filter('rawtestdata', [
-	function() {
-		return function(input) {
-      // rawtestdata directive logic
-      // ...
-      var out;
-
-			if (angular.isString(input)) {
-				input = input || '';
-				out = parse_test_data(input);
-      }
-
-      return out;
-    };
-	}
-]);
-
-'use strict';
-
-//Sparks service used to communicate Sparks REST endpoints
-angular.module('sparks').factory('Sparks', ['$resource',
+//Organizations service used to communicate Organizations REST endpoints
+angular.module('organizations').factory('Organizations', ['$resource',
 	function($resource) {
-		return $resource('sparks/:sparkId', { sparkId: '@_id'
+		return $resource('organizations/:organizationId', { organizationId: '@_id'
 		}, {
 			update: {
 				method: 'PUT'
@@ -2772,6 +2547,10 @@ angular.module('tests').config(['$stateProvider',
 			css: 'modules/tests/css/review-test.client.css',
 			templateUrl: 'modules/tests/views/review-test.client.view.html'
 		}).
+		state('exportTests', {
+			url: '/tests/export',
+			templateUrl: 'modules/tests/views/export-test.client.view.html'
+		}).
 		state('viewTest', {
 			url: '/tests/:testId',
 			templateUrl: 'modules/tests/views/view-test.client.view.html'
@@ -2780,6 +2559,142 @@ angular.module('tests').config(['$stateProvider',
 			url: '/tests/:testId/edit',
 			templateUrl: 'modules/tests/views/edit-test.client.view.html'
 		});
+	}
+]);
+
+'use strict';
+
+var _ = window._;
+
+// Tests controller
+angular.module('tests').controller('ExportTestController', ['$scope', '$http', '$timeout', '$location', 'Authentication', 'Tests', 'Notification', 'CSV',
+	function($scope, $http, $timeout, $location, Authentication, Tests, Notification, CSV) {
+		$scope.authentication = Authentication;
+		if (!$scope.authentication || $scope.authentication.user === '') {
+			$location.path('/signin');
+		}
+
+		function updateTest(test) {
+      $http.post('/tests/update_one_test', {
+        testID: test._id,
+        cartridgeID: test._cartridge._id,
+        deviceID: test._device._id,
+				analysis: test._assay.analysis,
+				status: test.status,
+        percentComplete: test.percentComplete
+      }).
+      success(function(data, status, headers, config) {
+				Notification.success('Test complete');
+      }).
+      error(function(err, status, headers, config) {
+        Notification.error(err.message);
+      });
+    }
+
+		$scope.clickTest = function(indx) {
+			var id = $scope.tests[indx]._id;
+			var pos = $scope.selection.indexOf(id);
+			if (pos === -1) {
+				$scope.selection.push(id);
+			}
+			else {
+				$scope.selection.splice(pos, 1);
+			}
+		};
+
+		$scope.selectAll = function() {
+			$scope.selection = _.pluck($scope.tests, '_id');
+		};
+
+		$scope.deselectAll = function() {
+			$scope.selection.length = 0;
+		};
+
+		var exportMap = {
+			'Test ID': '_id',
+			'Assay Name': ['_assay', 'name'],
+			'Assay ID': ['_assay', '_id'],
+			'Cartridge ID': ['_cartridge', '_id'],
+			'Device Name': ['_device', 'name'],
+			'Device ID': ['_device', '_id'],
+			'Particle ID': ['_device', 'particleID'],
+			'Reference': 'reference',
+			'Subject': 'subject',
+			'Description': 'description',
+			'Started On': ['_cartridge', 'startedOn'],
+			'Finished On': ['_cartridge', 'finishedOn'],
+			'Value': ['_cartridge', 'value'],
+			'Reading': 'reading',
+			'Result': 'result',
+			'Red Max': ['analysis', 'redMax'],
+			'Green Max': ['analysis', 'greenMax'],
+			'Green Min': ['analysis', 'greenMin'],
+			'Red Min': ['analysis', 'redMin'],
+			'Standard Curve': 'standardCurve'
+		};
+		var exportKeys = Object.keys(exportMap);
+
+		function mapFunction(e) {
+			var obj = {};
+			exportKeys.forEach(function(key) {
+				var val = exportMap[key];
+				var temp;
+				if (angular.isArray(val)) {
+					temp = e[val[0]][val[1]];
+				}
+				else {
+					temp = e[val];
+				}
+				if (angular.isObject(temp)) {
+					obj[key] = JSON.stringify(temp);
+				}
+				else {
+					obj[key] = temp.toString();
+				}
+			});
+			return obj;
+		}
+
+		$scope.getTestData = function() {
+			var a = _.filter($scope.tests, function(e) { return ($scope.selection.indexOf(e._id) !== -1 && e.loaded); });
+			console.log(a);
+			var b = _.map(a, mapFunction);
+			console.log(b);
+			return b;
+		};
+
+		$scope.getTestHeaders = function() {
+			return exportKeys;
+		};
+
+		$scope.setup = function() {
+			$scope.selection = [];
+			$http.get('/tests/exportable').
+				success(function(data, status, headers, config) {
+					$scope.tests = data;
+			  }).
+			  error(function(err, status, headers, config) {
+					Notification.error(err.message);
+			  });
+		};
+
+		$scope.cancelTest = function(index) {
+			var test = $scope.tests[index];
+
+			$http.post('/tests/cancel', {
+				testID: test._id,
+				cartridgeID: test._cartridge._id,
+				deviceID: test._device._id,
+				deviceName: test._device.name
+			}).
+				success(function(data, status, headers, config) {
+					test.status = 'Cancelled';
+					Notification.success('Test cancelled');
+				}).
+				error(function(err, status, headers, config) {
+					Notification.error(err.message);
+				});
+		};
 	}
 ]);
 
@@ -2816,21 +2731,21 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			$http.get('/tests/recently_started').
 				success(function(data, status, headers, config) {
 					$scope.tests = data;
-			  }).
+					Socket.on('test.update', function(message) {
+						var data = message.split('\n');
+						_.find($scope.tests, function(e) {
+							if (e._id === data[1]) {
+								e.percentComplete = parseInt(data[2]);
+								e.status = data[0].length ? data[0] : e.status;
+								return true;
+							}
+							return false;
+						});
+					});
+		  }).
 			  error(function(err, status, headers, config) {
 					Notification.error(err.message);
 			  });
-
-
-			Socket.on('test.update', function(message) {
-				var data = message.split('\n');
-				$scope.tests.forEach(function(e, i) {
-					if (e._cartridge._id === data[1]) {
-						e.percentComplete = parseInt(data[2]);
-						e.status = data[0].length ? data[0] : e.status;
-					}
-				});
-			});
 		};
 
 		$scope.cancelTest = function(index) {
@@ -2839,7 +2754,8 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 			$http.post('/tests/cancel', {
 				testID: test._id,
 				cartridgeID: test._cartridge._id,
-				deviceID: test._device._id
+				deviceID: test._device._id,
+				deviceName: test._device.name
 			}).
 				success(function(data, status, headers, config) {
 					test.status = 'Cancelled';
@@ -2859,8 +2775,8 @@ var c3 = window.c3;
 var d3 = window.d3;
 
 // Tests controller
-angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Sparks', 'Notification',
-  function($scope, $http, $location, Authentication, Tests, Sparks, Notification) {
+angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '$location', 'Authentication', 'Tests', 'Notification',
+  function($scope, $http, $location, Authentication, Tests, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
 			$location.path('/signin');
@@ -2868,14 +2784,14 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 
     $scope.loadGraph = function(index) {
       var test = $scope.tests[index];
-      var a = test._assay.analysis;
-      var std = test._assay.standardCurve;
+      var a = test.analysis;
+      var std = test.standardCurve;
       var cuts = [a.redMin, a.greenMin, a.greenMax, a.redMax];
 
       var xs = _.pluck(std, 'x');
       var ys = _.pluck(std, 'y');
       var standardScale = d3.scale.linear().domain(xs).range(ys);
-      var resultY = standardScale(test._cartridge.result);
+      var resultY = standardScale(test._cartridge.value);
 
       xs.splice(0, 0, 'Standard Curve X');
       ys.splice(0, 0, 'Standard Curve');
@@ -2894,7 +2810,7 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
               'This Test': 'This Test X'
             },
             columns: [
-              xs, ['This Test X', test._cartridge.result],
+              xs, ['This Test X', test._cartridge.value],
               ys, ['This Test', resultY]
             ],
             type: 'spline',
@@ -2962,54 +2878,6 @@ angular.module('tests').controller('ReviewTestController', ['$scope', '$http', '
 						Notification.error(err.message);
 				  });
 		};
-
-    $scope.updateTest = function(index) {
-      var test = $scope.tests[index];
-      var body = {
-        testID: test._id,
-        cartridgeID: test._cartridge._id,
-        deviceID: test._device._id,
-        analysis: test._assay.analysis,
-        standardCurve: test._assay.standardCurve,
-        percentComplete: test.percentComplete,
-        state: test.status
-      };
-      $http.post('/tests/update_one_test', body).
-      success(function(data, status, headers, config) {
-        test.reading = data.reading;
-        test.result = data.result;
-        test.startedOn = Date(data.startedOn);
-        test.finishedOn = Date(data.finishedOn);
-        test.percentComplete = data.percentComplete;
-
-        test._cartridge.rawData = data.rawData;
-        test._cartridge.result = data.value;
-        test._cartridge.startedOn = Date(data.startedOn);
-        test._cartridge.finishedOn = Date(data.finishedOn);
-        test._cartridge.failed = data.failed;
-      }).
-      error(function(err, status, headers, config) {
-        Notification.error(err.message);
-      });
-      Notification.success('Test record updating');
-    };
-
-    $scope.loadRawData = function(cartridgeID) {
-      $http.post('/sparks/record_by_cartridge_id', {
-        cartridgeID: cartridgeID
-      }).
-      success(function(data, status, headers, config) {
-        $scope.tests.forEach(function(e) {
-          if (e._cartridge._id === cartridgeID) {
-            e._cartridge.rawData = JSON.parse(data);
-          }
-        });
-      }).
-      error(function(err, status, headers, config) {
-        Notification.error(err.message);
-      });
-      Notification.info('Loading data from device');
-    };
   }
 ]);
 
@@ -3019,33 +2887,35 @@ var _ = window._;
 var $ = window.$;
 
 // Tests controller
-angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', '$modal', '$window','Authentication', 'Tests', 'Prescriptions', 'Devices', 'Cartridges', 'Sparks', 'Notification',
-  function($scope, $http, $location, $modal, $window, Authentication, Tests, Prescriptions, Devices, Cartridges, Sparks, Notification) {
+angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', '$modal', '$window','Authentication', 'Tests', 'Notification', 'Socket',
+  function($scope, $http, $location, $modal, $window, Authentication, Tests, Notification, Socket) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       $location.path('/signin');
     }
 
-    function loadAssays(prescription) {
-      var tests = _.pluck(prescription._tests, '_assay');
-      $scope.pendingAssays = [];
-      $scope.completedAssays = [];
-      prescription._assays.forEach(function(a) {
-        var indx = tests.indexOf(a._id);
-        if (indx === -1) {
-          $scope.pendingAssays.push(a);
-        } else {
-          $scope.completedAssays.push(a);
+    Socket.on('test.update', function(message) {
+      var data = message.split('\n');
+        if (data[0] === 'Test complete' || data[2] === '-1') {
+          $scope.loadDevices();
         }
       });
-    }
 
-    $scope.refresh = function() {
+    $scope.setupRun = function() {
+      $scope.loadDevices();
+      $scope.reference = '';
+      $scope.subject = '';
+      $scope.description = '';
+      $scope.cartridge = {};
+      $scope.assay = {};
+    };
+
+    $scope.refreshDevices = function() {
       console.log('Refreshing device list');
-      $http.get('/sparks/refresh').
+      $http.post('/devices/release').
       success(function(data, status, headers, config) {
-        Notification.success('Spark list refreshed');
-        $scope.setupRun();
+        $scope.devices = data;
+        $scope.activeDevice = -1;
       }).
       error(function(err, status, headers, config) {
         console.log(err, status, headers(), config);
@@ -3053,177 +2923,82 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
       });
     };
 
-    $scope.setupRun = function() {
-      $scope.testUnderway = false;
-      $scope.activePrescription = -1;
-      $scope.activeAssay = -1;
-      $scope.deviceInitialized = true;
-      $scope.activeDevice = -1;
-      $scope.activeCartridge = -1;
-      $scope.selectedCartridge = '';
-      $scope.showCartridges = false;
-      $http.get('/prescriptions/unfilled').
-        success(function(data, status, headers, config) {
-          $scope.prescriptions = data;
-        }).
-        error(function(err, status, headers, config) {
-          console.log(err);
-          Notification.error(err.message);
-        });
+    $scope.rescanCartridge = function() {
+      Notification.info('Rescanning cartridge, please wait...');
+      $http.post('/devices/rescan_cartridge', {
+        deviceID: $scope.devices[$scope.activeDevice]._id
+      }).
+      success(function(data, status, headers, config) {
+        $scope.cartridge = data.cartridge;
+        $scope.assay = data.assay;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.loadDevices = function() {
       $http.get('/devices/available').
         success(function(data, status, headers, config) {
           $scope.devices = data;
-        }).
+          $scope.activeDevice = -1;
+      }).
         error(function(err, status, headers, config) {
           console.log(err);
           Notification.error(err.message);
         });
     };
 
-    var currentPrescription = -1;
-    $scope.clickPrescription = function(indx) {
-      if (currentPrescription !== indx) {
-        $scope.activeAssay = -1;
-        $scope.activePrescription = -1;
-        loadAssays($scope.prescriptions[indx]);
+    $scope.claimDevice = function(indx) {
+      if (indx !== $scope.activeDevice) {
+        Notification.info('Setting up device, please wait...');
+        $scope.activeDevice = indx;
+        $http.post('/devices/claim', {
+          currentDeviceID: $scope.activeDevice === -1 ? '' : $scope.devices[$scope.activeDevice]._id,
+          newDeviceID: $scope.devices[indx]._id
+        }).
+        success(function(data, status, headers, config) {
+          $scope.devices[indx].claimed = true;
+          $scope.cartridge = data.cartridge;
+          $scope.assay = data.assay;
+        }).
+        error(function(err, status, headers, config) {
+          console.log(err);
+          Notification.error(err.message);
+          $scope.activeDevice = -1;
+        });
       }
-      currentPrescription = indx;
-    };
-
-    $scope.currentPage = 1;
-    $scope.itemsPerPage = 10;
-
-		$scope.loadCartridges = function(forceLoad) {
-      if (forceLoad || $scope.showCartridges) {
-	      $http.post('/cartridges/unused', {
-					page: $scope.currentPage,
-					pageSize: $scope.itemsPerPage,
-          assayID: $scope.pendingAssays[$scope.activeAssay]._id,
-          cartridgeID: $scope.selectedCartridge._id
-				}).
-				success(function(data, status, headers, config) {
-          console.log(data);
-          if (data.currentPage === -1) {
-            Notification.error($scope.selectedCartridge._id + ' is not a cartridge for ' + $scope.pendingAssays[$scope.activeAssay].name);
-            $scope.selectedCartridge._id = '';
-            $scope.showCartridges = false;
-            $scope.activeCartridge = -1;
-          }
-          else {
-            $scope.cartridges = data.cartridges;
-  					$scope.totalItems = data.number_of_items;
-            $scope.currentPage = data.currentPage;
-            $scope.activeCartridge = data.activeCartridge;
-          }
-			  }).
-			  error(function(err, status, headers, config) {
-					console.log(err);
-					Notification.error(err.message);
-			  });
-      }
-		};
-
-    $scope.pageChanged = function() {
-			console.log($scope.currentPage);
-			$scope.loadCartridges();
-		};
-
-    $scope.clickAssay = function(indx) {
-      $scope.activePrescription = currentPrescription;
-      $scope.activeAssay = indx;
-      $scope.activeCartridge = -1;
-      $scope.selectedCartridge = {_id: ''};
-      $scope.currentPage = 1;
-      $scope.loadCartridges(true);
-    };
-    $scope.clickDevice = function(indx) {
-      $scope.activeDevice = indx;
-    };
-    $scope.clickCartridge = function(indx) {
-      $scope.activeCartridge = indx;
-      $scope.selectedCartridge = $scope.cartridges[indx];
-  };
-
-    $scope.clickShowCartridges = function() {
-      $scope.showCartridges = !$scope.showCartridges;
-      if ($scope.showCartridges) {
-        $scope.loadCartridges();
-      }
-    };
-
-    $scope.initializeDevice = function() {
-      if ($scope.activeDevice < 0) {
-        Notification.error('Please select a device to initialize');
-        return;
-      }
-      if (!$scope.devices[$scope.activeDevice]) {
-        Notification.error('Unknown device');
-        return;
-      }
-      $scope.testUnderway = false;
-      $http.post('/devices/initialize', {
-        device: $scope.devices[$scope.activeDevice]
-      }).
-      success(function(data, status, headers, config) {
-        $scope.deviceInitialized = true;
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        $scope.deviceInitialized = false;
-        Notification.error(err.message);
-      });
-
-      Notification.success('Initialization started');
     };
 
     $scope.beginTest = function() {
-      if ($scope.activePrescription < 0 || $scope.activeAssay < 0) {
-        Notification.error('Please select an assay for testing');
-        return;
+      var device;
+      if (!$scope.reference) {
+        Notification.error('You must enter a reference number');
       }
-      if ($scope.activeDevice < 0) {
-        Notification.error('Please select a device for testing');
-        return;
+      else {
+        if ($scope.activeDevice !== -1) {
+          Notification.success('Starting test, please wait...');
+          device = $scope.devices[$scope.activeDevice];
+          $http.post('/tests/begin', {
+            reference: $scope.reference,
+            subject: $scope.subject,
+            description: $scope.description,
+            deviceID: device._id,
+            deviceName: device.name,
+            assayID: $scope.assay._id,
+            assayName: $scope.assay.name,
+            cartridgeID: $scope.cartridge._id
+          }).
+          success(function(data, status, headers, config) {
+            $scope.setupRun();
+          }).
+          error(function(err, status, headers, config) {
+            console.log(err);
+            Notification.error(err.message);
+          });
+        }
       }
-      if ($scope.selectedCartridge._id === '') {
-        Notification.error('Please select a cartridge for testing');
-        return;
-      }
-      if (!$scope.pendingAssays[$scope.activeAssay]) {
-        Notification.error('Unknown assay');
-        return;
-      }
-      if (!$scope.devices[$scope.activeDevice]) {
-        Notification.error('Unknown device');
-        return;
-      }
-
-      var assay = $scope.pendingAssays[$scope.activeAssay];
-      var cartridge = $scope.selectedCartridge;
-      var device = $scope.devices[$scope.activeDevice];
-      var prescription = $scope.prescriptions[$scope.activePrescription];
-      $http.post('/tests/begin', {
-        assayID: assay._id,
-        assayName: assay.name,
-        assayBCODE: assay.BCODE,
-        analysis: assay.analysis,
-        standardCurve: assay.standardCurve,
-        cartridgeID: cartridge._id,
-        deviceID: device._id,
-        deviceName: device.name,
-        prescriptionID: prescription._id
-      }).
-      success(function(data, status, headers, config) {
-        Notification.success('Test underway');
-        $scope.testUnderway = true;
-        $scope.currentPage = 1;
-        $scope.selectedCartridge = {_id: ''};
-        $scope.loadCartridges();
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        Notification.error(err.message);
-      });
     };
   }
 ]);
@@ -3244,16 +3019,18 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
     $scope.create = function() {
       // Create new Test object
       var test = new Tests({
-        name: this.name,
+        reference: this.reference,
+        subject: this.subject,
         description: this.description
       });
 
       // Redirect after save
       test.$save(function(response) {
-        $location.path('tests/' + response._id);
+        $location.path('tests');
 
         // Clear form fields
-        $scope.name = '';
+        $scope.reference = '';
+        $scope.subject = '';
         $scope.description = '';
       }, function(errorResponse) {
         $scope.error = errorResponse.data.message;
@@ -3284,7 +3061,7 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
       var test = $scope.test;
 
       test.$update(function() {
-        $location.path('tests/' + test._id);
+        $location.path('tests');
       }, function(errorResponse) {
         $scope.error = errorResponse.data.message;
       });
@@ -3485,14 +3262,19 @@ angular.module('users').controller('PasswordController', ['$scope', '$stateParam
 ]);
 'use strict';
 
-angular.module('users').controller('SettingsController', ['$scope', '$http', '$location', 'Users', 'Authentication',
-	function($scope, $http, $location, Users, Authentication) {
+angular.module('users').controller('SettingsController', ['$scope', '$http', '$location', 'Users', 'Organizations', 'Authentication',
+	function($scope, $http, $location, Users, Organizations, Authentication) {
 		$scope.user = Authentication.user;
 
 		// If user is not signed in then redirect back home
 		if (!$scope.user) $location.path('/');
 
-		// Check if there are additional accounts 
+		$scope.organizations = Organizations.query();
+		$scope.selectOrganization = function(indx) {
+			$scope.user._organization = $scope.organizations[indx]._id;
+		};
+
+		// Check if there are additional accounts
 		$scope.hasConnectedAdditionalSocialAccounts = function(provider) {
 			for (var i in $scope.user.additionalProvidersData) {
 				return true;
@@ -3554,6 +3336,7 @@ angular.module('users').controller('SettingsController', ['$scope', '$http', '$l
 		};
 	}
 ]);
+
 'use strict';
 
 // Authentication service for user variables

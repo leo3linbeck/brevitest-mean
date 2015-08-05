@@ -31,6 +31,10 @@ angular.module('tests').config(['$stateProvider',
 			css: 'modules/tests/css/review-test.client.css',
 			templateUrl: 'modules/tests/views/review-test.client.view.html'
 		}).
+		state('exportTests', {
+			url: '/tests/export',
+			templateUrl: 'modules/tests/views/export-test.client.view.html'
+		}).
 		state('viewTest', {
 			url: '/tests/:testId',
 			templateUrl: 'modules/tests/views/view-test.client.view.html'

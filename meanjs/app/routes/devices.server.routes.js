@@ -7,21 +7,42 @@ module.exports = function(app) {
     app.use('/devices', users.hasAuthorization(['user']));
 
 	// Devices Routes
-	app.route('/devices')
-		.get(devices.list)
-		.post(users.requiresLogin, devices.create);
+	app.route('/devices/write_serial_number')
+		.post(devices.write_serial_number);
+
+	app.route('/devices/attach_particle')
+		.post(devices.attach_particle);
+
+	app.route('/devices/detach_particle')
+		.post(devices.detach_particle);
+
+	app.route('/devices/pool')
+		.post(devices.pool);
 
 	app.route('/devices/available')
 		.get(devices.available);
 
+	app.route('/devices/unassigned')
+		.get(devices.unassigned);
+
+	app.route('/devices/flash_firmware')
+		.post(devices.flash_firmware);
+
+	app.route('/devices/claim')
+		.post(devices.claim);
+
+	app.route('/devices/release')
+		.post(devices.release);
+
 	app.route('/devices/load_by_model')
 		.post(devices.load_by_model);
 
-	app.route('/devices/initialize')
-		.post(devices.initialize);
-
 	app.route('/devices/move_to_and_set_calibration_point')
 		.post(devices.move_to_and_set_calibration_point);
+
+	app.route('/devices')
+		.get(devices.list)
+		.post(users.requiresLogin, devices.create);
 
 	app.route('/devices/:deviceId')
 		.get(devices.read)

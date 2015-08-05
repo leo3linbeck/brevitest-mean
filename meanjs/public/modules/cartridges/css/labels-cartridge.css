@@ -5,6 +5,9 @@
   .pagination-sm {
     display: none;
   }
+  .qrcode-link:after{
+    content: "" !important;
+  }
 }
 
 .cartridge-label-list {
@@ -21,6 +24,8 @@
   margin-right: 1in;
 }
 .cartridge-label-qrcode {
+  margin-top: 0.5em;
+  margin-left: 0.5em;
   float: left;
 }
 .cartridge-label-name {
@@ -37,7 +42,7 @@
 }
 .cartridge-label-underline {
   display: inline-block;
-  margin-bottom: -0.4em;
+  margin-bottom: -0.3em;
   margin-left: 1em;
   border-bottom: 1px solid #000;
   width: 2.2in;

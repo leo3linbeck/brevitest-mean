@@ -18,20 +18,11 @@ module.exports = function(app) {
 	app.route('/tests/recently_started')
 	  .all(tests.recently_started);
 
-	app.route('/tests/review')
-	  .all(tests.review);
-
 	app.route('/tests/begin')
 		.post(tests.begin);
 
-	app.route('/tests/monitor')
-	  .all(tests.monitor);
-
-	app.route('/tests/update_one_test')
-	  .all(tests.update_one_test);
-
-	app.route('/tests/status')
-	  .all(tests.status);
+	app.route('/tests/exportable')
+		.get(tests.exportable);
 
 	app.route('/tests/run')
 		.all(tests.run);

@@ -31,7 +31,7 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
 
       // Redirect after save
       manufacturer.$save(function(response) {
-        $location.path('manufacturers/' + response._id);
+        $location.path('manufacturers');
 
         // Clear form fields
         $scope.name = '';
@@ -62,11 +62,11 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
 
     // Update existing Manufacturer
     $scope.update = function() {
-      var manufacturer = $scope.manufacturer;
+      var manufacturer = new Manufacturers($scope.manufacturer);
 
       manufacturer.addresses = $scope.addresses;
       manufacturer.$update(function() {
-        $location.path('manufacturers/' + manufacturer._id);
+        $location.path('manufacturers');
       }, function(errorResponse) {
         $scope.error = errorResponse.data.message;
       });

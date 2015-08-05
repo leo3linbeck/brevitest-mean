@@ -15,8 +15,7 @@
   <div data-ng-repeat="cartridge in cartridges">
     <div class="cartridge-label" ng-click="dropLabel($index)" tooltip="Click to remove from printing set" tooltip-placement="left" ng-style="{'visibility': cartridge._id === 'nothing' ? 'hidden' : 'visible'}">
       <div class="cartridge-label-qrcode">
-        <qrcode data="{{cartridge._id}}" error-correction-level="M" size="60"
-          tooltip="{{cartridge._id}}"  tooltip-placement="right" version="2"></qrcode>
+        <qrcode tooltip="{{cartridge._id}}"  tooltip-placement="right" error-correction-level="M" version="2" size="40" data="{{cartridge._id}}" download></qrcode>
       </div>
       <div class="cartridge-label-name">{{cartridge._assay.name}}</div>
       <div class="cartridge-label-date">Exp date: {{cartridge.expirationDate | date:

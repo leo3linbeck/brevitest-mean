@@ -1,0 +1,50 @@
+<section data-ng-controller="ExportTestController" data-ng-init="setup()">
+  <div class="page-header">
+    <div class="col-xs-12">
+      <h1>Export Brevitests™</h1>
+    </div>
+    <div class="col-xs-12">
+      <div class="btn-group" role="group">
+        <a class="btn btn-sm btn-default" href="/#!/tests/run">Run</a>
+        <a class="btn btn-sm btn-default" href="/#!/tests/monitor">Monitor</a>
+        <a class="btn btn-sm btn-default" href="/#!/tests/review">Review</a>
+        <a class="btn btn-sm btn-default" disabled href="/#!/tests/export">Export</a>
+      </div>
+      <br/><br/>
+    </div>
+  </div>
+  <div class="col-xs-12">
+    <div class="panel panel-success">
+      <div class="panel-heading text-center">
+        <h5>Tests selected:
+          {{selection.length ? selection.length : 'None'}}</h5>
+      </div>
+      <div class="panel-body">
+        <button class="btn btn-sm btn-default" ng-click="selectAll()">Select All</button>
+        <button class="btn btn-sm btn-default" ng-click="deselectAll()">Deselect All</button>
+        <button class="btn btn-sm btn-primary pull-right" ng-disabled="!selection.length" ng-csv="getTestData()" csv-header="getTestHeaders()" quote-strings filename="BrevitestData">Export</button>
+        <br/>
+      </div>
+    </div>
+    <h5 class="text-center"><em>Click to select Brevitests™ to export:</em></h5>
+    <div class="panel panel-warning col-xs-12" ng-hide="tests.length">
+      <div class="panel-heading">
+        No tests found
+      </div>
+      <div class="panel-body">
+        If you know you have tests you can export, try refreshing this page. Also, make sure you are signed in.
+      </div>
+    </div>
+    <div class="list-group col-xs-12">
+      <a class="list-group-item" ng-click="clickTest($index)" ng-repeat="test in tests">
+        <h4 class="list-group-item-heading">
+          <span aria-hidden="true" class="glyphicon glyphicon-ok" ng-show="selection.indexOf(test._id)!==-1"></span>{{test.reference}}</h4>
+        <p class="list-group-item-text">
+          <small>{{test._cartridge.startedOn | date: "medium"}}</small>&nbsp;&nbsp;
+          <small>Status:
+            {{test.status}}</small>
+        </p>
+      </a>
+    </div>
+  </div>
+</section>

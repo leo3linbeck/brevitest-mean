@@ -10,7 +10,20 @@ var mongoose = require('mongoose'),
 	Q = require('q'),
 	_ = require('lodash');
 
-exports.make10cartridges = function(req, res) {
+exports.load_unused_cartridges = function(req, res) {
+	new Q(Cartridge.find({ _assay: req.body.assayID, _test: {$exists: false} }).sort('expirationDate').exec())
+		.then(function(cartridges) {
+			res.jsonp(cartridges);
+		})
+		.fail(function(err) {
+			return res.status(400).send({
+				message: errorHandler.getErrorMessage(err)
+			});
+		})
+		.done();
+};
+
+exports.make_10_cartridges = function(req, res) {
 	var i, promises = [];
 	var assay = req.body.assay;
 
@@ -135,12 +148,16 @@ exports.assayByID = function(req, res, next, id) {
  * Assay authorization middleware
  */
 exports.hasAuthorization = function(req, res, next) {
-    if (_.contains(req.user.roles, 'superuser', 0))
-        return next();
-    else if (req.assay.user.id !== req.user.id) {
-        var res_err = 'To delete an assay you need to be the creator or a superuser. Assay created by ' + req.assay.user.id + '.';
-        return res.jsonp({error: res_err});
-
-    }
-    next();
+    // if (_.contains(req.user.roles, 'superuser', 0))
+    //     return next();
+    // else if (req.assay.user.id !== req.user.id) {
+    //     var res_err = 'To delete an assay you need to be the creator or a superuser. Assay created by ' + req.assay.user.id + '.';
+    //     return res.jsonp({error: res_err});
+		//
+    // }
+    // next();
+	if (!req.device.user.id) {
+    return res.status(403).send('You must be signed in access assays');
+  }
+  next();
 };

@@ -6,10 +6,15 @@
     <form class="form-horizontal" data-ng-submit="create()" novalidate>
       <fieldset>
         <div class="form-group">
-          <label class="control-label" for="name">Name</label>
+          <label class="control-label" for="reference">Reference</label>
           <div class="controls">
-            <input class="form-control" data-ng-model="name" id="name"
-              placeholder="Enter test name here" required type="text"></input>
+            <input class="form-control" data-ng-model="reference" id="reference"
+              placeholder="Enter test reference here" required type="text"></input>
+          </div>
+          <label class="control-label" for="subject">Subject</label>
+          <div class="controls">
+            <input class="form-control" data-ng-model="subject" id="subject"
+              placeholder="Enter test subject here" required type="text"></input>
           </div>
           <label class="control-label" for="description">Description</label>
           <div class="controls">

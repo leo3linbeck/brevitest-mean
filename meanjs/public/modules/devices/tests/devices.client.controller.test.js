@@ -76,11 +76,9 @@
 		it('$scope.findOne() should create an array with one Device object fetched from XHR using a deviceId URL parameter', inject(function(Devices) {
 			// Define a sample Device object
 			var sampleDeviceModels = [];
-			var sampleSparks = [];
 
 			var sampleDevice = new Devices({
-				name: 'New Device',
-                _spark: {connected:true}
+				name: 'New Device'
 			});
 
 			// Set the URL parameter
@@ -89,7 +87,6 @@
 			// Set GET response
 			$httpBackend.expectGET(/devices\/([0-9a-fA-F]{24})$/).respond(sampleDevice);
 			$httpBackend.expectGET(/device-models/).respond(sampleDeviceModels);
-			$httpBackend.expectGET(/sparks/).respond(sampleSparks);
 
 			// Run controller functionality
 			scope.findOne();

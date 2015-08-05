@@ -11,21 +11,9 @@
     <h2 data-ng-bind="cartridge.name"></h2>
   </div>
   <div>
+    <h4>ID: {{cartridge._id}}</h4>
     <accordion close-others="true">
-      <accordion-group heading="Result" is-open="showResultsOnOpen">
-        <ul class="list-group">
-          <li class="list-group-item">Test succeeded: {{!cartridge.failed |
-            uppercase}}</li>
-          <li class="list-group-item">Value: {{cartridge.result | number: 3}}</li>
-        </ul>
-      </accordion-group>
-      <accordion-group heading="BCODE">
-        <small ng-bind-html="cartridge.bcodeString | bcode"></small>
-      </accordion-group>
-      <accordion-group heading="Raw Data">
-        <small ng-bind-html="cartridge.rawData | rawtestdata"></small>
-      </accordion-group>
-      <accordion-group heading="Dates">
+      <accordion-group heading="Dates" is-open="showOnOpen">
         <ul class="list-group">
           <li class="list-group-item">Manufactured on: {{cartridge.manufacturedOn | date:
             medium}}</li>
@@ -40,6 +28,19 @@
           <li class="list-group-item">Test finished on: {{cartridge.finishedOn | date:
             medium}}</li>
         </ul>
+      </accordion-group>
+      <accordion-group ng-show="cartridge.value" heading="Result">
+        <ul class="list-group">
+          <li class="list-group-item">Test succeeded: {{!cartridge.failed |
+            uppercase}}</li>
+          <li class="list-group-item">Value: {{cartridge.value | number: 3}}</li>
+        </ul>
+      </accordion-group>
+      <accordion-group ng-show="cartridge.value" heading="BCODE">
+        <small ng-bind-html="cartridge.bcodeString | bcode"></small>
+      </accordion-group>
+      <accordion-group ng-show="cartridge.value" heading="Raw Data">
+        <small ng-bind-html="cartridge.rawData | rawtestdata"></small>
       </accordion-group>
     </accordion>
   </div>

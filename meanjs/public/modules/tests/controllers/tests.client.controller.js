@@ -14,16 +14,18 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
     $scope.create = function() {
       // Create new Test object
       var test = new Tests({
-        name: this.name,
+        reference: this.reference,
+        subject: this.subject,
         description: this.description
       });
 
       // Redirect after save
       test.$save(function(response) {
-        $location.path('tests/' + response._id);
+        $location.path('tests');
 
         // Clear form fields
-        $scope.name = '';
+        $scope.reference = '';
+        $scope.subject = '';
         $scope.description = '';
       }, function(errorResponse) {
         $scope.error = errorResponse.data.message;
@@ -51,10 +53,10 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
 
     // Update existing Test
     $scope.update = function() {
-      var test = $scope.test;
+      var test = new Tests($scope.test);
 
       test.$update(function() {
-        $location.path('tests/' + test._id);
+        $location.path('tests');
       }, function(errorResponse) {
         $scope.error = errorResponse.data.message;
       });

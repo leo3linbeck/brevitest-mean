@@ -6,19 +6,30 @@
 var mongoose = require('mongoose'),
 	Schema = mongoose.Schema;
 
+var StandardCurvePointSchema = new Schema({
+	x: {
+		type: Number
+	},
+	y: {
+		type: Number
+	}
+});
+
 /**
  * Test Schema
  */
 var TestSchema = new Schema({
-	name: {
+	reference: {
 		type: String,
 		default: '',
-		required: 'Please fill Test name',
+		required: 'Please fill Test reference',
 		trim: true
 	},
+	subject: {
+		type: String
+	},
 	description: {
-		type: String,
-		trim: true
+		type: String
 	},
 	status: {
 		type: String
@@ -26,15 +37,21 @@ var TestSchema = new Schema({
 	percentComplete: {
 		type: Number
 	},
+	analysis: {
+		redMax: {type: Number},
+		greenMax: {type: Number},
+		greenMin: {type: Number},
+		redMin: {type: Number}
+	},
+	standardCurve: [StandardCurvePointSchema],
 	reading: {
 		type: Number
 	},
 	result: {
 		type: String
 	},
-	_prescription: {
-		type: Schema.ObjectId,
-		ref: 'Prescription'
+	loaded: {
+		type: Boolean
 	},
 	_assay: {
 		type: Schema.ObjectId,

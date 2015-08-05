@@ -24,7 +24,9 @@
     "jquery": "~2.1.4",
     "fontawesome": "~4.3.0",
     "bootstrap-social": "~4.9.1",
-    "angular-sweetalert": "~1.1.0"
+    "angular-sweetalert": "~1.1.0",
+    "spark": "~0.5.10",
+    "ng-csv": "~0.3.3"
   },
   "resolutions": {
     "d3": "~3.5.5",

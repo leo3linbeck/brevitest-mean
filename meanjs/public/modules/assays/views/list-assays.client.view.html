@@ -3,7 +3,7 @@
         <h1>Assays</h1>
     </div>
     <div class="list-group">
-        <a data-ng-repeat="assay in assays" data-ng-href="#!/assays/{{assay._id}}" class="list-group-item">
+        <a data-ng-repeat="assay in assays" data-ng-href="#!/assays/{{assay._id}}/edit" class="list-group-item">
 			<small class="list-group-item-text">
 				Posted on
 				<span data-ng-bind="assay.created | date:'medium'"></span>

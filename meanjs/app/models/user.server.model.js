@@ -66,6 +66,14 @@ var UserSchema = new Schema({
 		type: String,
 		required: 'Provider is required'
 	},
+	_devicePool: {
+		type: Schema.ObjectId,
+		ref: 'DevicePool'
+	},
+	_organization: {
+		type: Schema.ObjectId,
+		ref: 'Organization'
+	},
 	providerData: {},
 	additionalProvidersData: {},
 	roles: {
@@ -75,10 +83,10 @@ var UserSchema = new Schema({
 		}],
 		default: []
 	},
-	sparkAccessToken: {
+	particleAccessToken: {
 		type: String
 	},
-	sparkTokenExpires: {
+	particleTokenExpires: {
 		type: Date
 	},
 	updated: {

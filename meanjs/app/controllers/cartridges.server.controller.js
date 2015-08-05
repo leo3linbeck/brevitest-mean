@@ -7,7 +7,6 @@ var mongoose = require('mongoose'),
 	errorHandler = require('./errors.server.controller'),
 	Cartridge = mongoose.model('Cartridge'),
 	Device = mongoose.model('Device'),
-	Spark = mongoose.model('Spark'),
 	Q = require('q'),
 	_ = require('lodash');
 	require('mongoose-pagination');

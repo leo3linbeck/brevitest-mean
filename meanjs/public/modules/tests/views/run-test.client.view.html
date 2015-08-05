@@ -1,111 +1,92 @@
 <section data-ng-controller="RunTestController" data-ng-init="setupRun()">
   <div class="page-header">
     <div class="col-xs-12">
-      <h1>Run a Brevitest™</h1>
+      <h1>Initiate a Brevitest™</h1>
     </div>
     <div class="col-xs-12">
       <div class="btn-group" role="group">
-        <a class="btn btn-default" href="/#!/prescriptions/create">Prescribe</a>
-        <a class="btn btn-default" disabled href="/#!/tests/run">Run</a>
-        <a class="btn btn-default" href="/#!/tests/monitor">Monitor</a>
-        <a class="btn btn-default" href="/#!/tests/review">Review</a>
+        <a class="btn btn-sm btn-default" disabled href="/#!/tests/run">Run</a>
+        <a class="btn btn-sm btn-default" href="/#!/tests/monitor">Monitor</a>
+        <a class="btn btn-sm btn-default" href="/#!/tests/review">Review</a>
+        <a class="btn btn-sm btn-default" href="/#!/tests/export">Export</a>
       </div>
     </div>
     <div>&nbsp;</div>
-    <div class="col-xs-12 panel panel-warning" ng-show="!devices.length">
-      <div class="panel-heading">
-        No available devices found
-      </div>
-      <div class="panel-body">
-        The device you wish to use may not be online, or may be in use on another test.
-        Check to make sure it is plugged in, connected to the network, and not being
-        used.
-      </div>
-    </div>
   </div>
   <div class="col-xs-12">
-    <div><br/></div>
     <div class="col-md-4">
-      <div class="panel panel-default" ng-show="devices.length">
+      <div class="panel panel-default">
         <div class="panel-heading">
-          <button class="btn btn-xs btn-default pull-right glyphicon glyphicon-refresh"
-            ng-click="refresh()" type="button"></button>
+          <h3 class="panel-title">Enter Test Information</h3>
+        </div>
+        <div class="panel-body">
+          <form class="col-xs-12 form-horizontal">
+            <fieldset>
+              <div class="form-group">
+                <label class="control-label" for="reference">Reference Code</label>
+                <div class="controls">
+                  <input class="form-control" data-ng-model="reference" id="reference" placeholder="Enter test reference code here (required)" required type="text"></input>
+                </div>
+                <label class="control-label" for="subject">Subject Code</label>
+                <div class="controls">
+                  <input class="form-control" data-ng-model="subject" id="subject" placeholder="Enter test subject code here" type="text"></input>
+                </div>
+                <label class="control-label" for="description">Description</label>
+                <div class="controls">
+                  <textarea class="form-control" data-ng-model="description" id="description" placeholder="Enter test description here" rows="4" type="text"></textarea>
+                </div>
+              </div>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <button class="btn btn-xs btn-default pull-right glyphicon glyphicon-refresh" ng-click="refreshDevices()" type="button"></button>
           <h3 class="panel-title">Available Devices</h3>
         </div>
         <div class="panel-body">
-          <div class="list-group">
-            <a class="list-group-item {{activeDevice === $index ? 'active' : ''}}" href=""
-              ng-repeat="device in devices" ng_click="clickDevice($index)">{{device.name}}</a>
+          <h5 class="text-center" ng-show="devices.length">Current&nbsp;Pool: <a ng-href="/#!/device-pools/{{devices[0]._devicePool._id}}">{{devices[0]._devicePool.name}}</a></h5>
+          <div class="list-group" ng-show="devices.length">
+            <a class="list-group-item {{activeDevice === $index ? 'active' : ''}}" href="" ng-repeat="device in devices" ng_click="claimDevice($index)">{{device.name}}</a>
           </div>
-          <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
-            <button class="btn btn-success btn-block"
-              ng-class="{disabled: activeDevice === -1}" ng-click="initializeDevice()" type="button">Initialize
-              Device</button>
+          <div class="col-xs-12 panel panel-warning" ng-hide="devices.length">
+            <div class="panel-heading">
+              No available devices found in your pool
+            </div>
+            <div class="panel-body">
+              The device you wish to use may not be in your device pool, or may be offline or in use on another test. Check to make sure you have
+              <a href="/#!/device-pools/select">selected the correct device pool</a>, the device is plugged in, connected to the network, and not in use.
+            </div>
           </div>
         </div>
       </div>
     </div>
     <div class="col-md-4">
-      <div class="panel panel-default" ng-show="deviceInitialized">
+      <div class="panel panel-default" ng-show="activeDevice!=-1">
         <div class="panel-heading">
-          <h3 class="panel-title">Prescriptions</h3>
+          <button class="btn btn-xs btn-default pull-right glyphicon glyphicon-refresh" ng-click="rescanCartridge()" type="button"></button>
+          <h3 class="panel-title">Cartridge Information</h3>
         </div>
         <div class="panel-body">
-          <accordion close-others="true">
-            <accordion-group ng-click="clickPrescription($index)"
-              ng-repeat="prescription in prescriptions">
-              <accordion-heading>
-                {{prescription.name}}
-                <i class="glyphicon" ng-class="{'glyphicon-ok': $index === activePrescription}"></i>
-              </accordion-heading>
-              <p>Prescribed on {{prescription.prescribedOn | date: "medium"}}</p>
-              <p>{{prescription.comments}}</p>
-              <p><b>Pending Assays:</b></p>
-              <div class="list-group">
-                <a class="list-group-item {{activeAssay === $index ? 'active' : ''}}" href=""
-                  ng-repeat="pendingAssay in pendingAssays" ng_click="clickAssay($index)">{{pendingAssay.name}}</a>
-              </div>
-              <p><b>Completed Assays:</b></p>
-              <ul>
-                <li ng-hide="completedAssays.length">None</li>
-                <li ng-repeat="completedAssay in completedAssays">{{completedAssay.name}}</li>
-              </ul>
-            </accordion-group>
-          </accordion>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="panel panel-default"
-        ng-show="deviceInitialized && activeAssay !== -1">
-        <div class="panel-heading">
-          <h3 class="panel-title">Cartridges ({{totalItems}} available)</h3>
-        </div>
-        <div class="panel-body">
-          <div class="col-xs-8 col-xs-offset-2 col-md-10 col-md-offset-1">
-            <button class="btn btn-success btn-block"
-              ng-class="{disabled: selectedCartridge._id === ''}" ng-click="beginTest()" ng-hide="testUnderway" type="button">Run
-              Test</button>
-            <button class="btn btn-info btn-block" ng-click="setupRun()" ng-show="testUnderway"
-              type="button">Reset
-              for Another Test</a>
-          </div>
-          <br/>
-          <div id="scanDiv" ng-hide="true"></div>
-          <br/>
-          <div ng-show="selectedCartridge._id" style="text-align:center">
-            <strong>Selected Cartridge: {{selectedCartridge._id}}</strong>
-          </div>
-          <br/>
-          <div aria-label="..." class="btn-group" role="group">
-            <button class="btn btn-md btn-default" ng-click="clickShowCartridges()"
-              type="button">{{showCartridges ? "Hide Cartridges" : "Show Cartridges"}}</button>
-          </div>
-          <br/>
-          <div class="list-group col-xs-12" ng-show="showCartridges">
-            <pagination boundary-links="true" class="pagination-sm" total-items="totalItems" max-size="5" num-pages="numPages" ng-model="currentPage" ng-change="pageChanged()" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></pagination>
-            <a class="list-group-item {{activeCartridge === $index ? 'active' : ''}}" href=""
-              ng-repeat="cartridge in cartridges" ng_click="clickCartridge($index)">{{cartridge._id | uppercase}}</a>
+          <ul class="list-group" ng-show="cartridge">
+            <li class="list-group-item">
+              <strong>Cartridge ID:</strong><br/>&nbsp;&nbsp;{{cartridge._id}}</li>
+            <li class="list-group-item">
+              <strong>Cartridge Expiration Date:</strong><br/>&nbsp;&nbsp;{{cartridge.expirationDate | date: "medium"}}</li>
+            <li class="list-group-item">
+              <strong>Assay:</strong><br/>&nbsp;&nbsp;{{assay.name}}</li>
+          </ul>
+          <button class="btn btn-success btn-block" ng-class="{disabled: activeDevice === -1}" ng-click="beginTest()" ng-show="cartridge" type="button">Start Test</button>
+          <div class="col-xs-12 panel panel-warning" ng-hide="cartridge">
+            <div class="panel-heading">
+              No cartridge found
+            </div>
+            <div class="panel-body">
+              The device was unable to read the cartridge QR code. Check to make sure the cartridge is properly placed in the Brevitest™ device, and click the refresh button at the upper-right corner of this box.
+            </div>
           </div>
         </div>
       </div>

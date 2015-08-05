@@ -4,7 +4,7 @@
         <pagination boundary-links="true" class="pagination-sm" total-items="totalItems" max-size="8" ng-model="currentPage" ng-change="pageChanged()" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></pagination>
     </div>
     <div class="list-group">
-        <a data-ng-repeat="cartridge in cartridges" data-ng-href="#!/cartridges/{{cartridge._id}}" class="list-group-item">
+        <a data-ng-repeat="cartridge in cartridges" data-ng-href="#!/cartridges/{{cartridge._id}}/edit" class="list-group-item">
 			<small class="list-group-item-text">
 				Posted on
 				<span data-ng-bind="cartridge.created | date:'medium'"></span>

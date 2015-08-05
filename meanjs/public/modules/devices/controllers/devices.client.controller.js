@@ -1,16 +1,88 @@
 'use strict';
 
 // Devices controller
-angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Devices', 'DeviceModels', 'Sparks', 'Notification',
-  function($scope, $http, $stateParams, $location, $window, Authentication, Devices, DeviceModels, Sparks, Notification) {
+angular.module('devices').controller('DevicesController', ['$scope', '$http', '$stateParams', '$location', '$window', 'Authentication', 'Devices', 'DeviceModels', 'DevicePools', 'Notification',
+  function($scope, $http, $stateParams, $location, $window, Authentication, Devices, DeviceModels, DevicePools, Notification) {
     $scope.authentication = Authentication;
     if (!$scope.authentication || $scope.authentication.user === '') {
       $location.path('/signin');
     }
 
+    $scope.unassigned = false;
+    $scope.loadUnassigned = function() {
+      $scope.unassigned = true;
+      $http.get('/devices/unassigned').
+      success(function(data, status, headers, config) {
+        console.log(data);
+        $scope.devices = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.writeSerialNumber = function() {
+      $http.post('/devices/write_serial_number', {
+        deviceID: $scope.device._id,
+        serialNumber: $scope.device.serialNumber
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success('Serial number updated on device');
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.attachParticle = function() {
+      $http.post('/devices/attach_particle', {
+        deviceID: $scope.device._id
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success('Particle attached');
+        $scope.device = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.detachParticle = function() {
+      $http.post('/devices/detach_particle', {
+        deviceID: $scope.device._id
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data);
+        Notification.success('Particle detached');
+        $scope.device = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
     $scope.loadData = function() {
       $scope.deviceModels = DeviceModels.query();
-      $scope.sparks = Sparks.query();
+      $scope.devicePools = DevicePools.query();
+    };
+
+    $scope.refresh = function() {
+      $scope.unassigned = false;
+      $http.post('/devices/pool').
+      success(function(data, status, headers, config) {
+        console.log(data);
+        $scope.devices = data;
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
     };
 
     $scope.moveToAndSetCalibrationPoint = function() {
@@ -19,7 +91,22 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
       }).
       success(function(data, status, headers, config) {
         console.log(data);
-        Notification.success(data.result);
+        Notification.success(data.msg);
+        $scope.device.$save();
+      }).
+      error(function(err, status, headers, config) {
+        console.log(err);
+        Notification.error(err.message);
+      });
+    };
+
+    $scope.flashFirmware = function() {
+      $http.post('/devices/flash_firmware', {
+        device: $scope.device
+      }).
+      success(function(data, status, headers, config) {
+        console.log(data.msg);
+        Notification.success('Firmware flash underway...');
         $scope.device.$save();
       }).
       error(function(err, status, headers, config) {
@@ -37,7 +124,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
     };
 
     $scope.deviceModel = {};
-    $scope.spark = {};
+    $scope.devicePool = {};
 
     $scope.openedMfg = false;
     $scope.openedReg = false;
@@ -51,8 +138,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
       $scope.deviceModel._id = id;
     };
 
-    $scope.selectSpark = function(id) {
-      $scope.spark._id = id;
+    $scope.selectDevicePool = function(id) {
+      $scope.devicePool._id = id;
     };
 
     $scope.openDatepicker = function($event, dateField) {
@@ -80,22 +167,24 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         manufacturedOn: this.manufacturedOn,
         registeredOn: this.registeredOn,
         _deviceModel: this.deviceModel._id,
-        _spark: this.spark._id
+        _devicePool: this.devicePool._id,
+        particleID: this.particleID
       });
 
       // Redirect after save
       device.$save(function(response) {
-        $location.path('devices/' + response._id);
+        $location.path('devices');
 
         // Clear form fields
         $scope.name = '';
+        $scope.particleID = '';
         $scope.serialNumber = '';
         $scope.calibrationSteps = '';
         $scope.status = '';
         $scope.manufacturedOn = '';
         $scope.registeredOn = '';
         $scope.deviceModel = {};
-        $scope.spark = {};
+        $scope.devicePool = {};
       }, function(errorResponse) {
         //$scope.error = errorResponse.data.message;
         Notification.error(errorResponse.data.message);
@@ -123,12 +212,12 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 
     // Update existing Device
     $scope.update = function() {
-      var device = $scope.device;
+      var device = new Devices($scope.device);
       device._deviceModel = $scope.deviceModel ? $scope.deviceModel._id : '';
-      device._spark = $scope.spark ? $scope.spark._id : '';
+      device._devicePool = $scope.devicePool ? $scope.devicePool._id : '';
 
       device.$update(function() {
-        $location.path('devices/' + device._id);
+        $location.path('devices');
       }, function(errorResponse) {
         //$scope.error = errorResponse.data.message;
         Notification.error(errorResponse.data.message);
@@ -146,11 +235,10 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         deviceId: $stateParams.deviceId
       }, function() {
         $scope.deviceModels = $scope.deviceModels || DeviceModels.query();
-        $scope.sparks = $scope.sparks || Sparks.query();
-        $scope.online = $scope.device._spark.connected;
+        $scope.devicePools = $scope.devicePools || DevicePools.query();
         $scope.setOnlineButtonText();
         $scope.deviceModel = $scope.device._deviceModel ? $scope.device._deviceModel : {};
-        $scope.spark = $scope.device._spark ? $scope.device._spark : {};
+        $scope.devicePool = $scope.device._devicePool ? $scope.device._devicePool : {};
       });
     };
   }

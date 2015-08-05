@@ -6,82 +6,74 @@
       </div>
     </div>
     <div class="row">
-      <p class="lead">
-        Fast, Accurate, Point-of-Care Immunoassays
-      </p>
+      <h4>
+        <small>The Fast, Accurate, Versatile,<br/>Point-of-Care Immunoassay System</small>
+      </h4>
     </div>
   </div>
-    <div data-ng-hide="!(authentication.user.roles.indexOf('user') > -1)">
-  <div class="row">
-    <div class="col-md-3">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <a class="btn btn-success btn-block" href="/#!/prescriptions/create">Prescribe
-            Brevitests</a>
+  <div data-ng-hide="!(authentication.user.roles.indexOf('user') > -1)">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <a class="btn btn-success btn-block" href="/#!/tests/run">Initiate a Brevitest™</a>
+          </div>
+          <div class="panel-body" ng-show="showDetail">
+            <p>Click on the Initiate button above, enter a few pieces of information to set up the test,
+              select a device, and click on the Start button. It's that simple - so before you know it,
+              you'll be running a Brevitest™!
+            </p>
+          </div>
         </div>
-        <div class="panel-body" ng-show="showDetail">
-          <p>Prescribing a Brevitest™ is easy, and you can order one from your desktop,
-            tablet, or smartphone. Click on the button below, select the assays you want to
-            run, enter a little more information, and your prescription will be saved in the
-            cloud, ready to run!</p>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <a class="btn btn-success btn-block" href="/#!/tests/monitor">Monitor Brevitests™</a>
+          </div>
+          <div class="panel-body" ng-show="showDetail">
+            <p>While your tests (that's right, you can monitor multiple tests) are running, you can check
+              on their progress. Click the Monitor button above, and you'll be taken to a control center
+              that displays real-time information on your Brevitests™.</p>
+          </div>
         </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <a class="btn btn-success btn-block" href="/#!/tests/run">Run a Brevitest™</a>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <a class="btn btn-success btn-block" href="/#!/tests/review">
+              Review Brevitests™</a>
+          </div>
+          <div class="panel-body" ng-show="showDetail">
+            <p>Getting results is kinda the point of this whole exercise, isn't it? That's why Brevitest™
+              provides a simple way to review your test results, in a clean, sophisticated user interface.
+              Get numerical and graphical results whenever you want, wherever you are. Brevitest™ makes it easy!</p>
+          </div>
         </div>
-        <div class="panel-body" ng-show="showDetail">
-          <p>Once you've entered in the necessary information to set up the test, click on
-            the Run button below. You'll be asked to choose the device you want to use, and
-            then guided through a series of easy steps. Before you know it, you'll be
-            running a Brevitest™!
-          </p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <a class="btn btn-success btn-block" href="/#!/tests/monitor">Monitor
-            Brevitests™</a>
-        </div>
-        <div class="panel-body" ng-show="showDetail">
-          <p>While your tests (that's right, you can monitor multiple tests) are running,
-            you can check on their progress. Click the Monitor button below, and you'll be
-            taken to a control center that displays real-time information on your Brevitest™
-            devices.</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <a class="btn btn-success btn-block" href="/#!/tests/review">
-            Review Brevitests™</a>
-        </div>
-        <div class="panel-body" ng-show="showDetail">
-          <p>Getting results is kinda the point of this whole exercise, isn't it? That's
-            why Brevitest™ provides a simple way to review your test results, in a clean,
-            sophisticated user interface. Get numerical and graphical results whenever you
-            want, wherever you are. Brevitest™ makes it easy!</p>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <a class="btn btn-success btn-block" href="/#!/tests/export">
+              Export Brevitests™</a>
+          </div>
+          <div class="panel-body" ng-show="showDetail">
+            <p>No one wants their data to be trapped in a standalone system. That's why Brevitest™ data can be
+              exported in a standard format. In the near future, you'll be able to transmit your test data to 
+              other systems with the click of a button!<p>
+          </div>
         </div>
       </div>
     </div>
+    <small>
+      <br/>
+      <strong>Enjoy &amp; Thanks,</strong>
+      <br/>The Brevitest™ Team:
+      <button btn-checkbox class="btn btn-default pull-right" ng-bind-html="showDetail ? 'Hide Explanations' : 'Show Explanations'" ng-model="showDetail" type="checkbox"></button>
+      <br/>Dev, Erol, Mike, Nick, Peter, and Leo
+    </small>
   </div>
-  <small>
-    <br/><strong>Enjoy &amp; Thanks,</strong>
-    <br/>The Brevitest™ Team:
-    <button btn-checkbox class="btn btn-default pull-right"
-      ng-bind-html="showDetail ? 'Hide Detail' : 'Show Detail'" ng-model="showDetail" type="checkbox"></button>
-    <br/>Dev, Erol, Leo, and Mike
-  </small>
-    </div>
   <div class="alert alert-warning text-center" data-ng-hide="!superusers.$resolved || superusers.length">
-    No Users yet, why don't you <a href="/#!/superusers/create">create one</a>?
+    No Users yet, why don't you
+    <a href="/#!/superusers/create">create one</a>?
   </div>
-    <div class="alert alert-warning text-center" data-ng-hide="(authentication.user.roles.indexOf('user') > -1)">
-        <i class="fa fa-exclamation"></i> An admin has not approved your account yet. Request approval <a href="mailto:contact@brevitest.com">contact@brevitest.com</a>
-    </div>
+  <div class="alert alert-warning text-center" data-ng-hide="(authentication.user.roles.indexOf('user') > -1)">
+    <i class="fa fa-exclamation"></i>
+    An admin has not approved your account yet. Request approval
+    <a href="mailto:contact@brevitest.com">contact@brevitest.com</a>
+  </div>
 </section>

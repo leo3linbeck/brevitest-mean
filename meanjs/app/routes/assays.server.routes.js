@@ -4,6 +4,8 @@ module.exports = function(app) {
 	var users = require('../../app/controllers/users.server.controller');
 	var assays = require('../../app/controllers/assays.server.controller');
 
+	// For all assay routes require minimum authority level of: user
+    // Note: APPLIES TO ALL ROUTES BEGINNING WITH /assays
     app.use('/assays', users.hasAuthorization(['user']));
 
 	// Assays Routes

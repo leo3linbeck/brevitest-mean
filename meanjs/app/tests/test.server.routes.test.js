@@ -35,10 +35,12 @@ describe('Test CRUD tests', function() {
 			provider: 'local'
 		});
 
-		// Save a user to the test db and create new Test
-		user.save(function() {
+		// Save a user to the test db 
+		user.save(function() { // On success: create new Test
 			test = {
-				name: 'Test Name'
+				reference: 'Test Reference',
+                subject: 'Test Subject',
+                description: 'Test Description'
 			};
 
 			done();
@@ -75,7 +77,9 @@ describe('Test CRUD tests', function() {
 
 								// Set assertions
 								(tests[0].user._id).should.equal(userId);
-								(tests[0].name).should.match('Test Name');
+								(tests[0].reference).should.match(test.reference);
+                                (tests[0].subject).should.match(test.subject);
+                                (tests[0].description).should.match(test.description);
 
 								// Call the assertion callback
 								done();
@@ -94,9 +98,9 @@ describe('Test CRUD tests', function() {
 			});
 	});
 
-	it('should not be able to save Test instance if no name is provided', function(done) {
-		// Invalidate name field
-		test.name = '';
+	it('should not be able to save Test instance if no reference is provided', function(done) {
+		// Invalidate reference field
+		test.reference = '';
 
 		agent.post('/auth/signin')
 			.send(credentials)
@@ -105,8 +109,8 @@ describe('Test CRUD tests', function() {
 				// Handle signin error
 				if (signinErr) done(signinErr);
 
-				// Get the userId
-				var userId = user.id;
+                // Remove the reference property from test object
+                delete test['reference'];
 
 				// Save a new Test
 				agent.post('/tests')
@@ -114,7 +118,7 @@ describe('Test CRUD tests', function() {
 					.expect(400)
 					.end(function(testSaveErr, testSaveRes) {
 						// Set message assertion
-						(testSaveRes.body.message).should.match('Please fill Test name');
+						(testSaveRes.body.message).should.match('Please fill Test reference');
 						
 						// Handle Test save error
 						done(testSaveErr);
@@ -130,9 +134,6 @@ describe('Test CRUD tests', function() {
 				// Handle signin error
 				if (signinErr) done(signinErr);
 
-				// Get the userId
-				var userId = user.id;
-
 				// Save a new Test
 				agent.post('/tests')
 					.send(test)
@@ -141,8 +142,8 @@ describe('Test CRUD tests', function() {
 						// Handle Test save error
 						if (testSaveErr) done(testSaveErr);
 
-						// Update Test name
-						test.name = 'WHY YOU GOTTA BE SO MEAN?';
+						// Update Test reference
+						test.reference = 'WHY YOU GOTTA BE SO MEAN?';
 
 						// Update existing Test
 						agent.put('/tests/' + testSaveRes.body._id)
@@ -154,7 +155,7 @@ describe('Test CRUD tests', function() {
 
 								// Set assertions
 								(testUpdateRes.body._id).should.equal(testSaveRes.body._id);
-								(testUpdateRes.body.name).should.match('WHY YOU GOTTA BE SO MEAN?');
+								(testUpdateRes.body.reference).should.match('WHY YOU GOTTA BE SO MEAN?');
 
 								// Call the assertion callback
 								done();
@@ -192,7 +193,7 @@ describe('Test CRUD tests', function() {
 			request(app).get('/tests/' + testObj._id)
 				.end(function(req, res) {
 					// Set assertion
-					res.body.should.be.an.Object.with.property('name', test.name);
+					res.body.should.be.an.Object.with.property('reference', test.reference);
 
 					// Call the assertion callback
 					done();

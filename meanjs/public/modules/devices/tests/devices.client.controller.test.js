@@ -80,6 +80,8 @@
 			var sampleDevice = new Devices({
 				name: 'New Device'
 			});
+			
+			var sampleDevicePool = [];
 
 			// Set the URL parameter
 			$stateParams.deviceId = '525a8422f6d0f87f0e407a33';
@@ -87,6 +89,7 @@
 			// Set GET response
 			$httpBackend.expectGET(/devices\/([0-9a-fA-F]{24})$/).respond(sampleDevice);
 			$httpBackend.expectGET(/device-models/).respond(sampleDeviceModels);
+			$httpBackend.expectGET(/device-pools/).respond(sampleDevicePool);
 
 			// Run controller functionality
 			scope.findOne();

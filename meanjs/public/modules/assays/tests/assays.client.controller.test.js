@@ -129,7 +129,7 @@
 			expect(scope.name).toEqual('');
 
 			// Test URL redirection after the Assay was created
-			expect($location.path()).toBe('/assays/' + sampleAssayResponse._id);
+			expect($location.path()).toBe('/assays');
 		}));
 
 		it('$scope.update() should update a valid Assay', inject(function(Assays) {
@@ -150,7 +150,7 @@
 			$httpBackend.flush();
 
 			// Test URL location to new object
-			expect($location.path()).toBe('/assays/' + sampleAssayPutData._id);
+			expect($location.path()).toBe('/assays');
 		}));
 
 		it('$scope.remove() should send a DELETE request with a valid assayId and remove the Assay from the scope', inject(function(Assays) {

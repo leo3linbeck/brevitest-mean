@@ -80,6 +80,8 @@
 			var sampleDevice = new Devices({
 				name: 'New Device'
 			});
+			
+			var sampleDevicePool = [];
 
 			// Set the URL parameter
 			$stateParams.deviceId = '525a8422f6d0f87f0e407a33';
@@ -87,6 +89,7 @@
 			// Set GET response
 			$httpBackend.expectGET(/devices\/([0-9a-fA-F]{24})$/).respond(sampleDevice);
 			$httpBackend.expectGET(/device-models/).respond(sampleDeviceModels);
+			$httpBackend.expectGET(/device-pools/).respond(sampleDevicePool);
 
 			// Run controller functionality
 			scope.findOne();
@@ -122,7 +125,7 @@
 			expect(scope.name).toEqual('');
 
 			// Test URL redirection after the Device was created
-			expect($location.path()).toBe('/devices/' + sampleDeviceResponse._id);
+			expect($location.path()).toBe('/devices');
 		}));
 
 		it('$scope.update() should update a valid Device', inject(function(Devices) {
@@ -143,7 +146,7 @@
 			$httpBackend.flush();
 
 			// Test URL location to new object
-			expect($location.path()).toBe('/devices/' + sampleDevicePutData._id);
+			expect($location.path()).toBe('/devices');
 		}));
 
 		it('$scope.remove() should send a DELETE request with a valid deviceId and remove the Device from the scope', inject(function(Devices) {

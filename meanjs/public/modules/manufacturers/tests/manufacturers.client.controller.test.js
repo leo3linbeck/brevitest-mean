@@ -145,7 +145,7 @@
 			expect(scope.name).toEqual('');
 
 			// Test URL redirection after the Manufacturer was created
-			expect($location.path()).toBe('/manufacturers/' + sampleManufacturerResponse._id);
+			expect($location.path()).toBe('/manufacturers');
 		}));
 
 		it('$scope.update() should update a valid Manufacturer', inject(function(Manufacturers) {
@@ -166,7 +166,7 @@
 			$httpBackend.flush();
 
 			// Test URL location to new object
-			expect($location.path()).toBe('/manufacturers/' + sampleManufacturerPutData._id);
+			expect($location.path()).toBe('/manufacturers');
 		}));
 
 		it('$scope.remove() should send a DELETE request with a valid manufacturerId and remove the Manufacturer from the scope', inject(function(Manufacturers) {

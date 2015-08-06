@@ -100,7 +100,7 @@ angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$
         devicePoolId: $stateParams.devicePoolId
       }, function() {
         $scope.organizations = $scope.organizations || Organizations.query();
-				$scope.organization = $scope.devicePool._organization || {};
+        $scope.organization = $scope.devicePool._organization || {};
         $http.post('/devices/pool', {
           devicePoolID: $stateParams.devicePoolId
         }).

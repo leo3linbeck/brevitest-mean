@@ -4,6 +4,11 @@ module.exports = function(app) {
 	var users = require('../../app/controllers/users.server.controller');
 	var tests = require('../../app/controllers/tests.server.controller');
 
+    // For all tests routes require minimum authority level of: user
+    // Note: APPLIES TO ALL ROUTES BEGINNING WITH /tests
+    // The purpose of this is to require all users to be approved by a superuser (granted user privileges) before they can access any functionality
+    //app.use('/tests', users.hasAuthorization(['user']));
+    
 	// Tests Routes
 	app.route('/tests')
 		.get(tests.list)

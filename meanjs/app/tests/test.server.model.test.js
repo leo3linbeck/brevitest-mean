@@ -29,7 +29,9 @@ describe('Test Model Unit Tests:', function() {
 
 		user.save(function() {
 			test = new Test({
-				name: 'Test name'
+				reference: 'Test Reference',
+				subject: 'Test Subject',
+				description: 'Test Description'
 			});
 
 			done();
@@ -44,8 +46,8 @@ describe('Test Model Unit Tests:', function() {
 			});
 		});
 
-		it('should be able to show an error when try to save without name', function(done) {
-			test.name = '';
+		it('should be able to show an error when try to save without reference', function(done) {
+			test.reference = '';
 
 			return test.save(function(err) {
 				should.exist(err);

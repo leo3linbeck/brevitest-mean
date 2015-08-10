@@ -173,7 +173,7 @@ describe('Device pool CRUD tests', function() {
 			request(app).get('/device-pools')
 				.end(function(req, res) {
 					// Set assertion
-					res.body.should.be.an.Object;
+					res.body.should.be.an.Object; // jshint ignore:line
 
 					// Call the assertion callback
 					done();

@@ -17,7 +17,6 @@ angular.module('users').controller('SettingsController', ['$scope', '$http', '$l
 			for (var i in $scope.user.additionalProvidersData) {
 				return true;
 			}
-
 			return false;
 		};
 
@@ -52,8 +51,12 @@ angular.module('users').controller('SettingsController', ['$scope', '$http', '$l
 				user.$update(function(response) {
 					$scope.success = true;
 					Authentication.user = response;
+					$location.path('/');
+					/*global swal */
+					swal({title: '', text: '<b>' + $scope.user.firstName + ' ' + $scope.user.lastName +  ' has been updated!</b>', type: 'success', confirmButtonColor: '#5cb85c', html: true});
 				}, function(response) {
-					$scope.error = response.data.message;
+					/*global swal */
+					swal({title: '', text: '<b>' + response.data.message + '</b>', type: 'error', confirmButtonColor: 'rgb(242,116,116)', html: true});
 				});
 			} else {
 				$scope.submitted = true;
@@ -68,8 +71,12 @@ angular.module('users').controller('SettingsController', ['$scope', '$http', '$l
 				// If successful show success message and clear form
 				$scope.success = true;
 				$scope.passwordDetails = null;
+				$location.path('/');
+				/*global swal */
+				swal({title: '', text: '<b>' + Authentication.user.firstName + ' ' + Authentication.user.lastName +  '\'s password has been updated!</b>', type: 'success', confirmButtonColor: '#5cb85c', html: true});
 			}).error(function(response) {
-				$scope.error = response.message;
+				/*global swal */
+				swal({title: '', text: '<b>' + response.message + '</b>', type: 'error', confirmButtonColor: 'rgb(242,116,116)', html: true});
 			});
 		};
 	}

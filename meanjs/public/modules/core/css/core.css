@@ -25,3 +25,9 @@
     /*border: 3px #5cb85c solid;*/
     color: green;
 }
+
+.accordion-toggle:hover {
+    color: rgba(0,0,0,0.6);
+    text-decoration: none;
+    cursor: pointer;
+}

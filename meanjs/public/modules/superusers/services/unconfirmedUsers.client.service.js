@@ -10,7 +10,7 @@ angular.module('superusers').factory('unconfirmedUsers', [ 'Superusers', '$q', f
             users = response;
             // count the number of users without the role 'user' and save to variable: unconfirmedUsers
             for (var i = 0; i < users.length; i++) {
-                if (!(users[i].roles.indexOf('user') > -1)) {
+                if (users[i].roles.indexOf('user') === -1) {
                     unconfirmedUsers++;
                 }
             }

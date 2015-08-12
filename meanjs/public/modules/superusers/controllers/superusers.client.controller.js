@@ -72,5 +72,11 @@ angular.module('superusers').controller('SuperusersController', ['$scope', '$sta
                 };
             });
         };
+        
+        $scope.hasRole = function (role) {
+            if ($scope.superuser.roles) {
+                return $scope.superuser.roles.indexOf('superuser') > -1;   
+            }
+        };
     }
 ]);

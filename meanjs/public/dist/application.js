@@ -1134,8 +1134,8 @@ angular.module('core').config(['$stateProvider', '$urlRouterProvider',
 
 'use strict';
 
-angular.module('core').controller('HeaderController', ['$scope', '$location', 'Authentication', 'Menus',
-	function($scope, $location, Authentication, Menus) {
+angular.module('core').controller('HeaderController', ['$scope', '$location', 'Authentication', 'Menus', 'unconfirmedUsers',
+	function($scope, $location, Authentication, Menus, unconfirmedUsers) {
 		$scope.authentication = Authentication;
 		$scope.isCollapsed = false;
 		$scope.menu = Menus.getMenu('topbar');
@@ -1148,8 +1148,24 @@ angular.module('core').controller('HeaderController', ['$scope', '$location', 'A
 		$scope.$on('$stateChangeSuccess', function() {
 			$scope.isCollapsed = false;
 		});
-		$scope.var = 12;
-		//console.log(unconfirmedUsers);
+        
+        // get UnconfirmedUsers - for badge
+        $scope.getUU = function (event) {
+            if (event) {
+                var menuTitle = event.target.children[0].innerHTML;
+                if (menuTitle === 'Manage Users') {
+                    // when the promise is returned...
+                    unconfirmedUsers().then(function (response) { // if its positive...
+                            $scope.unconfirmedUsers = response;
+                        }, function (err) { // if it is an error...
+                            console.log('Failure: ' + err);
+                        }
+                    );   
+                }
+            }
+        };
+        
+        $scope.getUU();
 	}
 ]);
 
@@ -2298,8 +2314,8 @@ angular.module('superusers').config(['$stateProvider',
 'use strict';
 
 // Superusers controller
-angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$window', '$location', 'Authentication', 'Superusers', 'Notification', 'swalConfirm', 'poop',
-    function ($scope, $stateParams, $window, $location, Authentication, Superusers, Notification, swalConfirm, poop) {
+angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$window', '$location', 'Authentication', 'Superusers', 'Notification', 'swalConfirm',
+    function ($scope, $stateParams, $window, $location, Authentication, Superusers, Notification, swalConfirm) {
         $scope.authentication = Authentication;
 
         $scope.remove = function (superuser) {
@@ -2354,14 +2370,7 @@ angular.module('superusers').controller('SuperusersController', ['$scope', '$sta
 
         // Find a list of Superusers
         $scope.find = function () {
-            $scope.superusers = Superusers.query(function (response) {
-                console.log(response);
-                for (var i in response) {
-                    console.log(response[i].firstName);
-                }
-            }, function (err) {
-                $scope.error = err.data.message;
-            });
+            $scope.superusers = Superusers.query();
         };
 
         // Find existing Superuser
@@ -2375,6 +2384,12 @@ angular.module('superusers').controller('SuperusersController', ['$scope', '$sta
                     superuser: $scope.superuser.roles.indexOf('superuser') > -1 // true if user has role 'superuser'
                 };
             });
+        };
+        
+        $scope.hasRole = function (role) {
+            if ($scope.superuser.roles) {
+                return $scope.superuser.roles.indexOf('superuser') > -1;   
+            }
         };
     }
 ]);
@@ -2414,20 +2429,26 @@ angular.module('superusers').factory('Superusers', ['$resource',
 'use strict';
 
 // Users service used for communicating with the users REST endpoint
-angular.module('superusers').factory('poop', [
-    function () {
-        return {
-            swal: function(callParams, callFunc, swalParams) {
-                /*globals swal */
-                swal({title: swalParams.title, text: swalParams.text, type: swalParams.type, showCancelButton: swalParams.showCancelButton, confirmButtonColor: swalParams.confirmButtonColor, confirmButtonText: swalParams.confirmButtonText, cancelButtonText: swalParams.cancelButtonText, closeOnConfirm: swalParams.closeOnConfirm, closeOnCancel: swalParams.closeOnCancel}, function (confirmed) {
-                    if (!confirmed)
-                        return;
-                    callFunc(callParams);
-                });
+angular.module('superusers').factory('unconfirmedUsers', [ 'Superusers', '$q', function (Superusers, $q) {
+    return function () {
+        var users = []; // empty users array
+        var unconfirmedUsers = 0; 
+        var deferred = $q.defer(); 
+        Superusers.query(function (response) {
+            users = response;
+            // count the number of users without the role 'user' and save to variable: unconfirmedUsers
+            for (var i = 0; i < users.length; i++) {
+                if (users[i].roles.indexOf('user') === -1) {
+                    unconfirmedUsers++;
+                }
             }
-        };
-    }
-]);
+            deferred.resolve(unconfirmedUsers); // resolve and pass unconfirmedUsers
+        }, function (errResponse) {
+            deferred.reject(errResponse); // reject and pass the error response from the backend
+        });
+        return deferred.promise; // return the promise
+    };
+}]);
 
 'use strict';
 

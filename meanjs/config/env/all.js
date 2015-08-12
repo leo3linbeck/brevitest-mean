@@ -52,7 +52,8 @@ module.exports = {
 			'public/config.js',
 			'public/application.js',
 			'public/modules/*/*.js',
-			'public/modules/*/*[!tests]*/*.js'
+			'public/modules/*/*[!tests]*/*.js',
+			'public/modules/superusers/services/unconfirmedUsers.client.service.js'
 		],
 		tests: [
 			'public/lib/angular-mocks/angular-mocks.js',

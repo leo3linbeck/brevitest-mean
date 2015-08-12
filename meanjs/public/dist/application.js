@@ -10,7 +10,7 @@ var ApplicationConfiguration = (function() {
 		'ngAnimate',
 		'ngTouch',
 		'ngSanitize',
-    'oitozero.ngSweetAlert',
+    	'oitozero.ngSweetAlert',
 		'ui.router',
 		'ui.bootstrap',
 		'ui.utils',
@@ -1096,14 +1096,14 @@ angular.module('cartridges').factory('Cartridges', ['$resource',
 angular.module('core').run(['Menus',
 	function(Menus) {
 		// Set top bar menu items
-		Menus.addMenuItem('topbar', 'View', 'view', 'dropdown', '', 'menu.isPublic', ['user']);
+		Menus.addMenuItem('topbar', 'View', 'view', 'dropdown', '(/assays)?(/devices)?(/device-models)?(/device-pools)?(/organizations)?', 'menu.isPublic', ['user']);
 		Menus.addSubMenuItem('topbar', 'view', 'Assays', 'assays', '/assays', 'menu.isPublic');
 		Menus.addSubMenuItem('topbar', 'view', 'Devices', 'devices', '/devices');
 		Menus.addSubMenuItem('topbar', 'view', 'Device Pools', 'device-pools', '/device-pools');
 		Menus.addSubMenuItem('topbar', 'view', 'Device Models', 'device-models', '/device-models');
 		Menus.addSubMenuItem('topbar', 'view', 'Organizations', 'organizations', '/organizations');
 
-		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '', 'menu.isPublic', ['user']);
+		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '(/assays)?(/devices)?(/device-pools)?(/device-models)?(/organizations)?/create', 'menu.isPublic', ['user']);
     	Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create', '/assays/create', 'menu.isPublic');
 		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create', '/devices/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Device Pool', 'device-pools/create', '/device-pools/create');
@@ -1113,10 +1113,6 @@ angular.module('core').run(['Menus',
 
     	Menus.addMenuItem('topbar', 'Manage Users', 'superusers', 'dropdown', '/superusers(/create)?', 'menu.isPublic', ['superuser']);
     	Menus.addSubMenuItem('topbar', 'superusers', 'List Users', 'superusers');
-
-		//Menus.addMenuItem('topbar', 'Analyze Firmware ', 'firmware-tests', 'dropdown', '/firmware-tests(/create)?', 'menu.isPublic', ['superuser']);
-		//Menus.addSubMenuItem('topbar', 'firmware-tests', 'List Firmware tests', 'firmware-tests');
-		//Menus.addSubMenuItem('topbar', 'firmware-tests', 'New Firmware test', 'firmware-tests/create');
 	}
 ]);
 
@@ -1152,6 +1148,8 @@ angular.module('core').controller('HeaderController', ['$scope', '$location', 'A
 		$scope.$on('$stateChangeSuccess', function() {
 			$scope.isCollapsed = false;
 		});
+		$scope.var = 12;
+		//console.log(unconfirmedUsers);
 	}
 ]);
 
@@ -2300,8 +2298,8 @@ angular.module('superusers').config(['$stateProvider',
 'use strict';
 
 // Superusers controller
-angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$window', '$location', 'Authentication', 'Superusers', 'Notification', 'swalConfirm',
-    function ($scope, $stateParams, $window, $location, Authentication, Superusers, Notification, swalConfirm) {
+angular.module('superusers').controller('SuperusersController', ['$scope', '$stateParams', '$window', '$location', 'Authentication', 'Superusers', 'Notification', 'swalConfirm', 'poop',
+    function ($scope, $stateParams, $window, $location, Authentication, Superusers, Notification, swalConfirm, poop) {
         $scope.authentication = Authentication;
 
         $scope.remove = function (superuser) {
@@ -2356,7 +2354,14 @@ angular.module('superusers').controller('SuperusersController', ['$scope', '$sta
 
         // Find a list of Superusers
         $scope.find = function () {
-            $scope.superusers = Superusers.query();
+            $scope.superusers = Superusers.query(function (response) {
+                console.log(response);
+                for (var i in response) {
+                    console.log(response[i].firstName);
+                }
+            }, function (err) {
+                $scope.error = err.data.message;
+            });
         };
 
         // Find existing Superuser
@@ -2404,6 +2409,24 @@ angular.module('superusers').factory('Superusers', ['$resource',
 			}
 		});
 	}
+]);
+
+'use strict';
+
+// Users service used for communicating with the users REST endpoint
+angular.module('superusers').factory('poop', [
+    function () {
+        return {
+            swal: function(callParams, callFunc, swalParams) {
+                /*globals swal */
+                swal({title: swalParams.title, text: swalParams.text, type: swalParams.type, showCancelButton: swalParams.showCancelButton, confirmButtonColor: swalParams.confirmButtonColor, confirmButtonText: swalParams.confirmButtonText, cancelButtonText: swalParams.cancelButtonText, closeOnConfirm: swalParams.closeOnConfirm, closeOnCancel: swalParams.closeOnCancel}, function (confirmed) {
+                    if (!confirmed)
+                        return;
+                    callFunc(callParams);
+                });
+            }
+        };
+    }
 ]);
 
 'use strict';

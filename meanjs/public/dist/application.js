@@ -85,10 +85,6 @@ ApplicationConfiguration.registerModule('devices');
 'use strict';
 
 // Use applicaion configuration module to register a new module
-ApplicationConfiguration.registerModule('firmware-tests');
-'use strict';
-
-// Use applicaion configuration module to register a new module
 ApplicationConfiguration.registerModule('manufacturers');
 'use strict';
 
@@ -732,7 +728,7 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 
     // Update existing Assay
     $scope.update = function() {
-      var assay = $scope.assay;
+      var assay = new Assays($scope.assay);
 
       assay.BCODE = $scope.BCODE;
       assay.analysis = $scope.analysis;
@@ -901,7 +897,7 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 
 			// Redirect after save
 			cartridge.$save(function(response) {
-				$location.path('cartridges/' + response._id);
+				$location.path('cartridges');
 
 				// Clear form fields
 				$scope.name = '';
@@ -932,10 +928,10 @@ angular.module('cartridges').controller('CartridgesController', ['$scope', '$htt
 
 		// Update existing Cartridge
 		$scope.update = function() {
-			var cartridge = $scope.cartridge;
+			var cartridge = new Cartridges($scope.cartridge);
 
 			cartridge.$update(function() {
-				$location.path('cartridges/' + cartridge._id);
+				$location.path('cartridges');
 			}, function(errorResponse) {
 				//$scope.error = errorResponse.data.message;
                 Notification.error(errorResponse.data.message);
@@ -1108,19 +1104,19 @@ angular.module('core').run(['Menus',
 		Menus.addSubMenuItem('topbar', 'view', 'Organizations', 'organizations', '/organizations');
 
 		Menus.addMenuItem('topbar', 'Create', 'new', 'dropdown', '', 'menu.isPublic', ['user']);
-    Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create', '/assays/create', 'menu.isPublic');
+    	Menus.addSubMenuItem('topbar', 'new', 'Assay', 'assays/create', '/assays/create', 'menu.isPublic');
 		Menus.addSubMenuItem('topbar', 'new', 'Device', 'devices/create', '/devices/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Device Pool', 'device-pools/create', '/device-pools/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Device Model', 'device-models/create', '/device-models/create');
 		Menus.addSubMenuItem('topbar', 'new', 'Cartridge Labels', 'cartridges/labels', '/cartridges/labels');
 		Menus.addSubMenuItem('topbar', 'new', 'Organization', 'organizations/create', '/organizations/create');
 
-    Menus.addMenuItem('topbar', 'Manage Users', 'superusers', 'dropdown', '/superusers(/create)?', 'menu.isPublic', ['superuser']);
-    Menus.addSubMenuItem('topbar', 'superusers', 'List Users', 'superusers');
+    	Menus.addMenuItem('topbar', 'Manage Users', 'superusers', 'dropdown', '/superusers(/create)?', 'menu.isPublic', ['superuser']);
+    	Menus.addSubMenuItem('topbar', 'superusers', 'List Users', 'superusers');
 
-		Menus.addMenuItem('topbar', 'Analyze Firmware ', 'firmware-tests', 'dropdown', '/firmware-tests(/create)?', 'menu.isPublic', ['superuser']);
-		Menus.addSubMenuItem('topbar', 'firmware-tests', 'List Firmware tests', 'firmware-tests');
-		Menus.addSubMenuItem('topbar', 'firmware-tests', 'New Firmware test', 'firmware-tests/create');
+		//Menus.addMenuItem('topbar', 'Analyze Firmware ', 'firmware-tests', 'dropdown', '/firmware-tests(/create)?', 'menu.isPublic', ['superuser']);
+		//Menus.addSubMenuItem('topbar', 'firmware-tests', 'List Firmware tests', 'firmware-tests');
+		//Menus.addSubMenuItem('topbar', 'firmware-tests', 'New Firmware test', 'firmware-tests/create');
 	}
 ]);
 
@@ -1459,7 +1455,7 @@ angular.module('device-models').controller('DeviceModelsController', ['$scope', 
 
     // Update existing Device model
     $scope.update = function() {
-      var deviceModel = $scope.deviceModel;
+      var deviceModel = new DeviceModels($scope.deviceModel);
 
       deviceModel.$update(function() {
         $location.path('device-models');
@@ -1607,7 +1603,7 @@ angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$
 
     // Update existing Device pool
     $scope.update = function() {
-      var devicePool = $scope.devicePool;
+      var devicePool = new DevicePools($scope.devicePool);
       devicePool._organization = $scope.organization ? $scope.organization._id : '';
 
       devicePool.$update(function() {
@@ -1628,7 +1624,7 @@ angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$
         devicePoolId: $stateParams.devicePoolId
       }, function() {
         $scope.organizations = $scope.organizations || Organizations.query();
-				$scope.organization = $scope.devicePool._organization || {};
+        $scope.organization = $scope.devicePool._organization || {};
         $http.post('/devices/pool', {
           devicePoolID: $stateParams.devicePoolId
         }).
@@ -1775,7 +1771,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
       }).
       success(function(data, status, headers, config) {
         console.log(data);
-        Notification.success(data.result);
+        Notification.success(data.msg);
         $scope.device.$save();
       }).
       error(function(err, status, headers, config) {
@@ -1789,8 +1785,8 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
         device: $scope.device
       }).
       success(function(data, status, headers, config) {
-        console.log(data);
-        Notification.success(data.result);
+        console.log(data.msg);
+        Notification.success('Firmware flash underway...');
         $scope.device.$save();
       }).
       error(function(err, status, headers, config) {
@@ -1896,7 +1892,7 @@ angular.module('devices').controller('DevicesController', ['$scope', '$http', '$
 
     // Update existing Device
     $scope.update = function() {
-      var device = $scope.device;
+      var device = new Devices($scope.device);
       device._deviceModel = $scope.deviceModel ? $scope.deviceModel._id : '';
       device._devicePool = $scope.devicePool ? $scope.devicePool._id : '';
 
@@ -2049,110 +2045,6 @@ angular.module('devices').factory('Devices', ['$resource',
 'use strict';
 
 //Setting up route
-angular.module('firmware-tests').config(['$stateProvider',
-	function($stateProvider) {
-		// Firmware tests state routing
-		$stateProvider.
-		state('listFirmwareTests', {
-			url: '/firmware-tests',
-			templateUrl: 'modules/firmware-tests/views/list-firmware-tests.client.view.html'
-		}).
-		state('createFirmwareTest', {
-			url: '/firmware-tests/create',
-			templateUrl: 'modules/firmware-tests/views/create-firmware-test.client.view.html'
-		}).
-		state('viewFirmwareTest', {
-			url: '/firmware-tests/:firmwareTestId',
-			templateUrl: 'modules/firmware-tests/views/view-firmware-test.client.view.html'
-		}).
-		state('editFirmwareTest', {
-			url: '/firmware-tests/:firmwareTestId/edit',
-			templateUrl: 'modules/firmware-tests/views/edit-firmware-test.client.view.html'
-		});
-	}
-]);
-'use strict';
-
-// Firmware tests controller
-angular.module('firmware-tests').controller('FirmwareTestsController', ['$scope', '$stateParams', '$location', 'Authentication', 'FirmwareTests',
-	function($scope, $stateParams, $location, Authentication, FirmwareTests) {
-		$scope.authentication = Authentication;
-
-		// Create new Firmware test
-		$scope.create = function() {
-			// Create new Firmware test object
-			var firmwareTest = new FirmwareTests ({
-				name: this.name
-			});
-
-			// Redirect after save
-			firmwareTest.$save(function(response) {
-				$location.path('firmware-tests/' + response._id);
-
-				// Clear form fields
-				$scope.name = '';
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
-
-		// Remove existing Firmware test
-		$scope.remove = function(firmwareTest) {
-			if ( firmwareTest ) { 
-				firmwareTest.$remove();
-
-				for (var i in $scope.firmwareTests) {
-					if ($scope.firmwareTests [i] === firmwareTest) {
-						$scope.firmwareTests.splice(i, 1);
-					}
-				}
-			} else {
-				$scope.firmwareTest.$remove(function() {
-					$location.path('firmware-tests');
-				});
-			}
-		};
-
-		// Update existing Firmware test
-		$scope.update = function() {
-			var firmwareTest = $scope.firmwareTest;
-
-			firmwareTest.$update(function() {
-				$location.path('firmware-tests/' + firmwareTest._id);
-			}, function(errorResponse) {
-				$scope.error = errorResponse.data.message;
-			});
-		};
-
-		// Find a list of Firmware tests
-		$scope.find = function() {
-			$scope.firmwareTests = FirmwareTests.query();
-		};
-
-		// Find existing Firmware test
-		$scope.findOne = function() {
-			$scope.firmwareTest = FirmwareTests.get({ 
-				firmwareTestId: $stateParams.firmwareTestId
-			});
-		};
-	}
-]);
-'use strict';
-
-//Firmware tests service used to communicate Firmware tests REST endpoints
-angular.module('firmware-tests').factory('FirmwareTests', ['$resource',
-	function($resource) {
-		return $resource('firmware-tests/:firmwareTestId', { firmwareTestId: '@_id'
-		}, {
-			update: {
-				method: 'PUT'
-			}
-		});
-	}
-]);
-'use strict';
-
-//Setting up route
 angular.module('manufacturers').config(['$stateProvider',
 	function($stateProvider) {
 		// Manufacturers state routing
@@ -2239,7 +2131,7 @@ angular.module('manufacturers').controller('ManufacturersController', ['$scope',
 
     // Update existing Manufacturer
     $scope.update = function() {
-      var manufacturer = $scope.manufacturer;
+      var manufacturer = new Manufacturers($scope.manufacturer);
 
       manufacturer.addresses = $scope.addresses;
       manufacturer.$update(function() {
@@ -2347,7 +2239,7 @@ angular.module('organizations').controller('OrganizationsController', ['$scope',
 
 		// Update existing Organization
 		$scope.update = function() {
-			var organization = $scope.organization;
+			var organization = new Organizations($scope.organization);
 
 			organization.$update(function() {
 				$location.path('organizations');
@@ -3058,7 +2950,7 @@ angular.module('tests').controller('TestsController', ['$scope', '$stateParams',
 
     // Update existing Test
     $scope.update = function() {
-      var test = $scope.test;
+      var test = new Tests($scope.test);
 
       test.$update(function() {
         $location.path('tests');
@@ -3279,7 +3171,6 @@ angular.module('users').controller('SettingsController', ['$scope', '$http', '$l
 			for (var i in $scope.user.additionalProvidersData) {
 				return true;
 			}
-
 			return false;
 		};
 
@@ -3314,8 +3205,12 @@ angular.module('users').controller('SettingsController', ['$scope', '$http', '$l
 				user.$update(function(response) {
 					$scope.success = true;
 					Authentication.user = response;
+					$location.path('/');
+					/*global swal */
+					swal({title: '', text: '<b>' + $scope.user.firstName + ' ' + $scope.user.lastName +  ' has been updated!</b>', type: 'success', confirmButtonColor: '#5cb85c', html: true});
 				}, function(response) {
-					$scope.error = response.data.message;
+					/*global swal */
+					swal({title: '', text: '<b>' + response.data.message + '</b>', type: 'error', confirmButtonColor: 'rgb(242,116,116)', html: true});
 				});
 			} else {
 				$scope.submitted = true;
@@ -3330,8 +3225,12 @@ angular.module('users').controller('SettingsController', ['$scope', '$http', '$l
 				// If successful show success message and clear form
 				$scope.success = true;
 				$scope.passwordDetails = null;
+				$location.path('/');
+				/*global swal */
+				swal({title: '', text: '<b>' + Authentication.user.firstName + ' ' + Authentication.user.lastName +  '\'s password has been updated!</b>', type: 'success', confirmButtonColor: '#5cb85c', html: true});
 			}).error(function(response) {
-				$scope.error = response.message;
+				/*global swal */
+				swal({title: '', text: '<b>' + response.message + '</b>', type: 'error', confirmButtonColor: 'rgb(242,116,116)', html: true});
 			});
 		};
 	}

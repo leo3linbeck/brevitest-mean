@@ -1,7 +1,10 @@
 <section data-ng-controller="SuperusersController" data-ng-init="findOne()">
     <div data-ng-hide="!(superuser.firstName)">
         <div class="page-header">
-            <h1 data-ng-bind="superuser.displayName"></h1>
+          <div>
+            <span data-ng-bind="superuser.displayName" class="h1"></span>&nbsp;&nbsp;
+            <img data-ng-if="hasRole('superuser')" src="modules/superusers/imgs/crown128.png" style="width:3em; line-height: 1.1; vertical-align:top""/>
+          </div>
         </div>
         <div class="pull-right">
             <a class="btn btn-primary" href="/#!/superusers/{{superuser._id}}/edit">

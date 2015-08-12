@@ -10,14 +10,14 @@
 	</div>
 	<nav class="collapse navbar-collapse" collapse="!isCollapsed" role="navigation">
 		<ul class="nav navbar-nav" data-ng-if="menu.shouldRender(authentication.user);">
-			<li data-ng-repeat="item in menu.items | orderBy: 'position'" data-ng-if="item.shouldRender(authentication.user);" ng-switch="item.menuItemType" ui-route="{{item.uiRoute}}" class="{{item.menuItemClass}}" ng-class="{active: ($uiRoute)}" dropdown="item.menuItemType === 'dropdown'">
-				<a ng-switch-when="dropdown" class="dropdown-toggle">
-					<span data-ng-bind="item.title"></span>
+			<li data-ng-repeat="item in menu.items | orderBy: 'position'" data-ng-if="item.shouldRender(authentication.user);" ng-switch="item.menuItemType" ui-route="{{item.uiRoute}}" class="{{item.menuItemClass}}" ng-class="{active: ($uiRoute)}" dropdown="item.menuItemType === 'dropdown'" ng-click="item.title==='Manage Users' && getUU($event)">
+				<a ng-switch-when="dropdown" class="dropdown-toggle no-select cursor-pointer">
+					<span data-ng-bind="item.title" class="no-click"></span>
 					<b class="caret"></b>
 				</a>
 				<ul ng-switch-when="dropdown" class="dropdown-menu">
 					<li data-ng-repeat="subitem in item.items | orderBy: 'position'" data-ng-if="subitem.shouldRender(authentication.user);" ui-route="{{subitem.uiRoute}}" ng-class="{active: $uiRoute}">
-						<a href="/#!/{{subitem.link}}" data-ng-bind="subitem.title"></a>
+						<a href="/#!/{{subitem.link}}"><span data-ng-bind="subitem.title"></span>&nbsp;<span data-ng-if="subitem.title === 'List Users'" ng-class="{'active-badge': $uiRoute}" class="badge" data-ng-bind="unconfirmedUsers"></span></a>
 					</li>
 				</ul>
 				<a ng-switch-default href="/#!/{{item.link}}" data-ng-bind="item.title"></a>
@@ -58,5 +58,4 @@
 			</li>
 		</ul>
 	</nav>
-	<!--<div data-ng-if="menu.isAdmin(authentication.user);">popopopopopopopopppppp</div>-->
 </div>

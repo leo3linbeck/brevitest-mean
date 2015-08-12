@@ -8,22 +8,14 @@
 			</a>
 		</div>
 	</div>
-	<h3 class="col-md-12 text-center">Connect other social accounts:</h3>
-	<div class="col-md-12 text-center">
-		<a href="/auth/facebook" data-ng-hide="isConnectedSocialAccount('facebook')" class="undecorated-link">
-			<img src="/modules/users/img/buttons/facebook.png">
-		</a>
-		<a href="/auth/twitter" data-ng-hide="isConnectedSocialAccount('twitter')" class="undecorated-link">
-			<img src="/modules/users/img/buttons/twitter.png">
-		</a>
-		<a href="/auth/google" data-ng-hide="isConnectedSocialAccount('google')" class="undecorated-link">
-			<img src="/modules/users/img/buttons/google.png">
-		</a>
-		<a href="/auth/linkedin" data-ng-hide="isConnectedSocialAccount('linkedin')" class="undecorated-link">
-			<img src="/modules/users/img/buttons/linkedin.png">
-		</a>
-		<a href="/auth/github" data-ng-hide="isConnectedSocialAccount('github')" class="undecorated-link">
-			<img src="/modules/users/img/buttons/github.png">
-		</a>
+    <div class="col-md-10 col-md-offset-1 text-center well" style="margin-top: 3vh;">
+      <h3><i class="fa fa-plus-square-o"></i> Connect Social Accounts</h3>
+    </div>
+	<div class="col-md-offset-2 col-md-8 text-center">
+    <div class="form-group social-media-icon" data-ng-hide="isConnectedSocialAccount('twitter')"><a class="btn btn-block btn-social btn-twitter" href="/auth/twitter"><i class="fa fa-twitter"></i> Connect Twitter</a></div>
+    <div class="form-group social-media-icon" data-ng-hide="isConnectedSocialAccount('facebook')"><a class="btn btn-block btn-social btn-facebook" href="/auth/facebook"><i class="fa fa-facebook"></i> Connect Facebook</a></div>
+    <div class="form-group social-media-icon" data-ng-hide="isConnectedSocialAccount('google')"><a class="btn btn-block btn-social btn-google" href="/auth/google"><i class="fa fa-google-plus"></i> Connect Google+</a></div>
+    <div class="form-group social-media-icon" data-ng-hide="isConnectedSocialAccount('linkedin')"><a class="btn btn-block btn-social btn-linkedin" href="/auth/linkedin"><i class="fa fa-linkedin"></i> Connect LinkedIn</a></div>
+    <div class="form-group social-media-icon" data-ng-hide="isConnectedSocialAccount('github')"><a class="btn btn-block btn-social btn-github" href="/auth/github"><i class="fa fa-github"></i> Connect Github</a></div>
 	</div>
 </section>

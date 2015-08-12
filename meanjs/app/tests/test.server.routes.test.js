@@ -109,9 +109,6 @@ describe('Test CRUD tests', function() {
 				// Handle signin error
 				if (signinErr) done(signinErr);
 
-                // Remove the reference property from test object
-                delete test['reference'];
-
 				// Save a new Test
 				agent.post('/tests')
 					.send(test)

@@ -35,7 +35,7 @@ describe('Test CRUD tests', function() {
 			provider: 'local'
 		});
 
-		// Save a user to the test db 
+		// Save a user to the test db
 		user.save(function() { // On success: create new Test
 			test = {
 				reference: 'Test Reference',
@@ -110,7 +110,7 @@ describe('Test CRUD tests', function() {
 				if (signinErr) done(signinErr);
 
                 // Remove the reference property from test object
-                delete test['reference'];
+                delete test.reference;
 
 				// Save a new Test
 				agent.post('/tests')
@@ -119,7 +119,7 @@ describe('Test CRUD tests', function() {
 					.end(function(testSaveErr, testSaveRes) {
 						// Set message assertion
 						(testSaveRes.body.message).should.match('Please fill Test reference');
-						
+
 						// Handle Test save error
 						done(testSaveErr);
 					});
@@ -239,7 +239,7 @@ describe('Test CRUD tests', function() {
 	});
 
 	it('should not be able to delete Test instance if not signed in', function(done) {
-		// Set Test user 
+		// Set Test user
 		test.user = user;
 
 		// Create new Test model instance

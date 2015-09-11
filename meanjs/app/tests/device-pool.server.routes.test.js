@@ -115,7 +115,7 @@ describe('Device pool CRUD tests', function() {
 					.end(function(devicePoolSaveErr, devicePoolSaveRes) {
 						// Set message assertion
 						(devicePoolSaveRes.body.message).should.match('Please fill Device pool name');
-						
+
 						// Handle Device pool save error
 						done(devicePoolSaveErr);
 					});
@@ -173,7 +173,7 @@ describe('Device pool CRUD tests', function() {
 			request(app).get('/device-pools')
 				.end(function(req, res) {
 					// Set assertion
-					res.body.should.be.an.Object;
+					res.body.should.be.an.Array();
 
 					// Call the assertion callback
 					done();
@@ -238,7 +238,7 @@ describe('Device pool CRUD tests', function() {
 	});
 
 	it('should not be able to delete Device pool instance if not signed in', function(done) {
-		// Set Device pool user 
+		// Set Device pool user
 		devicePool.user = user;
 
 		// Create new Device pool model instance

@@ -74,7 +74,7 @@ angular.module('cartridges').controller('CartridgeLabelsController', ['$scope', 
 		};
 
 		$scope.currentPage = 0;
-		$scope.itemsPerPage = 10;
+		$scope.itemsPerPage = 8;
 
 		$scope.pageChanged = function() {
 			console.log($scope.currentPage);

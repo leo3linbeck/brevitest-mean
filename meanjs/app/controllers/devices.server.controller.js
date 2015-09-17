@@ -176,13 +176,14 @@ exports.claim = function(req, res) {
       }
     })
     .spread(function(device, particle_device, cartridgeID) {
+        console.log('cartridgeID', cartridgeID);
       return [device, particle_device, Cartridge.findById(cartridgeID).exec()];
     })
     .spread(function(device, particle_device, cartridge) {
       if (!cartridge || !cartridge._id) { // cartridge not found in database
         throw new Error('Unable to find cartridge record');
       } else {
-        return [device, particle_device, cartridge, Assay.findById(cartridge._assay).exec()];
+        return [device, particle_device, cartridge, Assay.findById(cartridge._assay._id).exec()];
       }
     })
     .spread(function(device, particle_device, cartridge, assay) {
@@ -193,7 +194,7 @@ exports.claim = function(req, res) {
       }
     })
     .spread(function(device, particle_device, cartridge, assay, result) {
-      if (result.return_value === 999) { // assay not found in cache
+      if (result.return_value === 9999) { // assay not found in cache
         return [device, particle_device, cartridge, assay, particle.send_assay_to_particle(particle_device, assay), assay];
       } else {
         return [device, particle_device, cartridge, assay, {return_value: 777}];

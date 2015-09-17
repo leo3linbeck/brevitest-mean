@@ -157,7 +157,7 @@ exports.load = function(req, res) {
 	  select: 'displayName'
 	}, {
 	  path: '_assay',
-	  select: 'name'
+	  select: '_id, name'
 	}]).exec(function(err, cartridges, total) {
 		if (err) {
 			return res.status(400).send({

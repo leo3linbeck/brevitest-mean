@@ -70,7 +70,6 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
     $scope.claimDevice = function(indx) {
       if (indx !== $scope.activeDevice) {
         Notification.info('Setting up device, please wait...');
-        $scope.activeDevice = indx;
         $http.post('/devices/claim', {
           currentDeviceID: $scope.activeDevice === -1 ? '' : $scope.devices[$scope.activeDevice]._id,
           newDeviceID: $scope.devices[indx]._id
@@ -85,6 +84,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
           Notification.error(err.message);
           $scope.activeDevice = -1;
         });
+        $scope.activeDevice = indx;
       }
     };
 

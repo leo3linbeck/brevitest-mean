@@ -193,27 +193,6 @@ exports.claim = function(req, res) {
       }
     })
     .spread(function(device, particle_device, cartridge, assay) {
-    //   console.log('assay', assay);
-    //   if (!assay || !assay._id) { // assay not found in database
-    //     throw new Error('Unable to find assay record');
-    //   } else {
-    //     return [device, particle_device, cartridge, assay, particle.execute_particle_command(particle_device, 'check_assay_cache', assay._id)];
-    //   }
-    // })
-    // .spread(function(device, particle_device, cartridge, assay, result) {
-    //   if (result.return_value === 999) { // assay not found in cache
-    //     return [device, particle_device, cartridge, assay, particle.send_assay_to_particle(particle_device, assay)];
-    //   } else {
-    //     return [device, particle_device, cartridge, assay, {return_value: 777}];
-    //   }
-    // })
-    // .spread(function(device, particle_device, cartridge, assay, result) {
-    //   result.msg = ;
-    //   device.claimed = true;
-    //   device.save();
-    //   return [device, cartridge, assay];
-    // })
-    // .spread(function(device, cartridge, assay, result) {
       console.log('Device claimed');
       res.jsonp({
         device: device,

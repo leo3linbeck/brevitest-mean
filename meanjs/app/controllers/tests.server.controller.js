@@ -172,23 +172,41 @@ exports.begin = function(req, res) {
       if (result.return_value !== 0) {
         throw new Error('Error verifying cartridge, code = ' + result.return_value);
       }
-      return [device, particle_device, test, Assay.findById(req.body.assayID).exec()];
+      return [device, particle_device, Assay.findById(req.body.assayID).exec()];
     })
-    .spread(function(device, particle_device, test, assay) {
-      test = new Test();
-      test.user = req.user;
-      test.reference = req.body.reference;
-      test.subject = req.body.subject;
-      test.description = req.body.description;
-      test.standardCurve = assay.standardCurve;
-      test.analysis = assay.analysis;
-      test._assay = req.body.assayID;
-      test._device = req.body.deviceID;
-      test._cartridge = req.body.cartridgeID;
-      test.status = 'Starting';
-      test.percentComplete = 0;
-      test.save();
-      return [device, particle_device, test, assay, particle.send_test_to_particle(particle_device, test)];
+    .spread(function(device, particle_device, assay) {
+      console.log('assay', assay);
+      if (!assay || !assay._id) { // assay not found in database
+        throw new Error('Unable to find assay record');
+      } else {
+        return [device, particle_device, assay, particle.execute_particle_command(particle_device, 'check_assay_cache', assay._id)];
+      }
+    })
+    .spread(function(device, particle_device, assay, result) {
+      if (result.return_value === 999) { // assay not found in cache
+        return [device, particle_device, assay, particle.send_assay_to_particle(particle_device, assay)];
+      } else {
+        return [device, particle_device, assay, {return_value: 777}];
+      }
+    })
+    .spread(function(device, particle_device, assay, result) {
+        if (result.return_value < 0) {
+          throw new Error('Error loading assay, code = ' + result.return_value);
+        }
+        test = new Test();
+        test.user = req.user;
+        test.reference = req.body.reference;
+        test.subject = req.body.subject;
+        test.description = req.body.description;
+        test.standardCurve = assay.standardCurve;
+        test.analysis = assay.analysis;
+        test._assay = req.body.assayID;
+        test._device = req.body.deviceID;
+        test._cartridge = req.body.cartridgeID;
+        test.status = 'Starting';
+        test.percentComplete = 0;
+        test.save();
+        return [device, particle_device, test, assay, particle.send_test_to_particle(particle_device, test)];
     })
     .spread(function(device, particle_device, test, assay, result) {
       if (result.return_value < 0) {

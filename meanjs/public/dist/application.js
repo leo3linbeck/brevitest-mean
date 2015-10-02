@@ -1532,116 +1532,116 @@ var _ = window._;
 
 // Device pools controller
 angular.module('device-pools').controller('DevicePoolsController', ['$scope', '$stateParams', '$location', '$http', 'Authentication', 'DevicePools', 'Users', 'Organizations', 'Notification',
-  function($scope, $stateParams, $location, $http, Authentication, DevicePools, Users, Organizations, Notification) {
-    $scope.authentication = Authentication;
+    function($scope, $stateParams, $location, $http, Authentication, DevicePools, Users, Organizations, Notification) {
+        $scope.authentication = Authentication;
 
-		$scope.loadData = function() {
-			$scope.organizations = Organizations.query();
-		};
+        $scope.loadData = function() {
+            $scope.organizations = Organizations.query();
+        };
 
-    $scope.organization = {};
-    $scope.selectOrganization = function(id) {
-      $scope.organization._id = id;
-    };
+        $scope.organization = {};
+        $scope.selectOrganization = function(id) {
+            $scope.organization._id = id;
+        };
 
-    $scope.selectDevicePool = function(index) {
-      if ($scope.authentication.user._devicePool !== $scope.devicePools[index]._id) {
-        $scope.authentication.user._devicePool = $scope.devicePools[index]._id;
-        var user = new Users($scope.authentication.user);
-        user.$update(function(response) {
-          $scope.authentication.user = response;
-        }, function(response) {
-          $scope.error = response.data.message;
-        });
-      }
-      $http.post('/devices/pool', {
-        devicePoolID: $scope.devicePools[index]._id
-      }).
-      success(function(data, status, headers, config) {
-        $scope.devices = data;
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        Notification.error(err.message);
-      });
-    };
+        $scope.selectDevicePool = function(index) {
+            if ($scope.authentication.user._devicePool !== $scope.devicePools[index]._id) {
+                $scope.authentication.user._devicePool = $scope.devicePools[index]._id;
+                var user = new Users($scope.authentication.user);
+                user.$update(function(response) {
+                    $scope.authentication.user = response;
+                }, function(response) {
+                    $scope.error = response.data.message;
+                });
+            }
+            $http.post('/devices/pool', {
+                devicePoolID: $scope.devicePools[index]._id
+            }).
+            success(function(data, status, headers, config) {
+                $scope.devices = data;
+            }).
+            error(function(err, status, headers, config) {
+                console.log(err);
+                Notification.error(err.message);
+            });
+        };
 
-    // Create new Device pool
-    $scope.create = function() {
-      // Create new Device pool object
-      var devicePool = new DevicePools({
-        name: this.name,
-        description: this.description,
-        _organization: this.organization._id
-      });
+        // Create new Device pool
+        $scope.create = function() {
+            // Create new Device pool object
+            var devicePool = new DevicePools({
+                name: this.name,
+                description: this.description,
+                _organization: this.organization._id
+            });
 
-      // Redirect after save
-      devicePool.$save(function(response) {
-        $location.path('device-pools');
+            // Redirect after save
+            devicePool.$save(function(response) {
+                $location.path('device-pools');
 
-        // Clear form fields
-        $scope.name = '';
-        $scope.description = '';
-        $scope._organization = {};
-      }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
-      });
-    };
+                // Clear form fields
+                $scope.name = '';
+                $scope.description = '';
+                $scope._organization = {};
+            }, function(errorResponse) {
+                $scope.error = errorResponse.data.message;
+            });
+        };
 
-    // Remove existing Device pool
-    $scope.remove = function(devicePool) {
-      if (devicePool) {
-        devicePool.$remove();
+        // Remove existing Device pool
+        $scope.remove = function(devicePool) {
+            if (devicePool) {
+                devicePool.$remove();
 
-        for (var i in $scope.devicePools) {
-          if ($scope.devicePools[i] === devicePool) {
-            $scope.devicePools.splice(i, 1);
-          }
-        }
-      } else {
-        $scope.devicePool.$remove(function() {
-          $location.path('device-pools');
-        });
-      }
-    };
+                for (var i in $scope.devicePools) {
+                    if ($scope.devicePools[i] === devicePool) {
+                        $scope.devicePools.splice(i, 1);
+                    }
+                }
+            } else {
+                $scope.devicePool.$remove(function() {
+                    $location.path('device-pools');
+                });
+            }
+        };
 
-    // Update existing Device pool
-    $scope.update = function() {
-      var devicePool = new DevicePools($scope.devicePool);
-      devicePool._organization = $scope.organization ? $scope.organization._id : '';
+        // Update existing Device pool
+        $scope.update = function() {
+            var devicePool = new DevicePools($scope.devicePool);
+            devicePool._organization = $scope.organization ? $scope.organization._id : '';
 
-      devicePool.$update(function() {
-        $location.path('device-pools');
-      }, function(errorResponse) {
-        $scope.error = errorResponse.data.message;
-      });
-    };
+            devicePool.$update(function() {
+                $location.path('device-pools');
+            }, function(errorResponse) {
+                $scope.error = errorResponse.data.message;
+            });
+        };
 
-    // Find a list of Device pools
-    $scope.find = function() {
-      $scope.devicePools = DevicePools.query();
-    };
+        // Find a list of Device pools
+        $scope.find = function() {
+            $scope.devicePools = DevicePools.query();
+        };
 
-    // Find existing Device pool
-    $scope.findOne = function() {
-      $scope.devicePool = DevicePools.get({
-        devicePoolId: $stateParams.devicePoolId
-      }, function() {
-        $scope.organizations = $scope.organizations || Organizations.query();
-        $scope.organization = $scope.devicePool._organization || {};
-        $http.post('/devices/pool', {
-          devicePoolID: $stateParams.devicePoolId
-        }).
-        success(function(data, status, headers, config) {
-          $scope.devices = data;
-        }).
-        error(function(err, status, headers, config) {
-          console.log(err);
-          Notification.error(err.message);
-        });
-      });
-    };
-  }
+        // Find existing Device pool
+        $scope.findOne = function() {
+            $scope.devicePool = DevicePools.get({
+                devicePoolId: $stateParams.devicePoolId
+            }, function() {
+                $scope.organizations = $scope.organizations || Organizations.query();
+                $scope.organization = $scope.devicePool._organization || {};
+                $http.post('/devices/pool', {
+                    devicePoolID: $stateParams.devicePoolId
+                }).
+                success(function(data, status, headers, config) {
+                    $scope.devices = data;
+                }).
+                error(function(err, status, headers, config) {
+                    console.log(err);
+                    Notification.error(err.message);
+                });
+            });
+        };
+    }
 ]);
 
 'use strict';
@@ -2887,120 +2887,150 @@ var _ = window._;
 var $ = window.$;
 
 // Tests controller
-angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', '$modal', '$window','Authentication', 'Tests', 'Notification', 'Socket',
-  function($scope, $http, $location, $modal, $window, Authentication, Tests, Notification, Socket) {
-    $scope.authentication = Authentication;
-    if (!$scope.authentication || $scope.authentication.user === '') {
-      $location.path('/signin');
+angular.module('tests').controller('RunTestController', ['$scope', '$http', '$location', '$modal', '$window', 'Authentication', 'Tests', 'Notification', 'Socket',
+    function($scope, $http, $location, $modal, $window, Authentication, Tests, Notification, Socket) {
+        $scope.authentication = Authentication;
+        if (!$scope.authentication || $scope.authentication.user === '') {
+            $location.path('/signin');
+        }
+
+        Socket.on('test.update', function(message) {
+            var data = message.split('\n');
+            if (data[0] === 'Test complete' || data[2] === '-1') {
+                $scope.loadDevices();
+            }
+        });
+
+        $scope.setupRun = function() {
+            $scope.loadDevices();
+            $scope.reference = '';
+            $scope.subject = '';
+            $scope.description = '';
+            $scope.cartridge = {};
+            $scope.assay = {};
+        };
+
+        $scope.refreshDevices = function() {
+            console.log('Refreshing device list');
+            $http.post('/devices/release').
+            success(function(data, status, headers, config) {
+                $scope.devices = data;
+                $scope.activeDevice = -1;
+            }).
+            error(function(err, status, headers, config) {
+                console.log(err, status, headers(), config);
+                Notification.error(err.message);
+            });
+        };
+
+        $scope.rescanCartridge = function() {
+            Notification.info('Rescanning cartridge, please wait...');
+            $http.post('/devices/rescan_cartridge', {
+                deviceID: $scope.devices[$scope.activeDevice]._id
+            }).
+            success(function(data, status, headers, config) {
+                $scope.cartridge = data.cartridge;
+                $scope.assay = data.assay;
+            }).
+            error(function(err, status, headers, config) {
+                console.log(err);
+                Notification.error(err.message);
+            });
+        };
+
+        $scope.loadDevices = function() {
+            $http.get('/devices/available').
+            success(function(data, status, headers, config) {
+                $scope.devices = data;
+                $scope.activeDevice = -1;
+            }).
+            error(function(err, status, headers, config) {
+                console.log(err);
+                Notification.error(err.message);
+            });
+        };
+
+        $scope.clickDevice = function(indx) {
+            if (indx === $scope.activeDevice) { // release device if highlighted device is clicked
+                $scope.releaseDevice(indx);
+            } else {
+                $scope.claimDevice(indx);
+            }
+        };
+
+        $scope.releaseDevice = function(indx) {
+            Notification.info('Releasing device, please wait...');
+            $http.post('/devices/release', {
+                deviceID: indx === -1 ? '' : $scope.devices[indx]._id
+            }).
+            success(function(data, status, headers, config) {
+                $scope.devices[indx].claimed = data.claimed;
+                if (data.claimed) {
+                    $scope.activeDevice = indx;
+                    Notification.error('Device not released');
+                } else {
+                    Notification.info('Device released');
+                    $scope.cartridge = '';
+                    $scope.assay = '';
+                }
+            }).
+            error(function(err, status, headers, config) {
+                console.log(err);
+                Notification.error(err.message);
+                $scope.activeDevice = indx;
+            });
+            $scope.activeDevice = -1;
+        };
+
+        $scope.claimDevice = function(indx) {
+            Notification.info('Claiming device, please wait...');
+            $http.post('/devices/claim', {
+                currentDeviceID: $scope.activeDevice === -1 ? '' : $scope.devices[$scope.activeDevice]._id,
+                newDeviceID: $scope.devices[indx]._id
+            }).
+            success(function(data, status, headers, config) {
+                Notification.info('Device claimed');
+                $scope.devices[indx].claimed = true;
+                $scope.cartridge = data.cartridge;
+                $scope.assay = data.assay;
+            }).
+            error(function(err, status, headers, config) {
+                console.log(err);
+                Notification.error(err.message);
+                $scope.activeDevice = -1;
+            });
+            $scope.activeDevice = indx;
+        };
+
+        $scope.beginTest = function() {
+            var device;
+            if (!$scope.reference) {
+                Notification.error('You must enter a reference number');
+            } else {
+                if ($scope.activeDevice !== -1) {
+                    Notification.success('Starting test, please wait...');
+                    device = $scope.devices[$scope.activeDevice];
+                    $http.post('/tests/begin', {
+                        reference: $scope.reference,
+                        subject: $scope.subject,
+                        description: $scope.description,
+                        deviceID: device._id,
+                        deviceName: device.name,
+                        assayID: $scope.assay._id,
+                        assayName: $scope.assay.name,
+                        cartridgeID: $scope.cartridge._id
+                    }).
+                    success(function(data, status, headers, config) {
+                        $scope.setupRun();
+                    }).
+                    error(function(err, status, headers, config) {
+                        console.log(err);
+                        Notification.error(err.message);
+                    });
+                }
+            }
+        };
     }
-
-    Socket.on('test.update', function(message) {
-      var data = message.split('\n');
-        if (data[0] === 'Test complete' || data[2] === '-1') {
-          $scope.loadDevices();
-        }
-      });
-
-    $scope.setupRun = function() {
-      $scope.loadDevices();
-      $scope.reference = '';
-      $scope.subject = '';
-      $scope.description = '';
-      $scope.cartridge = {};
-      $scope.assay = {};
-    };
-
-    $scope.refreshDevices = function() {
-      console.log('Refreshing device list');
-      $http.post('/devices/release').
-      success(function(data, status, headers, config) {
-        $scope.devices = data;
-        $scope.activeDevice = -1;
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err, status, headers(), config);
-        Notification.error(err.message);
-      });
-    };
-
-    $scope.rescanCartridge = function() {
-      Notification.info('Rescanning cartridge, please wait...');
-      $http.post('/devices/rescan_cartridge', {
-        deviceID: $scope.devices[$scope.activeDevice]._id
-      }).
-      success(function(data, status, headers, config) {
-        $scope.cartridge = data.cartridge;
-        $scope.assay = data.assay;
-      }).
-      error(function(err, status, headers, config) {
-        console.log(err);
-        Notification.error(err.message);
-      });
-    };
-
-    $scope.loadDevices = function() {
-      $http.get('/devices/available').
-        success(function(data, status, headers, config) {
-          $scope.devices = data;
-          $scope.activeDevice = -1;
-      }).
-        error(function(err, status, headers, config) {
-          console.log(err);
-          Notification.error(err.message);
-        });
-    };
-
-    $scope.claimDevice = function(indx) {
-      if (indx !== $scope.activeDevice) {
-        Notification.info('Setting up device, please wait...');
-        $scope.activeDevice = indx;
-        $http.post('/devices/claim', {
-          currentDeviceID: $scope.activeDevice === -1 ? '' : $scope.devices[$scope.activeDevice]._id,
-          newDeviceID: $scope.devices[indx]._id
-        }).
-        success(function(data, status, headers, config) {
-          $scope.devices[indx].claimed = true;
-          $scope.cartridge = data.cartridge;
-          $scope.assay = data.assay;
-        }).
-        error(function(err, status, headers, config) {
-          console.log(err);
-          Notification.error(err.message);
-          $scope.activeDevice = -1;
-        });
-      }
-    };
-
-    $scope.beginTest = function() {
-      var device;
-      if (!$scope.reference) {
-        Notification.error('You must enter a reference number');
-      }
-      else {
-        if ($scope.activeDevice !== -1) {
-          Notification.success('Starting test, please wait...');
-          device = $scope.devices[$scope.activeDevice];
-          $http.post('/tests/begin', {
-            reference: $scope.reference,
-            subject: $scope.subject,
-            description: $scope.description,
-            deviceID: device._id,
-            deviceName: device.name,
-            assayID: $scope.assay._id,
-            assayName: $scope.assay.name,
-            cartridgeID: $scope.cartridge._id
-          }).
-          success(function(data, status, headers, config) {
-            $scope.setupRun();
-          }).
-          error(function(err, status, headers, config) {
-            console.log(err);
-            Notification.error(err.message);
-          });
-        }
-      }
-    };
-  }
 ]);
 
 'use strict';

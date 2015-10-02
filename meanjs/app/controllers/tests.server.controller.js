@@ -161,16 +161,10 @@ exports.begin = function(req, res) {
     var bcodeString, test;
     particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
         .spread(function(device, particle_device) {
-            return [device, particle_device, particle.execute_particle_request(particle_device, 'test_uuids')];
-        })
-        .spread(function(device, particle_device, request) {
-            return [device, particle_device, verify_test_data_downloaded(req.user, request)];
-        })
-        .spread(function(device, particle_device) {
             return [device, particle_device, particle.execute_particle_command(particle_device, 'verify_qr_code', req.body.cartridgeID)];
         })
         .spread(function(device, particle_device, result) {
-            if (result.return_value !== 0) {
+            if (result.return_value) {
                 throw new Error('Error verifying cartridge, code = ' + result.return_value);
             }
             return [device, particle_device, Assay.findById(req.body.assayID).exec()];
@@ -180,16 +174,7 @@ exports.begin = function(req, res) {
             if (!assay || !assay._id) { // assay not found in database
                 throw new Error('Unable to find assay record');
             } else {
-                return [device, particle_device, assay, particle.execute_particle_command(particle_device, 'check_assay_cache', assay._id)];
-            }
-        })
-        .spread(function(device, particle_device, assay, result) {
-            if (result.return_value === 999) { // assay not found in cache
-                return [device, particle_device, assay, particle.send_assay_to_particle(particle_device, assay)];
-            } else {
-                return [device, particle_device, assay, {
-                    return_value: 777
-                }];
+              return [device, particle_device, assay, particle.send_assay_to_particle(particle_device, assay)];
             }
         })
         .spread(function(device, particle_device, assay, result) {

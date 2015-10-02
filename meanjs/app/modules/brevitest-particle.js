@@ -436,16 +436,17 @@ module.exports = {
               return [devices, particle_login_promise(user)];
           })
           .spread(function(devices, loginResult) {
-            return [devices, particle.getAttributesForAll()];
+            return [devices, getParticleList(user)];
           })
           .spread(function(devices, particle_devices) {
+              console.log(particle_devices);
               var available = [];
 
               particle_devices.forEach(function(e) {
                   var device = _.findWhere(devices, {particleID: e.id});
                   if (device) {
                       device.connected = e.connected;
-                      device.lastHeard = e.last_heard;
+                      device.lastHeard = e.lastHeard;
                       device.lastIpAddress = e.lastIpAddress;
                       device.save();
                       if (device.connected) {

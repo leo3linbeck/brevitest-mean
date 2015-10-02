@@ -14,6 +14,9 @@ var populateArray = [{
 }, {
   path: '_organization',
   select: '_id name'
+}, {
+  path: '_devices',
+  select: '_id name'
 }];
 
 exports.select = function(req, res) {

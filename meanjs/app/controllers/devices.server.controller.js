@@ -211,50 +211,25 @@ exports.claim = function(req, res) {
     .done();
 };
 
-function release_one_device_promise(user, deviceID) {
-  return particle.get_particle_device_from_uuid(user, deviceID)
-    .spread(function(device, particle_device) {
-      return [device, particle.execute_particle_command(particle_device, 'release_device', user.id)];
-    })
-    .spread(function(device, result) {
-      return Device.findByIdAndUpdate(device._id, {claimed: !result.return_value}).exec();
-    });
-}
-
 exports.release = function(req, res) {
-    new Q(Device.find({
-        $and: [{
-          _devicePool: req.user._devicePool
-        }, {
-          connected: true
-        }, {
-          attached: true
-        }, {
-          claimed: true
-        }]
-      }).exec())
-    .then(function(devices) {
-      return devices.map(function(device) {
-        return release_one_device_promise(req.user, device._id);
-      });
-    })
-    .then(function(promises) {
-      return Q.allSettled(promises);
-    })
-    .then(function() {
-      return particle.available_devices(req.user);
-    })
-    .then(function(devices) {
-      res.jsonp(devices);
-    })
-    .fail(function(error) {
-      console.error(error);
-      return res.status(400).send({
-        msg: 'Error releasing device ' + req.body.device.name,
-        message: error.message
-      });
-    })
-    .done();
+    return particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
+        .spread(function(device, particle_device) {
+            return [device, particle.execute_particle_command(particle_device, 'release_device', req.user.id)];
+        })
+        .spread(function(device, result) {
+            return Device.findByIdAndUpdate(req.body.deviceID, {claimed: !result.return_value}).exec();
+        })
+        .then(function(device) {
+            res.jsonp(device);
+        })
+        .fail(function(error) {
+            console.error(error);
+            return res.status(400).send({
+                msg: 'Error releasing device ' + req.body.device.name,
+                message: error.message
+            });
+        })
+        .done();
 };
 
 exports.get_test_data = function(req, res) {

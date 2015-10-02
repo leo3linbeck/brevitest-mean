@@ -321,7 +321,7 @@ function convert_assay_to_string(assay) {
     str += zeropad(bcodeStr.length, 3);
     str += '000'; // placeholder for BCODE version
     str += bcodeStr;
-
+    console.log('Assay string', str);
     return str;
 }
 

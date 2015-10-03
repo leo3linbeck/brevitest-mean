@@ -16,8 +16,6 @@ var bt = require('../../app/modules/brevitest-BCODE');
 var bcmds = bt.BCODE;
 var get_BCODE_duration = bt.calculate_duration;
 
-var particles = [];
-
 var devicePopulate = [{
   path: 'user',
   select: 'displayName'
@@ -270,31 +268,16 @@ function particle_login_promise(user) {
 
 var timeout = new Date();
 
-function getParticleList(user, forceReload) {
-    console.log('getParticleList', user, forceReload);
-    var now = new Date();
-    if (particles.length === 0 || now > timeout || forceReload) {
-        timeout.setMinutes(now.getMinutes() + 5); // refresh list every 5 minutes
-        return particle_login_promise(user)
-            .then(function() {
-                console.log('Access token saved');
-                return new Q(particle.listDevices());
-            })
-            .then(function(devices) {
-                console.log('Device list obtained');
-                particles = _.map(devices, function(d) {
-                    delete d._spark.devices;
-                    return d;
-                }); // remove circular JSON reference
-                return particles;
-            });
-    } else {
-        return new Q(particles);
-    }
+function getParticleList(user) {
+    return particle_login_promise(user)
+        .then(function() {
+            console.log('Access token saved');
+            return new Q(particle.listDevices());
+        });
 }
 
-function getParticleDevice(user, particleID, forceReload) {
-    return getParticleList(user, forceReload)
+function getParticleDevice(user, particleID) {
+    return getParticleList(user)
         .then(function(particleList) {
             var particleDevice = _.findWhere(particleList, {
                 id: particleID
@@ -347,8 +330,8 @@ function send_message_to_particle(particle_device, str, message_type, message_id
 // exported functions - all functions return a Q promise
 
 module.exports = {
-    get_particle_list: function(user, forceReload) {
-        return getParticleList(user, forceReload);
+    get_particle_list: function(user) {
+        return getParticleList(user);
     },
     get_particle_device_from_uuid: function(user, uuid) {
         return new Q(Device.findById(uuid).exec())
@@ -421,17 +404,7 @@ module.exports = {
         return new Q(device.flash('app/firmware/' + firmware[0]));
     },
     available_devices: function(user) {
-        return new Q(Device.find({
-            $and: [{
-              _devicePool: user._devicePool
-              }, {
-                attached: true
-              }, {
-                claimed: {
-                  $ne: true
-                }
-              }]
-          }).populate(devicePopulate).exec())
+        return new Q(Device.find({_devicePool: user._devicePool}).populate(devicePopulate).exec())
           .then(function(devices) {
               return [devices, particle_login_promise(user)];
           })
@@ -439,7 +412,7 @@ module.exports = {
             return [devices, getParticleList(user)];
           })
           .spread(function(devices, particle_devices) {
-              console.log(particle_devices);
+              console.log('particle_devices', particle_devices);
               var available = [];
 
               particle_devices.forEach(function(e) {
@@ -449,7 +422,7 @@ module.exports = {
                       device.lastHeard = e.lastHeard;
                       device.lastIpAddress = e.lastIpAddress;
                       device.save();
-                      if (device.connected) {
+                      if (device.connected && !device.claimed) {
                           available.push(device);
                       }
                   }

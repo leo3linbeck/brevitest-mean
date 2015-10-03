@@ -35,8 +35,10 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 						var data = message.split('\n');
 						_.find($scope.tests, function(e) {
 							if (e._id === data[1]) {
-								e.percentComplete = parseInt(data[2]);
 								e.status = data[0].length ? data[0] : e.status;
+								if (e.status !== 'Test complete' && e.status !== 'Test cancelled') {
+									e.percentComplete = parseInt(data[2]);
+								}
 								return true;
 							}
 							return false;

@@ -11,11 +11,8 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
             $location.path('/signin');
         }
 
-        Socket.on('test.update', function(message) {
-            var data = message.split('\n');
-            if (data[0] === 'Test complete' || data[2] === '-1') {
-                $scope.loadDevices();
-            }
+        Socket.on('test.complete', function(message) {
+            $scope.setupRun();
         });
 
         $scope.setupRun = function() {

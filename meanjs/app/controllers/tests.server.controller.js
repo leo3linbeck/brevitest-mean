@@ -90,6 +90,7 @@ function finalizeTestRecord(user, test) {
             return particle.execute_particle_request(particle_device, 'test_record', test._id);
         })
         .then(function(register) {
+            console.log('Final test data', register);
             var updateQuery = parseCartridgeFromParticleData(register, test);
             return Cartridge.findByIdAndUpdate(test._cartridge, updateQuery, {
                 new: true
@@ -108,42 +109,22 @@ function finalizeTestRecord(user, test) {
         });
 }
 
-function verify_test_data_downloaded(user, uuidStr) {
-    // verify that test data has been downloaded from device
-    var uuids = uuidStr.split('\n');
-    var promise = new Q();
-    uuids.forEach(function(uuid) {
-        if (uuid) {
-            promise = promise.then(function() {
-                    return Test.findById(uuid).exec();
-                })
-                .then(function(test) {
-                    if (test && !test.loaded) {
-                        return finalizeTestRecord(user, test);
-                    } else {
-                        return null;
-                    }
-                });
-        }
-    });
-
-    return promise;
-}
-
 function createParticleSubscribeCallback(user, test, socket) {
     return function particleSubscribeCallback(event) {
         var data = event.data.split('\n');
+        var testProgress = data[2] ? parseInt(data[2]) : 0;
 
         socket.emit('test.update', event.data);
 
-        test.percentComplete = data[2] ? parseInt(data[2]) : 0;
-        if (test.percentComplete === 100 && test.status !== 'Cancelled') {
+        if (testProgress === -1 && test.status !== 'Cancelled') {
             console.log('Test complete', test.loaded);
             test.status = 'Complete';
+            test.percentComplete = 100;
             if (!test.loaded) {
                 finalizeTestRecord(user, test)
                     .spread(function(updatedTest, device) {
                         test = updatedTest;
+                        socket.emit('test.complete', test._id);
                     })
                     .fail(function(err) {
                         console.log('finalizeTestRecord error', err, user, test);
@@ -152,6 +133,7 @@ function createParticleSubscribeCallback(user, test, socket) {
             }
         } else {
             test.status = data[0].length ? data[0] : test.status;
+            test.percentComplete = testProgress;
             test.save();
         }
     };
@@ -244,14 +226,20 @@ exports.begin = function(req, res) {
                     return [device, particle.execute_particle_command(particle_device, 'release_device', req.user.id)];
                 })
                 .spread(function(device, result) {
-                    device.claimed = !result.return_value;
+                    if (result.return_value < 0) {
+                        throw new Error('Unable to release device ' + req.body.deviceName);
+                    }
+                    device.claimed = false;
                     device.save();
-                });
-            console.error(error);
-            return res.status(400).send({
-                msg: 'Error running Brevitest™ on device ' + req.body.deviceName,
-                message: error.message
-            });
+                })
+                .then(function() {
+                    console.error(error);
+                    return res.status(400).send({
+                            msg: 'Error running Brevitest™ on device ' + req.body.deviceName,
+                            message: error.message
+                        });
+                })
+                .done();
         })
         .done();
 };
@@ -259,11 +247,17 @@ exports.begin = function(req, res) {
 exports.cancel = function(req, res) {
     particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
         .spread(function(device, particle_device) {
-            return particle.execute_particle_command(particle_device, 'cancel_test', req.body.testID);
+            return [device, particle_device, particle.execute_particle_command(particle_device, 'cancel_test', req.body.testID)];
+        })
+        .spread(function(device, particle_device, result) {
+            if (result.return_value < 0) {
+                throw new Error('Unable to cancel test on device ' + req.body.deviceName);
+            }
+            return particle.execute_particle_command(particle_device, 'release_device', req.user.id);
         })
         .then(function(result) {
             if (result.return_value < 0) {
-                throw new Error('Unable to cancel test on device ' + req.body.deviceName);
+                throw new Error('Unable to release device ' + req.body.deviceName);
             }
             var updateObj = {
                 finishedOn: new Date(),

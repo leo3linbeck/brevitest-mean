@@ -54,7 +54,7 @@
                     <div class="list-group" ng-show="devices.length">
                         <a class="list-group-item {{activeDevice === $index ? 'active' : ''}}" href="" ng-repeat="device in devices" ng_click="clickDevice($index)">{{device.name}}</a>
                     </div>
-                    <div class="col-xs-12 panel panel-warning" ng-hide="devices.length">
+                    <div class="col-xs-12 panel panel-warning" ng-show="!devices.length">
                         <div class="panel-heading">
                             No available devices found in your pool
                         </div>

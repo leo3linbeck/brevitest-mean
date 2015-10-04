@@ -2735,8 +2735,10 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 						var data = message.split('\n');
 						_.find($scope.tests, function(e) {
 							if (e._id === data[1]) {
-								e.percentComplete = parseInt(data[2]);
 								e.status = data[0].length ? data[0] : e.status;
+								if (e.status !== 'Test complete' && e.status !== 'Test cancelled') {
+									e.percentComplete = parseInt(data[2]);
+								}
 								return true;
 							}
 							return false;
@@ -2894,11 +2896,8 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
             $location.path('/signin');
         }
 
-        Socket.on('test.update', function(message) {
-            var data = message.split('\n');
-            if (data[0] === 'Test complete' || data[2] === '-1') {
-                $scope.loadDevices();
-            }
+        Socket.on('test.complete', function(message) {
+            $scope.setupRun();
         });
 
         $scope.setupRun = function() {

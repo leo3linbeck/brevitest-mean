@@ -412,7 +412,6 @@ module.exports = {
             return [devices, getParticleList(user)];
           })
           .spread(function(devices, particle_devices) {
-              console.log('particle_devices', particle_devices);
               var available = [];
 
               particle_devices.forEach(function(e) {

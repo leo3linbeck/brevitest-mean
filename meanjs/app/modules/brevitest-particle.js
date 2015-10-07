@@ -234,6 +234,13 @@ var command = {
             console.log('verify_qr_code', uuid);
             return particle_device.callFunction('runcommand', this.code + uuid);
         }
+    },
+    'battery_level': {
+        code: '66',
+        exec: function(particle_device) {
+            console.log('battery_level');
+            return particle_device.callFunction('runcommand', this.code);
+        }
     }
 };
 
@@ -271,7 +278,6 @@ var timeout = new Date();
 function getParticleList(user) {
     return particle_login_promise(user)
         .then(function() {
-            console.log('Access token saved');
             return new Q(particle.listDevices());
         });
 }
@@ -344,6 +350,12 @@ module.exports = {
     },
     get_register_contents: function(particle_device) {
         return particle_device.getVariable('register')
+            .then(function(result) {
+                return result.result;
+            });
+    },
+    get_power_status: function(particle_device) {
+        return particle_device.getVariable('powerstatus')
             .then(function(result) {
                 return result.result;
             });

@@ -52,7 +52,13 @@
                         <a ng-href="/#!/device-pools/{{devices[0]._devicePool._id}}">{{devices[0]._devicePool.name}}</a>
                     </h5>
                     <div class="list-group" ng-show="devices.length">
-                        <a class="list-group-item {{activeDevice === $index ? 'active' : ''}}" href="" ng-repeat="device in devices" ng_click="clickDevice($index)">{{device.name}}</a>
+                        <a class="list-group-item {{activeDevice === $index ? 'active' : ''}}" href="" ng-repeat="device in devices" ng_click="clickDevice($index)">
+                            {{device.name}}
+                            <span class="pull-right" ng-show="activeDevice === $index">
+                                <span class="pull-right glyphicon glyphicon-flash" ng-show="batteryCharging"></span>
+                                <img class="pull-right" ng-show="batteryLevel" height="16" ng-src="{{batteryImage}}"></img>
+                            </span>
+                        </a>
                     </div>
                     <div class="col-xs-12 panel panel-warning" ng-show="!devices.length">
                         <div class="panel-heading">

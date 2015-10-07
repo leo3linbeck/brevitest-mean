@@ -195,11 +195,18 @@ exports.claim = function(req, res) {
             }
         })
         .spread(function(device, particle_device, cartridge, assay) {
+            if (!assay || !assay._id) { // cartridge not found in database
+                throw new Error('Unable to find assay record');
+            }
+            return [device, particle_device, cartridge, assay, particle.get_power_status(particle_device)];
+        })
+        .spread(function(device, particle_device, cartridge, assay, batteryLevel) {
             console.log('Device claimed');
             res.jsonp({
                 device: device,
                 cartridge: cartridge,
                 assay: assay,
+                batteryLevel: batteryLevel,
                 result: {
                     msg: device.name + ' claimed'
                 }

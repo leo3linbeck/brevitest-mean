@@ -15,6 +15,33 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
             $scope.setupRun();
         });
 
+        function updateBatteryLevel(level) {
+            $scope.batteryLevel = level;
+            if (level) {
+                $scope.batteryCharging = (level < 0);
+                level = Math.abs(level);
+                if (level < 10) {
+                    $scope.batteryImage = 'modules/devices/img/battery-empty.gif';
+                }
+                else if (level < 30) {
+                    $scope.batteryImage = 'modules/devices/img/battery-one-quarter.gif';
+                }
+                else if (level < 60) {
+                    $scope.batteryImage = 'modules/devices/img/battery-half.gif';
+                }
+                else if (level < 90) {
+                    $scope.batteryImage = 'modules/devices/img/battery-three-quarters.gif';
+                }
+                else {
+                    $scope.batteryImage = 'modules/devices/img/battery-full.gif';
+                }
+            }
+            else {
+                $scope.batteryCharging = false;
+                $scope.batteryImage = '';
+            }
+        }
+
         $scope.setupRun = function() {
             $scope.loadDevices();
             $scope.reference = '';
@@ -22,6 +49,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
             $scope.description = '';
             $scope.cartridge = {};
             $scope.assay = {};
+            updateBatteryLevel(0);
         };
 
         $scope.refreshDevices = function() {
@@ -84,9 +112,10 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
                     Notification.error('Device not released');
                 } else {
                     Notification.info('Device released');
-                    $scope.cartridge = '';
-                    $scope.assay = '';
-                }
+                    $scope.cartridge = {};
+                    $scope.assay = {};
+                    updateBatteryLevel(0);
+            }
             }).
             error(function(err, status, headers, config) {
                 console.log(err);
@@ -97,6 +126,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
         };
 
         $scope.claimDevice = function(indx) {
+            updateBatteryLevel(0);
             Notification.info('Claiming device, please wait...');
             $http.post('/devices/claim', {
                 currentDeviceID: $scope.activeDevice === -1 ? '' : $scope.devices[$scope.activeDevice]._id,
@@ -107,7 +137,8 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
                 $scope.devices[indx].claimed = true;
                 $scope.cartridge = data.cartridge;
                 $scope.assay = data.assay;
-            }).
+                updateBatteryLevel(data.batteryLevel);
+        }).
             error(function(err, status, headers, config) {
                 console.log(err);
                 Notification.error(err.message);

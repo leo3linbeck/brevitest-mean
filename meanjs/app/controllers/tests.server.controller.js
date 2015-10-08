@@ -143,13 +143,7 @@ exports.begin = function(req, res) {
     var bcodeString, test;
     particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
         .spread(function(device, particle_device) {
-            return [device, particle_device, particle.execute_particle_command(particle_device, 'verify_qr_code', req.body.cartridgeID)];
-        })
-        .spread(function(device, particle_device, result) {
-            if (result.return_value) {
-                throw new Error('Error verifying cartridge, code = ' + result.return_value);
-            }
-            return [device, particle_device, Assay.findById(req.body.assayID).exec()];
+          return [device, particle_device, Assay.findById(req.body.assayID).exec()];
         })
         .spread(function(device, particle_device, assay) {
             console.log('assay', assay);
@@ -195,7 +189,7 @@ exports.begin = function(req, res) {
         })
         .spread(function(device, particle_device, test, assay, result) {
             if (result.return_value < 0) { // test failed to start
-                throw new Error('Unable to start test ' + test.reference);
+                throw new Error('Unable to start test ' + test.reference + ', code = ' + result.return_value);
             }
 
             var updateObj = {

@@ -2711,39 +2711,40 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 		}
 
 		function updateTest(test) {
-      $http.post('/tests/update_one_test', {
-        testID: test._id,
-        cartridgeID: test._cartridge._id,
-        deviceID: test._device._id,
-				analysis: test._assay.analysis,
-				status: test.status,
-        percentComplete: test.percentComplete
-      }).
-      success(function(data, status, headers, config) {
-				Notification.success('Test complete');
-      }).
-      error(function(err, status, headers, config) {
-        Notification.error(err.message);
-      });
-    }
+	      $http.post('/tests/update_one_test', {
+	        testID: test._id,
+	        cartridgeID: test._cartridge._id,
+	        deviceID: test._device._id,
+					analysis: test._assay.analysis,
+					status: test.status,
+	        percentComplete: test.percentComplete
+	      }).
+	      success(function(data, status, headers, config) {
+					Notification.success('Test complete');
+	      }).
+	      error(function(err, status, headers, config) {
+	        Notification.error(err.message);
+	      });
+	    }
+
+		Socket.on('test.update', function(message) {
+			var d = message.split('\n');
+			_.find($scope.tests, function(e) {
+				if (e._id === d[1]) {
+					e.status = d[0].length ? d[0] : e.status;
+					if (e.status !== 'Test complete' && e.status !== 'Test cancelled') {
+						e.percentComplete = parseInt(d[2]);
+					}
+					return true;
+				}
+				return false;
+			});
+		});
 
 		$scope.setup = function() {
 			$http.get('/tests/recently_started').
 				success(function(data, status, headers, config) {
 					$scope.tests = data;
-					Socket.on('test.update', function(message) {
-						var data = message.split('\n');
-						_.find($scope.tests, function(e) {
-							if (e._id === data[1]) {
-								e.status = data[0].length ? data[0] : e.status;
-								if (e.status !== 'Test complete' && e.status !== 'Test cancelled') {
-									e.percentComplete = parseInt(data[2]);
-								}
-								return true;
-							}
-							return false;
-						});
-					});
 		  }).
 			  error(function(err, status, headers, config) {
 					Notification.error(err.message);
@@ -2986,28 +2987,30 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
         };
 
         $scope.releaseDevice = function(indx) {
-            Notification.info('Releasing device, please wait...');
-            $http.post('/devices/release', {
-                deviceID: indx === -1 ? '' : $scope.devices[indx]._id
-            }).
-            success(function(data, status, headers, config) {
-                $scope.devices[indx].claimed = data.claimed;
-                if (data.claimed) {
+            if (indx !== -1) {
+                Notification.info('Releasing device, please wait...');
+                $http.post('/devices/release', {
+                    deviceID: indx === -1 ? '' : $scope.devices[indx]._id
+                }).
+                success(function(data, status, headers, config) {
+                    $scope.devices[indx].claimed = data.claimed;
+                    if (data.claimed) {
+                        $scope.activeDevice = indx;
+                        Notification.error('Device not released');
+                    } else {
+                        Notification.info('Device released');
+                        $scope.cartridge = {};
+                        $scope.assay = {};
+                        updateBatteryLevel(0);
+                }
+                }).
+                error(function(err, status, headers, config) {
+                    console.log(err);
+                    Notification.error(err.message);
                     $scope.activeDevice = indx;
-                    Notification.error('Device not released');
-                } else {
-                    Notification.info('Device released');
-                    $scope.cartridge = {};
-                    $scope.assay = {};
-                    updateBatteryLevel(0);
+                });
+                $scope.activeDevice = -1;
             }
-            }).
-            error(function(err, status, headers, config) {
-                console.log(err);
-                Notification.error(err.message);
-                $scope.activeDevice = indx;
-            });
-            $scope.activeDevice = -1;
         };
 
         $scope.claimDevice = function(indx) {
@@ -3027,6 +3030,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
             error(function(err, status, headers, config) {
                 console.log(err);
                 Notification.error(err.message);
+                $scope.releaseDevice($scope.activeDevice);
                 $scope.activeDevice = -1;
             });
             $scope.activeDevice = indx;
@@ -3040,6 +3044,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
                 if ($scope.activeDevice !== -1) {
                     Notification.success('Starting test, please wait...');
                     device = $scope.devices[$scope.activeDevice];
+                    $scope.activeDevice = -1;
                     $http.post('/tests/begin', {
                         reference: $scope.reference,
                         subject: $scope.subject,

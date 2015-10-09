@@ -11,39 +11,40 @@ angular.module('tests').controller('MonitorTestController', ['$scope', '$http', 
 		}
 
 		function updateTest(test) {
-      $http.post('/tests/update_one_test', {
-        testID: test._id,
-        cartridgeID: test._cartridge._id,
-        deviceID: test._device._id,
-				analysis: test._assay.analysis,
-				status: test.status,
-        percentComplete: test.percentComplete
-      }).
-      success(function(data, status, headers, config) {
-				Notification.success('Test complete');
-      }).
-      error(function(err, status, headers, config) {
-        Notification.error(err.message);
-      });
-    }
+	      $http.post('/tests/update_one_test', {
+	        testID: test._id,
+	        cartridgeID: test._cartridge._id,
+	        deviceID: test._device._id,
+					analysis: test._assay.analysis,
+					status: test.status,
+	        percentComplete: test.percentComplete
+	      }).
+	      success(function(data, status, headers, config) {
+					Notification.success('Test complete');
+	      }).
+	      error(function(err, status, headers, config) {
+	        Notification.error(err.message);
+	      });
+	    }
+
+		Socket.on('test.update', function(message) {
+			var d = message.split('\n');
+			_.find($scope.tests, function(e) {
+				if (e._id === d[1]) {
+					e.status = d[0].length ? d[0] : e.status;
+					if (e.status !== 'Test complete' && e.status !== 'Test cancelled') {
+						e.percentComplete = parseInt(d[2]);
+					}
+					return true;
+				}
+				return false;
+			});
+		});
 
 		$scope.setup = function() {
 			$http.get('/tests/recently_started').
 				success(function(data, status, headers, config) {
 					$scope.tests = data;
-					Socket.on('test.update', function(message) {
-						var data = message.split('\n');
-						_.find($scope.tests, function(e) {
-							if (e._id === data[1]) {
-								e.status = data[0].length ? data[0] : e.status;
-								if (e.status !== 'Test complete' && e.status !== 'Test cancelled') {
-									e.percentComplete = parseInt(data[2]);
-								}
-								return true;
-							}
-							return false;
-						});
-					});
 		  }).
 			  error(function(err, status, headers, config) {
 					Notification.error(err.message);

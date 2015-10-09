@@ -190,6 +190,8 @@ exports.claim = function(req, res) {
             console.log('cartridge', cartridge);
             if (!cartridge || !cartridge._id) { // cartridge not found in database
                 throw new Error('Unable to find cartridge record');
+            } else if (cartridge._test) {
+                throw new Error('Cartridge already used');
             } else {
                 return [device, particle_device, cartridge, Assay.findById(cartridge._assay).exec()];
             }

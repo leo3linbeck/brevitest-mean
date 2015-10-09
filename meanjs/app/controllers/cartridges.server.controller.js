@@ -175,7 +175,15 @@ exports.load = function(req, res) {
 };
 
 exports.loadLabels = function(req, res) {
-	Cartridge.find({registeredOn: {$exists:false}}).paginate(req.body.page, req.body.pageSize).sort('-created').populate([{
+	Cartridge.find({
+		$and: [
+			{
+				registeredOn: {$exists: false}
+			}, {
+				_test: {$exists: false}
+			}
+		]
+	}).paginate(req.body.page, req.body.pageSize).sort('-created').populate([{
 		path: 'user',
 	  select: 'displayName'
 	}, {

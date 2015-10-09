@@ -101,28 +101,30 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
         };
 
         $scope.releaseDevice = function(indx) {
-            Notification.info('Releasing device, please wait...');
-            $http.post('/devices/release', {
-                deviceID: indx === -1 ? '' : $scope.devices[indx]._id
-            }).
-            success(function(data, status, headers, config) {
-                $scope.devices[indx].claimed = data.claimed;
-                if (data.claimed) {
+            if (indx !== -1) {
+                Notification.info('Releasing device, please wait...');
+                $http.post('/devices/release', {
+                    deviceID: indx === -1 ? '' : $scope.devices[indx]._id
+                }).
+                success(function(data, status, headers, config) {
+                    $scope.devices[indx].claimed = data.claimed;
+                    if (data.claimed) {
+                        $scope.activeDevice = indx;
+                        Notification.error('Device not released');
+                    } else {
+                        Notification.info('Device released');
+                        $scope.cartridge = {};
+                        $scope.assay = {};
+                        updateBatteryLevel(0);
+                }
+                }).
+                error(function(err, status, headers, config) {
+                    console.log(err);
+                    Notification.error(err.message);
                     $scope.activeDevice = indx;
-                    Notification.error('Device not released');
-                } else {
-                    Notification.info('Device released');
-                    $scope.cartridge = {};
-                    $scope.assay = {};
-                    updateBatteryLevel(0);
+                });
+                $scope.activeDevice = -1;
             }
-            }).
-            error(function(err, status, headers, config) {
-                console.log(err);
-                Notification.error(err.message);
-                $scope.activeDevice = indx;
-            });
-            $scope.activeDevice = -1;
         };
 
         $scope.claimDevice = function(indx) {
@@ -142,6 +144,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
             error(function(err, status, headers, config) {
                 console.log(err);
                 Notification.error(err.message);
+                $scope.releaseDevice($scope.activeDevice);
                 $scope.activeDevice = -1;
             });
             $scope.activeDevice = indx;
@@ -155,6 +158,7 @@ angular.module('tests').controller('RunTestController', ['$scope', '$http', '$lo
                 if ($scope.activeDevice !== -1) {
                     Notification.success('Starting test, please wait...');
                     device = $scope.devices[$scope.activeDevice];
+                    $scope.activeDevice = -1;
                     $http.post('/tests/begin', {
                         reference: $scope.reference,
                         subject: $scope.subject,

@@ -143,17 +143,25 @@ exports.begin = function(req, res) {
     var bcodeString, test;
     particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
         .spread(function(device, particle_device) {
-          return [device, particle_device, Assay.findById(req.body.assayID).exec()];
+          return [device, particle_device, Cartridge.findById(req.body.cartridgeID).exec()];
         })
-        .spread(function(device, particle_device, assay) {
-            console.log('assay', assay);
+        .spread(function(device, particle_device, cartridge) {
+            if (!cartridge || !cartridge._id) { // cartridge not found in database
+                throw new Error('Unable to find cartridge record');
+            } else if (cartridge._test) {
+                throw new Error('Cartridge already used');
+            } else {
+                return [device, particle_device, cartridge, Assay.findById(req.body.assayID).exec()];
+            }
+        })
+        .spread(function(device, particle_device, cartridge, assay) {
             if (!assay || !assay._id) { // assay not found in database
                 throw new Error('Unable to find assay record');
             } else {
-              return [device, particle_device, assay, particle.send_assay_to_particle(particle_device, assay)];
+              return [device, particle_device, cartridge, assay, particle.send_assay_to_particle(particle_device, assay)];
             }
         })
-        .spread(function(device, particle_device, assay, result) {
+        .spread(function(device, particle_device, cartridge, assay, result) {
             if (result.return_value < 0) {
                 throw new Error('Error loading assay, code = ' + result.return_value);
             }
@@ -170,40 +178,38 @@ exports.begin = function(req, res) {
             test.status = 'Starting';
             test.percentComplete = 0;
             test.save();
-            return [device, particle_device, test, assay, particle.send_test_to_particle(particle_device, test)];
+            return [device, particle_device, cartridge, test, assay, particle.send_test_to_particle(particle_device, test)];
         })
-        .spread(function(device, particle_device, test, assay, result) {
+        .spread(function(device, particle_device, cartridge, test, assay, result) {
             if (result.return_value < 0) {
                 throw new Error('Error loading test data into device, code = ' + result.return_value);
             }
-            return [device, particle_device, test, assay, particle.execute_particle_command(particle_device, 'run_test', test._id)];
+            return [device, particle_device, cartridge, test, assay, particle.execute_particle_command(particle_device, 'run_test', test._id)];
         })
-        .spread(function(device, particle_device, test, assay, result) {
+        .spread(function(device, particle_device, cartridge, test, assay, result) {
             if (result.return_value < 0) { // test failed to start
                 test.user = req.user;
                 test.status = 'Failed';
                 test.percentComplete = -1;
                 test.save();
             }
-            return [device, particle_device, test, assay, result];
+            return [device, particle_device, cartridge, test, assay, result];
         })
-        .spread(function(device, particle_device, test, assay, result) {
+        .spread(function(device, particle_device, cartridge, test, assay, result) {
             if (result.return_value < 0) { // test failed to start
                 throw new Error('Unable to start test ' + test.reference + ', code = ' + result.return_value);
             }
 
-            var updateObj = {
-                _test: test._id,
-                _device: req.body.deviceID,
-                startedOn: new Date(),
-                bcodeString: particle.get_BCODE_string(assay.BCODE),
-                _runBy: test.user
-            };
-            return [device, particle_device, test, assay, Cartridge.findByIdAndUpdate(req.body.cartridgeID, updateObj, {
-                new: true
-            }).exec()];
+            cartridge._test = test._id;
+            cartridge._device = req.body.deviceID;
+            cartridge.startedOn = new Date();
+            cartridge.bcodeString = particle.get_BCODE_string(assay.BCODE);
+            cartridge._runBy = test.user;
+            cartridge.save();
+
+            return [device, particle_device, cartridge, test, assay];
         })
-        .spread(function(device, particle_device, test, assay, cartridge) {
+        .spread(function(device, particle_device, cartridge, test, assay) {
             particle.start_monitor(particle_device, test._id, createParticleSubscribeCallback(req.user, test, req.app.get('socketio')));
 
             res.jsonp({
@@ -215,25 +221,11 @@ exports.begin = function(req, res) {
             });
         })
         .fail(function(error) {
-            particle.get_particle_device_from_uuid(req.user, req.body.deviceID)
-                .spread(function(device, particle_device) {
-                    return [device, particle.execute_particle_command(particle_device, 'release_device', req.user.id)];
-                })
-                .spread(function(device, result) {
-                    if (result.return_value < 0) {
-                        throw new Error('Unable to release device ' + req.body.deviceName);
-                    }
-                    device.claimed = false;
-                    device.save();
-                })
-                .then(function() {
-                    console.error(error);
-                    return res.status(400).send({
-                            msg: 'Error running Brevitest™ on device ' + req.body.deviceName,
-                            message: error.message
-                        });
-                })
-                .done();
+            console.error(error);
+            return res.status(400).send({
+                    msg: 'Error running Brevitest™ on device ' + req.body.deviceName,
+                    message: error.message
+                });
         })
         .done();
 };

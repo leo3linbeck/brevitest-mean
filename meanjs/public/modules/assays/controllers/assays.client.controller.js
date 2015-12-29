@@ -468,18 +468,18 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
 
     $scope.cutBCODE = function() {
       if ($scope.BCODE.length && $scope.activeBCODE && $scope.canDelete) {
-        $scope.clipboard = $scope.BCODE.splice($scope.activeBCODE, 1);
-        delete $scope.clipboard._id;
+        window.assay_clipboard = $scope.BCODE.splice($scope.activeBCODE, 1);
+        delete window.assay_clipboard._id;
         $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
       }
     };
 
     $scope.copyBCODE = function() {
-      $scope.clipboard = $scope.BCODE[$scope.activeBCODE];
+      window.assay_clipboard = $scope.BCODE[$scope.activeBCODE];
     };
 
     $scope.copyAllBCODE = function() {
-      $scope.clipboard = _.filter($scope.BCODE.slice(1, $scope.BCODE.length - 2), function(e) {
+      window.assay_clipboard = _.filter($scope.BCODE.slice(1, $scope.BCODE.length - 2), function(e) {
         return e.command !== 'Read Sensors';
       });
     };
@@ -487,12 +487,12 @@ angular.module('assays').controller('AssaysController', ['$scope', '$http', '$st
     $scope.pasteBCODE = function() {
       if ($scope.activeBCODE > 0 && $scope.activeBCODE < $scope.BCODE.length - 1) {
         $scope.activeBCODE += 1;
-        if (angular.isArray($scope.clipboard)) {
-          $scope.clipboard.forEach(function(e, i) {
+        if (angular.isArray(window.assay_clipboard)) {
+          window.assay_clipboard.forEach(function(e, i) {
             $scope.BCODE.splice($scope.activeBCODE + i, 0, angular.copy(e));
           });
         } else {
-          $scope.BCODE.splice($scope.activeBCODE, 0, angular.copy($scope.clipboard));
+          $scope.BCODE.splice($scope.activeBCODE, 0, angular.copy(window.assay_clipboard));
         }
         $scope.estimatedTime = get_BCODE_duration($scope.BCODE);
       }
